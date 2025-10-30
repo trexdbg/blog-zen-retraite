@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Zen Retraite – Inspirer les jeunes retraités actifs</title>
+<meta name="description" content="Zen Retraite partage des idées voyage, bien-être, cuisine, jardinage et culture pour une retraite active et sereine.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./style.css">
+</head>
+<body data-page="home">
+<header class="site-header">
+<a class="brand" href="./index.html">
+<span class="brand-mark">Zen</span>
+<span class="brand-text">Retraite</span>
+</a>
+<div class="header-controls">
+<label class="control search-control">
+<span class="control-label">Recherche</span>
+<input id="search-input" type="search" placeholder="Chercher un article..." aria-label="Rechercher un article">
+</label>
+<label class="control">
+<span class="control-label">Thème</span>
+<select id="theme-filter" aria-label="Filtrer par thème">
+<option value="">Tous</option>
+</select>
+</label>
+<label class="control">
+<span class="control-label">Sous-thème</span>
+<select id="subtheme-filter" aria-label="Filtrer par sous-thème">
+<option value="">Tous</option>
+</select>
+</label>
+</div>
+</header>
+<main class="content">
+<section class="intro">
+<h1>Des idées pour savourer chaque journée</h1>
+<p>Voyages inspirants, recettes de saison, activités douces et bons plans pour cultiver votre équilibre.</p>
+</section>
+<section aria-live="polite">
+<div id="articles-grid" class="card-grid" data-state="loading"></div>
+<p id="empty-state" class="empty-state" hidden>Aucun article ne correspond à votre recherche pour le moment. Essayez d’autres filtres.</p>
+</section>
+</main>
+<footer class="site-footer">
+<nav class="footer-nav">
+<a href="./archive.html">Archives</a>
+</nav>
+<p>&copy; <span id="current-year"></span> Zen Retraite. Tous droits réservés.</p>
+</footer>
+<script src="./script.js" defer></script>
+</body>
+</html>

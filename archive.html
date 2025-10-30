@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Archives – Zen Retraite</title>
+<meta name="description" content="Retrouvez les anciens articles Zen Retraite classés par date.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./style.css">
+</head>
+<body data-page="archive">
+<header class="site-header archive-header">
+<a class="brand" href="./index.html">
+<span class="brand-mark">Zen</span>
+<span class="brand-text">Retraite</span>
+</a>
+</header>
+<main class="content">
+<section class="intro">
+<h1>Archives</h1>
+<p>Une bibliothèque d’inspirations classées par date pour continuer à explorer en douceur.</p>
+</section>
+<section aria-live="polite">
+<ul id="archive-list" class="archive-list"></ul>
+<p id="archive-empty" class="empty-state" hidden>Aucune archive disponible pour le moment.</p>
+</section>
+</main>
+<footer class="site-footer">
+<nav class="footer-nav">
+<a href="./index.html">Accueil</a>
+</nav>
+<p>&copy; <span id="current-year"></span> Zen Retraite. Tous droits réservés.</p>
+</footer>
+<script src="./script.js" defer></script>
+</body>
+</html>
