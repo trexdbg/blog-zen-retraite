@@ -8,6 +8,16 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+<script>
+  (function(){
+    try {
+      var t = localStorage.getItem('zr-theme');
+      if (t === 'dark' || t === 'light') {
+        document.documentElement.setAttribute('data-theme', t);
+      }
+    } catch (e) {}
+  })();
+  </script>
 <link rel="stylesheet" href="./style.css">
 </head>
 <body data-page="archive">
@@ -16,6 +26,7 @@
 <span class="brand-mark">Zen</span>
 <span class="brand-text">Retraite</span>
 </a>
+<button id="theme-toggle" class="theme-toggle" aria-label="Basculer le mode jour/nuit" title="Basculer le mode jour/nuit">🌙</button>
 </header>
 <main class="content">
 <section class="intro">

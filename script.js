@@ -16,6 +16,7 @@
 
 // 1) Constantes et utilitaires ----------------------------------------------
 const BODY = document.body;
+const HTML = document.documentElement;
 const PAGE = BODY.dataset.page || ""; // "home" | "article" | "archive"
 
 // Année courante dans le pied de page
@@ -32,6 +33,49 @@ function formatDateFR(iso) {
 
 // Polyfill trivial pour structuredClone si indisponible
 function structuredClone(obj) { return JSON.parse(JSON.stringify(obj)); }
+
+// Gestion du thème jour/nuit -------------------------------------------------
+function effectiveTheme() {
+  const saved = (() => { try { return localStorage.getItem('zr-theme'); } catch(e) { return null; } })();
+  if (saved === 'dark' || saved === 'light') return saved;
+  return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+
+function updateThemeButton() {
+  const btn = document.getElementById('theme-toggle');
+  if (!btn) return;
+  const current = (HTML.getAttribute('data-theme') || effectiveTheme());
+  const isDark = current === 'dark';
+  btn.textContent = isDark ? '☀️' : '🌙';
+  btn.title = isDark ? 'Passer en mode jour' : 'Passer en mode nuit';
+  btn.setAttribute('aria-label', btn.title);
+}
+
+function setTheme(theme) {
+  if (theme !== 'dark' && theme !== 'light') return;
+  HTML.setAttribute('data-theme', theme);
+  try { localStorage.setItem('zr-theme', theme); } catch (e) {}
+  updateThemeButton();
+}
+
+function initThemeToggle() {
+  updateThemeButton();
+  const btn = document.getElementById('theme-toggle');
+  if (!btn) return;
+  btn.addEventListener('click', () => {
+    const current = (HTML.getAttribute('data-theme') || effectiveTheme());
+    const next = current === 'dark' ? 'light' : 'dark';
+    setTheme(next);
+  });
+  // Si le système change et aucun thème forcé, mettre à jour l'icône
+  const attr = HTML.getAttribute('data-theme');
+  if (!attr && window.matchMedia) {
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    const onChange = () => updateThemeButton();
+    if (typeof mq.addEventListener === 'function') mq.addEventListener('change', onChange);
+    else if (typeof mq.addListener === 'function') mq.addListener(onChange);
+  }
+}
 
 // 2) Données fallback (mode file://) ----------------------------------------
 // Ouvrir en file:// bloque fetch des JSON. Pour une démo fluide hors serveur,
@@ -228,6 +272,29 @@ async function initHome() {
   if (input) input.addEventListener("input", (ev) => { state.search = ev.target.value.trim(); applyFilters(); });
   if (themeSel) themeSel.addEventListener("change", (ev) => { state.theme = ev.target.value; resetSubthemes(); applyFilters(); });
   if (subSel) subSel.addEventListener("change", (ev) => { state.subtheme = ev.target.value; applyFilters(); });
+
+  // Hamburger toggle (mobile): open/close filters panel
+  const toggleBtn = document.getElementById("filters-toggle");
+  const headerEl = document.querySelector(".site-header");
+  const panelEl = document.getElementById("filters-panel");
+  if (toggleBtn && headerEl && panelEl) {
+    toggleBtn.addEventListener("click", () => {
+      const open = !headerEl.classList.contains("filters-open");
+      headerEl.classList.toggle("filters-open", open);
+      toggleBtn.setAttribute("aria-expanded", String(open));
+    });
+
+    // Close panel when resizing to desktop
+    const mq = window.matchMedia("(min-width: 641px)");
+    const onChange = (e) => {
+      if (e.matches) {
+        headerEl.classList.remove("filters-open");
+        toggleBtn.setAttribute("aria-expanded", "false");
+      }
+    };
+    if (typeof mq.addEventListener === "function") mq.addEventListener("change", onChange);
+    else if (typeof mq.addListener === "function") mq.addListener(onChange);
+  }
 }
 
 // 6) Article ----------------------------------------------------------------
@@ -343,6 +410,7 @@ async function initArchive() {
 }
 
 // Point d’entrée – selon la page courante
+initThemeToggle();
 if (PAGE === "home") initHome();
 else if (PAGE === "article") initArticle();
 else if (PAGE === "archive") initArchive();
