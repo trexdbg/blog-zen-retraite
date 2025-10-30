@@ -33,5 +33,4 @@ coverage/
 # Contenu dynamique géré par un autre agent (ne pas suivre localement)
 # NB: les fichiers déjà versionnés resteront suivis; voir aussi .gitattributes
 # et la configuration skip-worktree ci-dessous pour ignorer leurs modifications.
-data/
 
