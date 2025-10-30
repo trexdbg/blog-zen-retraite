@@ -284,11 +284,38 @@ async function initArchive() {
 
   try {
     const data = await fetchJson("./data/archive.json");
-    const entries = Array.isArray(data) ? data : (Array.isArray(data.articles) ? data.articles : []);
+    let entriesRaw = Array.isArray(data) ? data : (Array.isArray(data.articles) ? data.articles : []);
+    let entries = [];
+    if (!entriesRaw.length) { empty.hidden = false; return; }
+    // Normalisation: accepte soit une liste d'objets { id, title?, created_at? },
+    // soit une liste d'IDs (strings). Dans ce dernier cas, on récupère titre/date
+    // depuis le fichier d'article correspondant pour l'affichage.
+    if (typeof entriesRaw[0] === "string") {
+      const ids = entriesRaw;
+      const loaded = await Promise.all(ids.map(async (id) => {
+        try {
+          const a = await fetchJson(`./data/articles/${id}.json`);
+          return { id, title: a.title, created_at: a.created_at };
+        } catch (e) {
+          console.warn("Archive ignorée", id, e);
+          return { id };
+        }
+      }));
+      entries = loaded.filter(Boolean);
+    } else {
+      entries = entriesRaw.filter(Boolean);
+    }
+
     if (!entries.length) { empty.hidden = false; return; }
     empty.hidden = true;
 
-    entries.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    entries.sort((a, b) => {
+      const da = a.created_at ? new Date(a.created_at).getTime() : 0;
+      const db = b.created_at ? new Date(b.created_at).getTime() : 0;
+      if (db !== da) return db - da;
+      return String(b.id).localeCompare(String(a.id), "fr");
+    });
+
     entries.forEach((item) => {
       const li = document.createElement("li");
       const left = document.createElement("div");
