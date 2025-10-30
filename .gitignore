@@ -1,0 +1,32 @@
+# OS / fichiers système
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Icon?
+desktop.ini
+
+# Logs
+*.log
+npm-debug.log*
+yarn-error.log*
+
+# Éditeurs / IDE
+.vscode/
+.idea/
+*.code-workspace
+
+# Dépendances Node (si utilisées)
+node_modules/
+
+# Build / caches (si utilisés)
+dist/
+build/
+.cache/
+.tmp/
+coverage/
+.sass-cache/
+
+# Environnements
+.env
+.env.*
+
