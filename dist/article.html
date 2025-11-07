@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Redirection d'article - Zen Retraite</title>
+<meta name="robots" content="noindex,follow">
+<meta name="description" content="Cette page redirige automatiquement les anciens liens article.html?id=... vers les nouvelles pages statiques.">
+<meta id="redirect-meta" http-equiv="refresh" content="">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./style.css">
+</head>
+<body data-page="article-redirect">
+<header class="site-header article-header">
+<a class="brand" href="./index.html">
+<span class="brand-mark">Zen</span>
+<span class="brand-text">Retraite</span>
+</a>
+</header>
+<main class="content">
+<article class="article-detail">
+<h1>Redirection de votre article</h1>
+<p id="redirect-status">Veuillez patienter, nous préparons la nouvelle URL statique de l'article.</p>
+<p id="redirect-link-wrapper" class="article-note" hidden>Vous allez être redirigé vers <a id="redirect-link" href="./">la page de l'article</a>. Si la redirection ne se lance pas, cliquez simplement sur ce lien.</p>
+<p class="article-note">Si rien ne se passe, copiez l'identifiant après <code>?id=</code> et remplacez-le par le chemin <code>/articles/IDENTIFIANT/</code>, ou revenez vers <a href="./index.html">l'accueil</a>.</p>
+</article>
+</main>
+<footer class="site-footer">
+<nav class="footer-nav">
+<a href="./index.html">Accueil</a>
+<a href="./archive.html">Archives</a>
+</nav>
+<p>&copy; <span id="current-year"></span> Zen Retraite. Tous droits réservés.</p>
+</footer>
+<script>
+(function () {
+  var statusEl = document.getElementById("redirect-status");
+  var metaEl = document.getElementById("redirect-meta");
+  var linkWrapper = document.getElementById("redirect-link-wrapper");
+  var linkEl = document.getElementById("redirect-link");
+
+  function updateStatus(message) {
+    if (statusEl) {
+      statusEl.textContent = message;
+    }
+  }
+
+  function handleInvalid(message) {
+    updateStatus(message);
+    if (linkWrapper) {
+      linkWrapper.hidden = true;
+    }
+  }
+
+  try {
+    var params = new URLSearchParams(window.location.search);
+    var rawId = params.get("id");
+    if (!rawId) {
+      handleInvalid("Aucun identifiant ?id= fourni. Utilisez les liens de l'accueil ou des archives.");
+      return;
+    }
+    var safeId = rawId.trim().replace(/[^a-zA-Z0-9_-]/g, "");
+    if (!safeId) {
+      handleInvalid("L'identifiant fourni n'est pas reconnu. Consultez l'accueil ou les archives.");
+      return;
+    }
+    var target = "./articles/" + safeId + "/";
+    updateStatus("Redirection en cours vers " + target + "...");
+    if (linkEl) {
+      linkEl.href = target;
+      linkEl.textContent = target;
+    }
+    if (linkWrapper) {
+      linkWrapper.hidden = false;
+    }
+    if (metaEl) {
+      metaEl.setAttribute("content", "0;url=" + target);
+    }
+    setTimeout(function () {
+      window.location.replace(target);
+    }, 100);
+  } catch (error) {
+    console.error(error);
+    updateStatus("Impossible de calculer la redirection. Consultez l'accueil ou les archives.");
+  }
+})();
+</script>
+<noscript>
+<p class="article-note">Activez JavaScript pour être redirigé automatiquement, ou remplacez manuellement <code>?id=</code> par <code>/articles/IDENTIFIANT/</code>.</p>
+</noscript>
+</body>
+</html>

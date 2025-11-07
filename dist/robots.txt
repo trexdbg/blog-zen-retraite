@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://zen-retraite.fr/sitemap.xml

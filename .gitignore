@@ -19,7 +19,6 @@ yarn-error.log*
 node_modules/
 
 # Build / caches (si utilisés)
-dist/
 build/
 .cache/
 .tmp/
