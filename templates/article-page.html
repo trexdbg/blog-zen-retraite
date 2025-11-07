@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{{ARTICLE_TITLE}} – Zen Retraite</title>
+<meta name="description" content="{{ARTICLE_DESCRIPTION}}">
+<link rel="canonical" href="{{ARTICLE_CANONICAL_URL}}">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Zen Retraite">
+<meta property="og:title" content="{{ARTICLE_TITLE}}">
+<meta property="og:description" content="{{ARTICLE_DESCRIPTION}}">
+<meta property="og:url" content="{{ARTICLE_CANONICAL_URL}}">
+{{ARTICLE_OG_IMAGE_TAGS}}
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{{ARTICLE_TITLE}}">
+<meta name="twitter:description" content="{{ARTICLE_DESCRIPTION}}">
+{{ARTICLE_TWITTER_IMAGE_TAG}}
+{{ARTICLE_STRUCTURED_DATA}}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+<script>
+  (function(){
+    try {
+      var t = localStorage.getItem('zr-theme');
+      if (t === 'dark' || t === 'light') {
+        document.documentElement.setAttribute('data-theme', t);
+      }
+    } catch (e) {}
+  })();
+  </script>
+<link rel="stylesheet" href="../../style.css">
+</head>
+<body data-page="article">
+<header class="site-header article-header">
+<a class="brand" href="../../index.html">
+<span class="brand-mark">Zen</span>
+<span class="brand-text">Retraite</span>
+</a>
+<button id="theme-toggle" class="theme-toggle" aria-label="Basculer le mode jour/nuit" title="Basculer le mode jour/nuit">☀️/🌙</button>
+</header>
+<main class="content">
+<article id="article-detail" class="article-detail" aria-live="polite">
+<h1>{{ARTICLE_TITLE}}</h1>
+<div class="card-meta">
+<time dateTime="{{ARTICLE_PUBLISHED_ISO}}">{{ARTICLE_PUBLISHED_HUMAN}}</time>
+<span>{{ARTICLE_THEME}} – {{ARTICLE_SUBTHEME}}</span>
+</div>
+{{ARTICLE_IMAGE_BLOCK}}
+<div class="article-body">
+{{ARTICLE_CONTENT}}
+</div>
+</article>
+<div class="article-actions">
+<a class="back-link" href="../../index.html">← Retour à l’accueil</a>
+</div>
+</main>
+<footer class="site-footer">
+<nav class="footer-nav">
+<a href="../../archive.html">Archives</a>
+</nav>
+<p>&copy; <span id="current-year"></span> Zen Retraite. Tous droits réservés.</p>
+</footer>
+{{ARTICLE_DATA_SCRIPT}}
+<script src="../../script.js" defer></script>
+</body>
+</html>

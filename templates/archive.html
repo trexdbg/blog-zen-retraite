@@ -35,15 +35,9 @@
 </section>
 <section aria-live="polite">
 <ul id="archive-list" class="archive-list">
-<li>
-  <div>Velouté de potimarron facile et parfumé</div>
-  <div>
-    <time dateTime="2025-11-01T08:00:00Z">1 novembre 2025</time>
-    <a href="./articles/2025-11-01-1/index.html">Lire</a>
-  </div>
-</li>
+{{ARCHIVE_LIST}}
 </ul>
-<p id="archive-empty" class="empty-state" hidden>Aucune archive disponible pour le moment.</p>
+<p id="archive-empty" class="empty-state" {{ARCHIVE_EMPTY_STATE_ATTR}}>Aucune archive disponible pour le moment.</p>
 </section>
 </main>
 <footer class="site-footer">
@@ -52,7 +46,7 @@
 </nav>
 <p>&copy; <span id="current-year"></span> Zen Retraite. Tous droits réservés.</p>
 </footer>
-<script id="zr-archive-data" type="application/json">{"entries":[{"id":"2025-11-01-1","title":"Velouté de potimarron facile et parfumé","created_at":"2025-11-01T08:00:00Z","url":"./articles/2025-11-01-1/index.html"}]}</script>
+{{ARCHIVE_DATA_SCRIPT}}
 <script src="./script.js" defer></script>
 </body>
 </html>

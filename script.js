@@ -34,6 +34,17 @@ function formatDateFR(iso) {
 // Polyfill trivial pour structuredClone si indisponible
 function structuredClone(obj) { return JSON.parse(JSON.stringify(obj)); }
 
+function readInlineJson(id) {
+  const node = document.getElementById(id);
+  if (!node) return null;
+  try {
+    return JSON.parse(node.textContent);
+  } catch (error) {
+    console.warn("JSON inline invalide", id, error);
+    return null;
+  }
+}
+
 // Gestion du thème jour/nuit -------------------------------------------------
 function effectiveTheme() {
   const saved = (() => { try { return localStorage.getItem('zr-theme'); } catch(e) { return null; } })();
@@ -181,6 +192,7 @@ async function initHome() {
   const state = { search: "", theme: "", subtheme: "" };
 
   function setOptions(select, values) {
+    if (!select) return;
     const opts = ["<option value=\"\">Tous</option>"];
     values.forEach(v => opts.push(`<option value="${v}">${v}</option>`));
     select.innerHTML = opts.join("");
@@ -190,11 +202,6 @@ async function initHome() {
     const card = document.createElement("article");
     card.className = "card";
     card.style.animationDelay = `${(index * 0.06).toFixed(2)}s`;
-
-    const img = document.createElement("img");
-    img.alt = article.title;
-    img.dataset.src = article.image;
-    observeImage(img);
 
     const wrap = document.createElement("div");
     wrap.className = "card-content";
@@ -208,7 +215,7 @@ async function initHome() {
     p.textContent = article.excerpt;
 
     const a = document.createElement("a");
-    a.href = `./article.html?id=${encodeURIComponent(article.id)}`;
+    a.href = article.url || `./articles/${encodeURIComponent(article.id)}/index.html`;
     a.textContent = "Lire la suite";
 
     wrap.appendChild(createMeta(article));
@@ -216,7 +223,14 @@ async function initHome() {
     wrap.appendChild(p);
     wrap.appendChild(a);
 
-    card.appendChild(img);
+    if (article.image) {
+      const img = document.createElement("img");
+      img.alt = article.title;
+      img.dataset.src = article.image;
+      img.src = article.image;
+      observeImage(img);
+      card.appendChild(img);
+    }
     card.appendChild(wrap);
     return card;
   }
@@ -241,6 +255,7 @@ async function initHome() {
   }
 
   function resetSubthemes() {
+    if (!subSel) return;
     const set = new Set();
     articles.forEach(a => { if (!state.theme || a.theme === state.theme) set.add(a.subtheme); });
     const list = [...set].sort((a, b) => a.localeCompare(b, "fr"));
@@ -248,25 +263,45 @@ async function initHome() {
     if (!list.includes(state.subtheme)) { state.subtheme = ""; subSel.value = ""; }
   }
 
-  try {
-    const ids = await fetchJson("./data/articles/index.json");
-    if (!Array.isArray(ids)) throw new Error("Index absent");
-
-    const loaded = await Promise.all(ids.map(async (id) => {
-      try { return await fetchJson(`./data/articles/${id}.json`); }
-      catch (e) { console.warn("Article ignoré", id, e); return null; }
-    }));
-
-    articles = loaded.filter(Boolean).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-
-    const themes = [...new Set(articles.map(a => a.theme))].sort((a, b) => a.localeCompare(b, "fr"));
+  function hydrate(list) {
+    articles = list
+      .filter(Boolean)
+      .map((item) => ({
+        ...item,
+        excerpt: item.excerpt || "",
+        url: item.url || `./articles/${item.id}/index.html`,
+      }))
+      .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    const themes = [...new Set(articles.map(a => a.theme))].filter(Boolean).sort((a, b) => a.localeCompare(b || "", "fr"));
     setOptions(themeSel, themes);
     resetSubthemes();
     applyFilters();
-  } catch (e) {
-    console.error(e);
-    grid.dataset.state = "ready";
-    grid.innerHTML = '<p class="empty-state">Impossible de charger les articles. Merci de réessayer plus tard.</p>';
+  }
+
+  const inline = readInlineJson("zr-home-data");
+  if (inline && Array.isArray(inline.articles) && inline.articles.length) {
+    hydrate(structuredClone(inline.articles));
+  } else {
+    try {
+      const ids = await fetchJson("./data/articles/index.json");
+      if (!Array.isArray(ids)) throw new Error("Index absent");
+
+      const loaded = await Promise.all(ids.map(async (id) => {
+        try {
+          const data = await fetchJson(`./data/articles/${id}.json`);
+          return { ...data, url: `./articles/${id}/index.html` };
+        } catch (e) {
+          console.warn("Article ignoré", id, e);
+          return null;
+        }
+      }));
+
+      hydrate(loaded);
+    } catch (e) {
+      console.error(e);
+      grid.dataset.state = "ready";
+      grid.innerHTML = '<p class="empty-state">Impossible de charger les articles. Merci de réessayer plus tard.</p>';
+    }
   }
 
   if (input) input.addEventListener("input", (ev) => { state.search = ev.target.value.trim(); applyFilters(); });
@@ -298,9 +333,54 @@ async function initHome() {
 }
 
 // 6) Article ----------------------------------------------------------------
+function renderArticleDetail(container, article) {
+  if (!article || !container) return;
+  document.title = `${article.title} - Zen Retraite`;
+  container.innerHTML = "";
+
+  const h1 = document.createElement("h1");
+  h1.textContent = article.title;
+
+  const meta = document.createElement("div");
+  meta.className = "card-meta";
+  if (article.created_at) {
+    const time = document.createElement("time");
+    time.dateTime = article.created_at;
+    time.textContent = formatDateFR(article.created_at);
+    meta.appendChild(time);
+  }
+  const tags = document.createElement("span");
+  tags.textContent = `${article.theme} - ${article.subtheme}`;
+  meta.appendChild(tags);
+
+  const body = document.createElement("div");
+  body.className = "article-body";
+  body.innerHTML = article.content;
+
+  container.appendChild(h1);
+  container.appendChild(meta);
+
+  if (article.image) {
+    const img = document.createElement("img");
+    img.alt = article.title;
+    img.dataset.src = article.image;
+    img.src = article.image;
+    observeImage(img);
+    container.appendChild(img);
+  }
+
+  container.appendChild(body);
+}
+
 async function initArticle() {
   const container = document.getElementById("article-detail");
   if (!container) return;
+
+  const inline = readInlineJson("zr-article-data");
+  if (inline && inline.id) {
+    renderArticleDetail(container, inline);
+    return;
+  }
 
   const params = new URLSearchParams(location.search);
   const id = params.get("id");
@@ -308,35 +388,7 @@ async function initArticle() {
 
   try {
     const article = await fetchJson(`./data/articles/${id}.json`);
-    document.title = `${article.title} - Zen Retraite`;
-    container.innerHTML = "";
-
-    const h1 = document.createElement("h1");
-    h1.textContent = article.title;
-
-    const meta = document.createElement("div");
-    meta.className = "card-meta";
-    const time = document.createElement("time");
-    time.dateTime = article.created_at;
-    time.textContent = formatDateFR(article.created_at);
-    meta.appendChild(time);
-    const tags = document.createElement("span");
-    tags.textContent = `${article.theme} - ${article.subtheme}`;
-    meta.appendChild(tags);
-
-    const img = document.createElement("img");
-    img.alt = article.title;
-    img.dataset.src = article.image;
-    observeImage(img);
-
-    const body = document.createElement("div");
-    body.className = "article-body";
-    body.innerHTML = article.content;
-
-    container.appendChild(h1);
-    container.appendChild(meta);
-    container.appendChild(img);
-    container.appendChild(body);
+    renderArticleDetail(container, { ...article, url: `./articles/${article.id}/index.html` });
   } catch (e) {
     console.error(e);
     container.innerHTML = '<p class="empty-state">Impossible de charger cet article.</p>';
@@ -345,26 +397,62 @@ async function initArticle() {
 
 // 7) Archives ---------------------------------------------------------------
 async function initArchive() {
-  const list = document.getElementById("archive-list");
+  const list = document.getElementById('archive-list');
   if (!list) return;
-  const empty = document.getElementById("archive-empty");
+  const empty = document.getElementById('archive-empty');
+
+  function renderEntries(entries) {
+    list.innerHTML = '';
+    if (!entries.length) { empty.hidden = false; return; }
+    empty.hidden = true;
+
+    const sorted = [...entries].sort((a, b) => {
+      const da = a.created_at ? new Date(a.created_at).getTime() : 0;
+      const db = b.created_at ? new Date(b.created_at).getTime() : 0;
+      if (db !== da) return db - da;
+      return String(b.id).localeCompare(String(a.id), 'fr');
+    });
+
+    sorted.forEach((item) => {
+      const li = document.createElement('li');
+      const left = document.createElement('div');
+      left.textContent = item.title || `Article ${item.id}`;
+      const right = document.createElement('div');
+      if (item.created_at) {
+        const t = document.createElement('time');
+        t.dateTime = item.created_at;
+        t.textContent = formatDateFR(item.created_at);
+        right.appendChild(t);
+      }
+      const a = document.createElement('a');
+      a.href = item.url || `./articles/${encodeURIComponent(item.id)}/index.html`;
+      a.textContent = 'Lire';
+      right.appendChild(a);
+      li.appendChild(left);
+      li.appendChild(right);
+      list.appendChild(li);
+    });
+  }
+
+  const inline = readInlineJson('zr-archive-data');
+  if (inline && Array.isArray(inline.entries) && inline.entries.length) {
+    renderEntries(structuredClone(inline.entries));
+    return;
+  }
 
   try {
-    const data = await fetchJson("./data/archive.json");
+    const data = await fetchJson('./data/archive.json');
     let entriesRaw = Array.isArray(data) ? data : (Array.isArray(data.articles) ? data.articles : []);
-    let entries = [];
     if (!entriesRaw.length) { empty.hidden = false; return; }
-    // Normalisation: accepte soit une liste d'objets { id, title?, created_at? },
-    // soit une liste d'IDs (strings). Dans ce dernier cas, on récupère titre/date
-    // depuis le fichier d'article correspondant pour l'affichage.
-    if (typeof entriesRaw[0] === "string") {
+    let entries = [];
+    if (typeof entriesRaw[0] === 'string') {
       const ids = entriesRaw;
       const loaded = await Promise.all(ids.map(async (id) => {
         try {
           const a = await fetchJson(`./data/articles/${id}.json`);
           return { id, title: a.title, created_at: a.created_at };
         } catch (e) {
-          console.warn("Archive ignorée", id, e);
+          console.warn('Archive ignorée', id, e);
           return { id };
         }
       }));
@@ -373,42 +461,14 @@ async function initArchive() {
       entries = entriesRaw.filter(Boolean);
     }
 
-    if (!entries.length) { empty.hidden = false; return; }
-    empty.hidden = true;
-
-    entries.sort((a, b) => {
-      const da = a.created_at ? new Date(a.created_at).getTime() : 0;
-      const db = b.created_at ? new Date(b.created_at).getTime() : 0;
-      if (db !== da) return db - da;
-      return String(b.id).localeCompare(String(a.id), "fr");
-    });
-
-    entries.forEach((item) => {
-      const li = document.createElement("li");
-      const left = document.createElement("div");
-      left.textContent = item.title || `Article ${item.id}`;
-      const right = document.createElement("div");
-      if (item.created_at) {
-        const t = document.createElement("time");
-        t.dateTime = item.created_at;
-        t.textContent = formatDateFR(item.created_at);
-        right.appendChild(t);
-      }
-      const a = document.createElement("a");
-      a.href = `./article.html?id=${encodeURIComponent(item.id)}`;
-      a.textContent = "Lire";
-      right.appendChild(a);
-      li.appendChild(left);
-      li.appendChild(right);
-      list.appendChild(li);
-    });
+    entries = entries.map(item => ({ ...item, url: `./articles/${item.id}/index.html` }));
+    renderEntries(entries);
   } catch (e) {
     console.error(e);
     empty.hidden = false;
-    empty.textContent = "Impossible de charger les archives.";
+    empty.textContent = 'Impossible de charger les archives.';
   }
 }
-
 // Point d’entrée – selon la page courante
 initThemeToggle();
 if (PAGE === "home") initHome();

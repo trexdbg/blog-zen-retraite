@@ -1,19 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset 
-  xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
-                      http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
-
-  <!-- Page d'accueil : contenu principal, mise à jour quotidienne -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://zen-retraite.fr/</loc>
-    <lastmod>2025-11-01</lastmod>
+    <lastmod>2025-11-07</lastmod>
     <changefreq>hourly</changefreq>
     <priority>1.0</priority>
   </url>
 
-  <!-- Page archive : contenu évolutif, mise à jour régulière -->
   <url>
     <loc>https://zen-retraite.fr/archive.html</loc>
     <lastmod>2025-11-01</lastmod>
@@ -21,4 +14,339 @@
     <priority>0.9</priority>
   </url>
 
+  <url>
+    <loc>https://zen-retraite.fr/articles/2025-11-07_06-47_s-curit-et-confort-domicile_maison-s-curis-e-confort/</loc>
+    <lastmod>2025-11-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://zen-retraite.fr/articles/2025-11-06_20-43_d-coration-int-rieure-saisonni-re_maison-cosy-automne/</loc>
+    <lastmod>2025-11-06</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://zen-retraite.fr/articles/2025-11-06_18-46_bien-tre-et-sant-douce_marche-for-t-sport/</loc>
+    <lastmod>2025-11-06</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://zen-retraite.fr/articles/2025-11-06_11-31_d-coration-int-rieure-et-bien-tre_d-co-chaleureuse-maison/</loc>
+    <lastmod>2025-11-06</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://zen-retraite.fr/articles/2025-11-06_06-47_bien-tre-et-sant-douce_articulation-bien-tre-mobilit/</loc>
+    <lastmod>2025-11-06</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://zen-retraite.fr/articles/2025-11-05_20-44_bien-tre-et-sant-douce-loisirs_marche-nature-nergie/</loc>
+    <lastmod>2025-11-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://zen-retraite.fr/articles/2025-11-05_18-43_vie-de-retrait-active-et-panouie_maison-connect-e/</loc>
+    <lastmod>2025-11-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://zen-retraite.fr/articles/2025-11-05_15-00_d-coration-int-rieure-et-confort_int-rieur-cosy-automne/</loc>
+    <lastmod>2025-11-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://zen-retraite.fr/articles/2025-11-05_06-47_bien-tre-et-sant-douce_marche-nature-automne/</loc>
+    <lastmod>2025-11-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://zen-retraite.fr/articles/2025-11-04_20-44_bien-tre-et-sant-douce_marche-sport-nature/</loc>
+    <lastmod>2025-11-04</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://zen-retraite.fr/articles/2025-11-04_18-45_d-coration-int-rieure-bien-tre-maison_maison-douce-automne/</loc>
+    <lastmod>2025-11-04</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://zen-retraite.fr/articles/2025-11-04_11-32_d-coration-int-rieure-cocooning_d-co-hiver-cocon/</loc>
+    <lastmod>2025-11-04</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://zen-retraite.fr/articles/2025-11-04_10-11_phytoth-rapie-et-compl-ments_plantes-immunit-automne/</loc>
+    <lastmod>2025-11-04</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://zen-retraite.fr/articles/2025-11-04_07-33_loisirs-cr-atifs_cr-ativit-mains-loisirs/</loc>
+    <lastmod>2025-11-04</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://zen-retraite.fr/articles/2025-11-03_21-37_bien-tre-naturel-et-th-rapies-douces_bien-tre-nature-calme/</loc>
+    <lastmod>2025-11-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://zen-retraite.fr/articles/2025-11-03_20-43_d-coration-d-int-rieur-saisonni-re_ambiance-cosy-nature/</loc>
+    <lastmod>2025-11-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://zen-retraite.fr/articles/2025-11-03_18-40_d-coration-et-ambiance-maison_int-rieur-cosy-chaud/</loc>
+    <lastmod>2025-11-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://zen-retraite.fr/articles/2025-11-03_11-30_jardinage-cologique_jardinage-nature-outils/</loc>
+    <lastmod>2025-11-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://zen-retraite.fr/articles/2025-11-03_06-49_jardinage-urbain-et-ergonomique_jardinage-urbain-facile/</loc>
+    <lastmod>2025-11-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://zen-retraite.fr/articles/2025-11-02_20-39_maison-jardin-nature_maison-cosy-automne/</loc>
+    <lastmod>2025-11-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://zen-retraite.fr/articles/2025-11-02_18-37_jardinage-adapt_jardin-outils-plantes/</loc>
+    <lastmod>2025-11-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://zen-retraite.fr/articles/2025-11-02_11-27_maison-bien-tre_maison-chaleureuse-cocoon/</loc>
+    <lastmod>2025-11-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://zen-retraite.fr/articles/2025-11-02_06-45_cuisine-simple-et-de-saison_plat-cuisine-automne/</loc>
+    <lastmod>2025-11-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://zen-retraite.fr/articles/2025-11-01_20-39_bien-tre-et-activit-physique-douce_yoga-bien-tre-d-tente/</loc>
+    <lastmod>2025-11-01</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://zen-retraite.fr/articles/2025-11-01_18-37_maison-jardin-nature_maison-nergie-hiver/</loc>
+    <lastmod>2025-11-01</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://zen-retraite.fr/articles/2025-11-01_11-28_yoga-doux-bien-tre_yoga-zen-quilibre/</loc>
+    <lastmod>2025-11-01</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://zen-retraite.fr/articles/2025-11-01-1/</loc>
+    <lastmod>2025-11-01</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://zen-retraite.fr/articles/2025-11-01_06-43_activit-physique-et-quipement_marche-b-tons-nature/</loc>
+    <lastmod>2025-11-01</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://zen-retraite.fr/articles/2025-10-31_20-41_d-coration-v-g-tale-facile_nature-maison-calme/</loc>
+    <lastmod>2025-10-31</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://zen-retraite.fr/articles/2025-10-31_18-45_maison-confort-s-curit_maison-confort-hiver/</loc>
+    <lastmod>2025-10-31</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://zen-retraite.fr/articles/2025-10-31_11-30_d-coration-d-int-rieur-saisonni-re_d-coration-automne-chaleureuse/</loc>
+    <lastmod>2025-10-31</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://zen-retraite.fr/articles/2025-10-31_09-57_jardinage-simple-et-productif_potager-urbain-facile/</loc>
+    <lastmod>2025-10-31</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://zen-retraite.fr/articles/2025-10-31_09-40_d-coration-d-int-rieur_int-rieur-cosy-plaid/</loc>
+    <lastmod>2025-10-31</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://zen-retraite.fr/articles/2025-10-31_09-28_d-coration-int-rieure-automne_maison-chaleureuse-automne/</loc>
+    <lastmod>2025-10-31</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://zen-retraite.fr/articles/2025-10-31_08-19_recettes-faciles-et-de-saison_repas-automne-l-gumes/</loc>
+    <lastmod>2025-10-31</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://zen-retraite.fr/articles/2025-10-31_07-39_bien-tre-et-sant-douce-vie-active-et-panouie_gym-douce-active/</loc>
+    <lastmod>2025-10-31</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://zen-retraite.fr/articles/2025-10-31_06-47_fitness-adapt-seniors_gym-douce-bien-tre/</loc>
+    <lastmod>2025-10-31</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://zen-retraite.fr/articles/2025-10-30_22-21_loisirs-cr-ativit-manuel_cr-ation-loisirs-mains/</loc>
+    <lastmod>2025-10-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://zen-retraite.fr/articles/2025-10-30_22-16_d-coration-int-rieure_int-rieur-chaleureux-lumi-re/</loc>
+    <lastmod>2025-10-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://zen-retraite.fr/articles/2025-10-30_22-07_maison-confort-s-curit_maison-confort-s-curit/</loc>
+    <lastmod>2025-10-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://zen-retraite.fr/articles/2025-10-30_22-02_cuisine-simple-et-de-saison_cuisine-automne-confortable/</loc>
+    <lastmod>2025-10-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://zen-retraite.fr/articles/2025-10-30_21-45_bien-tre-et-sant-douce_marche-nature-saine/</loc>
+    <lastmod>2025-10-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://zen-retraite.fr/articles/2025-10-30_21-37_bien-tre-et-sant-douce_sport-nature-active/</loc>
+    <lastmod>2025-10-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://zen-retraite.fr/articles/2025-10-30_17-06_jardinage-adapt_jardinage-outils-seniors/</loc>
+    <lastmod>2025-10-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://zen-retraite.fr/articles/2025-10-30_15-16_cuisine-saine-et-appareils-lectrom-nagers_cuisine-saine-appareils/</loc>
+    <lastmod>2025-10-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://zen-retraite.fr/articles/2025-10-30_14-35_jardinage-urbain-pour-seniors_balcon-fleuri-urbain/</loc>
+    <lastmod>2025-10-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://zen-retraite.fr/articles/2025-10-30-1/</loc>
+    <lastmod>2025-10-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://zen-retraite.fr/articles/2025-10-18-1/</loc>
+    <lastmod>2025-10-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
 </urlset>
