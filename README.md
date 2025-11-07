@@ -45,8 +45,53 @@ Ajouter / mettre à jour un article
 ----------------------------------
 
 1. Créer/éditer `data/articles/{id}.json` (copier un exemple existant).
-2. Ajouter l’ID dans `data/articles/index.json` pour l’afficher en page d’accueil.
+2. Ajouter l'ID dans `data/articles/index.json` pour l'afficher en page d'accueil.
 3. Lancer `npm run build` pour régénérer toutes les pages statiques.
+
+Compatibilité des anciens liens
+-------------------------------
+
+- Les vieux liens `article.html?id=...` restent valides : la page `article.html` redirige automatiquement (JS minimal) vers la page statique `articles/<id>/`.
+- Sans JavaScript, un message d'instructions explique comment reconstruire l'URL ou revenir vers l'accueil/les archives.
+- Le fichier `article.html` ne dépend plus de `script.js` et peut être servi tel quel par GitHub Pages/Netlify en tant que simple passerelle SEO-friendly.
+
+Intégration GitHub Actions
+--------------------------
+
+Déposez ce workflow (à adapter) dans `.github/workflows/publish.yml` pour reconstruire et publier automatiquement la version statique :
+
+```yaml
+name: build-and-deploy
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install dependencies
+        run: npm install
+        working-directory: zen-retraite
+      - name: Build static pages
+        env:
+          SITE_URL: https://zen-retraite.fr
+        run: npm run build
+        working-directory: zen-retraite
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: zen-retraite
+          force_orphan: true
+```
+
+Adaptez `publish_dir`/`SITE_URL` ou swappez l'étape finale par l'action Netlify/Vercel de votre choix selon l'hébergement ciblé.
 
 Développement & déploiement
 ---------------------------

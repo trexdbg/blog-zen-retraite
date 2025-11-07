@@ -3,45 +3,60 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Article – Zen Retraite</title>
-<meta name="description" content="Découvrez les conseils et inspirations Zen Retraite pour profiter d'une retraite active.">
+<title>Redirection d'article - Zen Retraite</title>
+<meta name="robots" content="noindex,follow">
+<meta name="description" content="Cette page redirige automatiquement les anciens liens article.html?id=... vers les nouvelles pages statiques.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
-<script>
-  (function(){
-    try {
-      var t = localStorage.getItem('zr-theme');
-      if (t === 'dark' || t === 'light') {
-        document.documentElement.setAttribute('data-theme', t);
-      }
-    } catch (e) {}
-  })();
-  </script>
 <link rel="stylesheet" href="./style.css">
 </head>
-<body data-page="article">
+<body data-page="article-redirect">
 <header class="site-header article-header">
 <a class="brand" href="./index.html">
 <span class="brand-mark">Zen</span>
 <span class="brand-text">Retraite</span>
 </a>
-<button id="theme-toggle" class="theme-toggle" aria-label="Basculer le mode jour/nuit" title="Basculer le mode jour/nuit">🌙</button>
 </header>
 <main class="content">
-<article id="article-detail" class="article-detail" aria-live="polite">
-<div class="article-loading">Chargement de l’article...</div>
+<article class="article-detail">
+<h1>Redirection de votre article</h1>
+<p id="redirect-status">Veuillez patienter, nous préparons la nouvelle URL statique de l'article.</p>
+<p class="article-note">Si rien ne se passe, copiez l'identifiant après <code>?id=</code> et remplacez-le par le chemin <code>/articles/IDENTIFIANT/</code>, ou revenez vers <a href="./index.html">l'accueil</a>.</p>
 </article>
-<div class="article-actions">
-<a class="back-link" href="./index.html">← Retour à l’accueil</a>
-</div>
 </main>
 <footer class="site-footer">
 <nav class="footer-nav">
+<a href="./index.html">Accueil</a>
 <a href="./archive.html">Archives</a>
 </nav>
 <p>&copy; <span id="current-year"></span> Zen Retraite. Tous droits réservés.</p>
 </footer>
-<script src="./script.js" defer></script>
+<script>
+(function () {
+  var statusEl = document.getElementById("redirect-status");
+  try {
+    var params = new URLSearchParams(window.location.search);
+    var rawId = params.get("id");
+    if (!rawId) {
+      statusEl.textContent = "Aucun identifiant ?id= fourni. Utilisez les liens de l'accueil ou des archives.";
+      return;
+    }
+    var safeId = rawId.replace(/[^a-zA-Z0-9_-]/g, "");
+    if (!safeId) {
+      statusEl.textContent = "L'identifiant fourni n'est pas reconnu. Consultez l'accueil ou les archives.";
+      return;
+    }
+    var target = "./articles/" + safeId + "/";
+    statusEl.textContent = "Redirection vers " + target + "…";
+    window.location.replace(target);
+  } catch (error) {
+    statusEl.textContent = "Impossible de calculer la redirection. Consultez l'accueil ou les archives.";
+  }
+})();
+</script>
+<noscript>
+<p class="article-note">Activez JavaScript pour être redirigé automatiquement, ou remplacez manuellement <code>?id=</code> par <code>/articles/IDENTIFIANT/</code>.</p>
+</noscript>
 </body>
 </html>
