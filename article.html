@@ -6,6 +6,7 @@
 <title>Redirection d'article - Zen Retraite</title>
 <meta name="robots" content="noindex,follow">
 <meta name="description" content="Cette page redirige automatiquement les anciens liens article.html?id=... vers les nouvelles pages statiques.">
+<meta id="redirect-meta" http-equiv="refresh" content="">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
@@ -22,6 +23,7 @@
 <article class="article-detail">
 <h1>Redirection de votre article</h1>
 <p id="redirect-status">Veuillez patienter, nous préparons la nouvelle URL statique de l'article.</p>
+<p id="redirect-link-wrapper" class="article-note" hidden>Vous allez être redirigé vers <a id="redirect-link" href="./">la page de l'article</a>. Si la redirection ne se lance pas, cliquez simplement sur ce lien.</p>
 <p class="article-note">Si rien ne se passe, copiez l'identifiant après <code>?id=</code> et remplacez-le par le chemin <code>/articles/IDENTIFIANT/</code>, ou revenez vers <a href="./index.html">l'accueil</a>.</p>
 </article>
 </main>
@@ -35,23 +37,53 @@
 <script>
 (function () {
   var statusEl = document.getElementById("redirect-status");
+  var metaEl = document.getElementById("redirect-meta");
+  var linkWrapper = document.getElementById("redirect-link-wrapper");
+  var linkEl = document.getElementById("redirect-link");
+
+  function updateStatus(message) {
+    if (statusEl) {
+      statusEl.textContent = message;
+    }
+  }
+
+  function handleInvalid(message) {
+    updateStatus(message);
+    if (linkWrapper) {
+      linkWrapper.hidden = true;
+    }
+  }
+
   try {
     var params = new URLSearchParams(window.location.search);
     var rawId = params.get("id");
     if (!rawId) {
-      statusEl.textContent = "Aucun identifiant ?id= fourni. Utilisez les liens de l'accueil ou des archives.";
+      handleInvalid("Aucun identifiant ?id= fourni. Utilisez les liens de l'accueil ou des archives.");
       return;
     }
-    var safeId = rawId.replace(/[^a-zA-Z0-9_-]/g, "");
+    var safeId = rawId.trim().replace(/[^a-zA-Z0-9_-]/g, "");
     if (!safeId) {
-      statusEl.textContent = "L'identifiant fourni n'est pas reconnu. Consultez l'accueil ou les archives.";
+      handleInvalid("L'identifiant fourni n'est pas reconnu. Consultez l'accueil ou les archives.");
       return;
     }
     var target = "./articles/" + safeId + "/";
-    statusEl.textContent = "Redirection vers " + target + "…";
-    window.location.replace(target);
+    updateStatus("Redirection en cours vers " + target + "...");
+    if (linkEl) {
+      linkEl.href = target;
+      linkEl.textContent = target;
+    }
+    if (linkWrapper) {
+      linkWrapper.hidden = false;
+    }
+    if (metaEl) {
+      metaEl.setAttribute("content", "0;url=" + target);
+    }
+    setTimeout(function () {
+      window.location.replace(target);
+    }, 100);
   } catch (error) {
-    statusEl.textContent = "Impossible de calculer la redirection. Consultez l'accueil ou les archives.";
+    console.error(error);
+    updateStatus("Impossible de calculer la redirection. Consultez l'accueil ou les archives.");
   }
 })();
 </script>

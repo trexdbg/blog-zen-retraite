@@ -10,7 +10,10 @@ const dataDir = path.join(rootDir, "data");
 const articlesDataDir = path.join(dataDir, "articles");
 const archiveDataPath = path.join(dataDir, "archive.json");
 const templatesDir = path.join(rootDir, "templates");
-const articlesOutputDir = path.join(rootDir, "articles");
+const distDir = path.join(rootDir, "dist");
+const articlesOutputDir = path.join(distDir, "articles");
+const STATIC_FILES = ["style.css", "script.js", "favicon.png", "robots.txt", "CNAME", "article.html"];
+const STATIC_DIRECTORIES = ["assets"];
 
 const SITE_URL = (process.env.SITE_URL || "https://zen-retraite.fr").replace(/\/+$/, "");
 const DATE_FORMATTER = new Intl.DateTimeFormat("fr-FR", { year: "numeric", month: "long", day: "numeric" });
@@ -66,6 +69,41 @@ function metaDescription(text) {
 async function loadTemplate(name) {
   const filePath = path.join(templatesDir, name);
   return fs.readFile(filePath, "utf8");
+}
+
+async function prepareDist() {
+  await fs.rm(distDir, { recursive: true, force: true });
+  await fs.mkdir(distDir, { recursive: true });
+}
+
+async function copyPathSafe(source, target) {
+  try {
+    const stats = await fs.stat(source);
+    if (stats.isDirectory()) {
+      await fs.cp(source, target, { recursive: true });
+    } else {
+      await fs.mkdir(path.dirname(target), { recursive: true });
+      await fs.copyFile(source, target);
+    }
+  } catch (error) {
+    if (error.code === "ENOENT") {
+      console.warn(`[build] Ressource statique absente (ignorée): ${source}`);
+    } else {
+      throw error;
+    }
+  }
+}
+
+async function copyStaticAssets() {
+  const tasks = [];
+  for (const file of STATIC_FILES) {
+    tasks.push(copyPathSafe(path.join(rootDir, file), path.join(distDir, file)));
+  }
+  for (const dir of STATIC_DIRECTORIES) {
+    tasks.push(copyPathSafe(path.join(rootDir, dir), path.join(distDir, dir)));
+  }
+  await Promise.all(tasks);
+  console.log("[build] Fichiers statiques copiés.");
 }
 
 function renderTemplate(template, replacements) {
@@ -159,7 +197,7 @@ async function buildHome(template, articles) {
   };
 
   const html = renderTemplate(template, replacements);
-  await fs.writeFile(path.join(rootDir, "index.html"), html, "utf8");
+  await fs.writeFile(path.join(distDir, "index.html"), html, "utf8");
   console.log(`[build] Accueil généré (${articles.length} articles).`);
 }
 
@@ -171,7 +209,7 @@ async function buildArchive(template, entries) {
     ARCHIVE_DATA_SCRIPT: `<script id="zr-archive-data" type="application/json">${safeJson({ entries })}</script>`,
   };
   const html = renderTemplate(template, replacements);
-  await fs.writeFile(path.join(rootDir, "archive.html"), html, "utf8");
+  await fs.writeFile(path.join(distDir, "archive.html"), html, "utf8");
   console.log(`[build] Archives générées (${entries.length} entrées).`);
 }
 
@@ -183,7 +221,7 @@ function articleImageBlock(article) {
 function structuredData(article, canonicalUrl, description) {
   const payload = {
     "@context": "https://schema.org",
-    "@type": "BlogPosting",
+    "@type": "Article",
     headline: article.title,
     description,
     datePublished: article.created_at,
@@ -204,7 +242,6 @@ function structuredData(article, canonicalUrl, description) {
 }
 
 async function buildArticles(template, articles) {
-  await fs.rm(articlesOutputDir, { recursive: true, force: true });
   await fs.mkdir(articlesOutputDir, { recursive: true });
 
   const tasks = articles.map(async (article) => {
@@ -293,7 +330,7 @@ async function buildSitemap(articles, homeNewestDate, archiveNewestDate) {
 </urlset>
 `;
 
-  await fs.writeFile(path.join(rootDir, "sitemap.xml"), xml, "utf8");
+  await fs.writeFile(path.join(distDir, "sitemap.xml"), xml, "utf8");
   console.log("[build] sitemap.xml mis à jour.");
 }
 
@@ -339,6 +376,8 @@ async function main() {
 
   const [homeTemplate, archiveTemplate, articleTemplate] = templates;
 
+  await prepareDist();
+
   const articleMap = new Map(articles.map((article) => [article.id, article]));
   const homeArticles = sortByDateDesc(
     (indexIds || [])
@@ -367,6 +406,7 @@ async function main() {
     toDateStamp(homeArticles[0]?.created_at),
     toDateStamp(archiveEntries[0]?.created_at)
   );
+  await copyStaticAssets();
 
   console.log("[build] Terminé ✅");
 }

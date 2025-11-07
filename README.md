@@ -1,102 +1,104 @@
-Zen Retraite – génération statique (SSG)
-=======================================
+Zen Retraite - generation statique (SSG)
+========================================
 
-Tout le site HTML est désormais pré-généré à partir des fichiers JSON présents dans `data/`.  
-Les pages rendues contiennent le contenu des articles dès l’ouverture et exposent aussi les données
-en JSON inline pour que `script.js` puisse améliorer la navigation sans dépendre du réseau.
+Le site HTML est desormais pre-genere a partir des fichiers JSON situes dans `data/`. Chaque build injecte le contenu de vos articles dans des pages totalement statiques (HTML + JSON-LD) puis depose les fichiers finis dans `dist/`, pret a etre deployes (SEO + GEO friendly) sur GitHub Pages, Netlify ou tout autre hebergeur statique.
 
-Arborescence principale
------------------------
+Structure cle
+-------------
 
-- `data/articles/` – source JSON des articles (`index.json` + 1 fichier par article)
-- `data/archive.json` – liste d’IDs ou d’objets pour la page Archives
-- `templates/` – patrons HTML utilisés par le script de build
-- `scripts/build.js` – génère `index.html`, `archive.html`, `sitemap.xml` et `articles/<id>/index.html`
-- `articles/` – pages finales prêtes à être servies (recréées à chaque build)
-- `article.html` – page dynamique de secours (`?id=`) conservée pour les anciens liens
+- `data/articles/` : source JSON des articles (`index.json` + 1 fichier par article).
+- `data/archive.json` : liste d'IDs ou d'objets `{ id, title?, created_at? }` pour la page Archives.
+- `templates/` : patrons HTML utilises par le script de build.
+- `scripts/build.js` : SSG qui lit les JSON, applique les templates, genere `dist/` et met a jour `sitemap.xml`.
+- `style.css`, `script.js`, `assets/`, `favicon.png`, `robots.txt`, `CNAME`, `article.html` : ressources sources copiees automatiquement dans `dist/`.
+- `dist/` : resultat complet (index.html, archive.html, article.html, sitemap.xml, articles/<id>/index.html, assets, etc.). Le dossier est recree a chaque build.
 
-Générer le site
+Generer le site
 ---------------
 
 ```
 cd zen-retraite
-npm run build              # génère index + archive + toutes les pages /articles/<id>/
-SITE_URL=https://zen-retraite.fr npm run build   # optionnel : définit l’URL canonique dans le sitemap/SEO
+npm run build
+# ou avec une URL canonique precise
+SITE_URL=https://zen-retraite.fr npm run build
 ```
 
-Chaque build lit les JSON, applique les modèles et met à jour `sitemap.xml`.  
-Le script supprime puis recrée le dossier `articles/`, assurez-vous donc de ne rien y stocker manuellement.
+Ce que fait `npm run build` :
 
-Structure des données
+1. Nettoie `dist/`.
+2. Charge `index.json` et tous les `articles/<id>.json`.
+3. Cree `dist/index.html`, `dist/archive.html`, `dist/articles/<id>/index.html` avec contenu inline + schema.org Article + balises Open Graph/Twitter.
+4. Ecrit `dist/sitemap.xml` avec `/` et toutes les URLs `/articles/<id>/`.
+5. Copie `style.css`, `script.js`, `article.html`, `favicon.png`, `robots.txt`, `CNAME` et `assets/` dans `dist/`.
+
+Structure des donnees
 ---------------------
 
-- `data/articles/index.json` : tableau d’IDs à afficher sur l’accueil (ordre ≈ chronologique)
-- `data/articles/{id}.json` : article complet (`id`, `title`, `created_at`, `image`, `excerpt`, `content`, `theme`, `subtheme`, …)
-- `data/archive.json` : soit un simple tableau d’IDs, soit `{ "articles": [ ... ] }` avec des objets `{ id, title?, created_at? }`
+- `data/articles/index.json` : tableau d'IDs a afficher sur l'accueil (ordre descendant).
+- `data/articles/{id}.json` : article complet (`id`, `title`, `excerpt`, `content` HTML, `image`, `theme`, `subtheme`, `created_at`, etc.).
+- `data/archive.json` : tableau d'IDs ou d'objets `{ id, title?, created_at? }`. Les champs manquants sont completes automatiquement depuis les fichiers article.
 
-Règles d’archivage
-------------------
+Archivage
+---------
 
-1. Retirer l’ID du fichier `data/articles/index.json` pour qu’il n’apparaisse plus à l’accueil.
-2. Ajouter cet ID (ou un objet) dans `data/archive.json`.  
-   La page Archives complétera automatiquement `title`/`date` à partir du JSON de l’article.
+1. Retirer l'ID du fichier `data/articles/index.json` pour le sortir de l'accueil.
+2. Ajouter cet ID (ou un objet) dans `data/archive.json`. La page Archives se met a jour automatiquement.
 
-Ajouter / mettre à jour un article
-----------------------------------
+Ajouter ou mettre a jour un article
+-----------------------------------
 
-1. Créer/éditer `data/articles/{id}.json` (copier un exemple existant).
-2. Ajouter l'ID dans `data/articles/index.json` pour l'afficher en page d'accueil.
-3. Lancer `npm run build` pour régénérer toutes les pages statiques.
+1. Creer/editer `data/articles/{id}.json` (copier un exemple).
+2. Ajouter l'ID dans `data/articles/index.json` pour le rendre visible en homepage.
+3. Lancer `npm run build`. Le nouveau contenu est immediatement integre dans `dist/`.
 
-Compatibilité des anciens liens
--------------------------------
+Compatibilite des anciens liens (`article.html?id=...`)
+-------------------------------------------------------
 
-- Les vieux liens `article.html?id=...` restent valides : la page `article.html` redirige automatiquement (JS minimal) vers la page statique `articles/<id>/`.
-- Sans JavaScript, un message d'instructions explique comment reconstruire l'URL ou revenir vers l'accueil/les archives.
-- Le fichier `article.html` ne dépend plus de `script.js` et peut être servi tel quel par GitHub Pages/Netlify en tant que simple passerelle SEO-friendly.
+- `article.html` detecte le parametre `?id=`, genere une redirection propre vers `/articles/<ID>/` et renseigne un meta-refresh.
+- Un lien cliquable apparait instantanement en fallback si la redirection automatique echoue.
+- Sans JavaScript, un message explique comment reconstruire l'URL ou revenir vers l'accueil/les archives. La page est marquee `noindex,follow` pour que les bots suivent les nouveaux liens sans indexer ce relais.
 
-Intégration GitHub Actions
---------------------------
+Deploiement
+-----------
 
-Déposez ce workflow (à adapter) dans `.github/workflows/publish.yml` pour reconstruire et publier automatiquement la version statique :
+**GitHub Pages (branche `gh-pages` ou Pages modernes)**
+
+1. Build command : `npm run build`.
+2. Directory a publier : `zen-retraite/dist`.
+3. Exemple de workflow (extrait) :
 
 ```yaml
-name: build-and-deploy
+- name: Build static pages
+  env:
+    SITE_URL: https://zen-retraite.fr
+  run: npm run build
+  working-directory: zen-retraite
 
-on:
-  push:
-    branches: [main]
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-      - name: Install dependencies
-        run: npm install
-        working-directory: zen-retraite
-      - name: Build static pages
-        env:
-          SITE_URL: https://zen-retraite.fr
-        run: npm run build
-        working-directory: zen-retraite
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: zen-retraite
-          force_orphan: true
+- name: Deploy to GitHub Pages
+  uses: peaceiris/actions-gh-pages@v4
+  with:
+    github_token: ${{ secrets.GITHUB_TOKEN }}
+    publish_dir: zen-retraite/dist
+    force_orphan: true
 ```
 
-Adaptez `publish_dir`/`SITE_URL` ou swappez l'étape finale par l'action Netlify/Vercel de votre choix selon l'hébergement ciblé.
+**Netlify**
 
-Développement & déploiement
----------------------------
+- Build command : `npm run build`.
+- Publish directory : `dist`.
+- Optionnel : definir `SITE_URL` dans les variables Netlify pour generer les URLs canoniques definitives.
 
-- Les pages générées fonctionnent sans JavaScript, mais `script.js` (inchangé) ajoute recherche, filtres, thème, etc.
-- Pour visualiser localement : après `npm run build`, ouvrir `index.html` ou lancer un petit serveur (`python -m http.server`…).
-- Déployer le dossier `zen-retraite/` sur n’importe quel hébergement statique (GitHub Pages, Netlify, Vercel, S3, …).
+Developpement local
+-------------------
 
+- Apres `npm run build`, ouvrir `dist/index.html` dans le navigateur ou lancer `npx serve dist`.
+- Les pages HTML affichent tout le contenu sans JavaScript. `script.js` reste optionnel et ajoute seulement la recherche, les filtres et le switch de theme.
+- `dist/` est regenere a chaque build : ne pas y faire de modifications manuelles.
+
+Points cle SEO/GEO
+------------------
+
+- `templates/article-page.html` injecte le contenu complet (h1 + corps) directement dans le HTML.
+- Chaque article inclut un JSON-LD `Article` avec `headline`, `description`, `image`, `datePublished`, `author`, `mainEntityOfPage`.
+- `sitemap.xml` recense `/` et toutes les pages articles.
+- `article.html` n'affiche plus de spinner : il fournit un meta-refresh rapide et un lien manuel pour que les crawlers et les utilisateurs suivent la nouvelle URL.
