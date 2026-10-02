@@ -40,6 +40,8 @@ body{margin:0;font-family:var(--font-body);background:var(--sand);color:var(--gr
 .card a:hover{color:#ff693f}
 .empty-state{margin:2rem 0;font-style:italic;text-align:center;color:rgba(75,85,99,.7)}
 .site-footer{padding:1.5rem 1.5rem 2rem;text-align:center;background:rgba(250,247,242,.9);font-size:.9rem;color:rgba(75,85,99,.75)}
+.affiliate-disclosure{max-width:720px;margin:.8rem auto 0;font-size:.82rem;line-height:1.5;color:rgba(75,85,99,.82)}
+.article-disclosure{margin:.5rem 0 0;padding:.8rem 1rem;border-left:3px solid var(--sage);background:var(--sand);border-radius:.4rem}
 .footer-nav{margin-bottom:.6rem;display:flex;justify-content:center;gap:1rem}
 .footer-nav a{color:var(--gray);text-decoration:none;font-weight:600}
 .footer-nav a:hover{color:var(--coral)}
@@ -52,6 +54,10 @@ body{margin:0;font-family:var(--font-body);background:var(--sand);color:var(--gr
 .article-detail .article-body{font-size:1rem;color:rgba(75,85,99,.9)}
 .article-detail .article-body p{margin:1rem 0}
 .article-detail .article-body ul{margin:1rem 0;padding-left:1.2rem}
+.article-sources,.related-articles{margin-top:.5rem;padding-top:1rem;border-top:1px solid rgba(75,85,99,.15)}
+.article-sources h2,.related-articles h2{font-family:var(--font-heading);font-size:1.2rem;margin:0 0 .5rem;color:#2f3a3b}
+.article-sources ul,.related-articles ul{margin:0;padding-left:1.2rem}
+.article-sources a,.related-articles a{color:var(--coral);font-weight:600}
 .article-actions{margin:1.5rem 0}
 .back-link{display:inline-flex;align-items:center;gap:.4rem;padding:.6rem 1rem;border-radius:999px;background:var(--sage);color:#fff;text-decoration:none;font-weight:600;transition:background .2s ease;box-shadow:var(--shadow)}
 .back-link:hover{background:#889b73}
@@ -83,6 +89,10 @@ html[data-theme=dark] .site-header,html[data-theme=dark] .site-footer{background
 html[data-theme=dark] .card,html[data-theme=dark] .article-detail,html[data-theme=dark] .archive-list li{background:#2a3033;box-shadow:0 12px 30px -20px rgba(0,0,0,.8)}
 html[data-theme=dark] .card-title,html[data-theme=dark] .article-detail h1{color:#f5f7f8}
 html[data-theme=dark] .card-excerpt,html[data-theme=dark] .article-detail .article-body{color:rgba(227,230,232,.85)}
+html[data-theme=dark] .affiliate-disclosure{color:rgba(227,230,232,.8)}
+html[data-theme=dark] .article-disclosure{background:#23282b}
+html[data-theme=dark] .article-sources,html[data-theme=dark] .related-articles{border-color:rgba(255,255,255,.12)}
+html[data-theme=dark] .article-sources h2,html[data-theme=dark] .related-articles h2{color:#f5f7f8}
 html[data-theme=dark] .header-controls input,html[data-theme=dark] .header-controls select{background:#23282b;color:#e3e6e8;border-color:rgba(255,255,255,.08)}
 html[data-theme=dark] .theme-toggle{background:#23282b;color:#e3e6e8;border-color:rgba(255,255,255,.08)}
 

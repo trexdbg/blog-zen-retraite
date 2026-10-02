@@ -17,6 +17,9 @@ const STATIC_DIRECTORIES = ["assets"];
 
 const SITE_URL = (process.env.SITE_URL || "https://zen-retraite.fr").replace(/\/+$/, "");
 const DATE_FORMATTER = new Intl.DateTimeFormat("fr-FR", { year: "numeric", month: "long", day: "numeric" });
+const SITE_NAME = "Zen Retraite";
+const AFFILIATE_DISCLOSURE =
+  "En tant que Partenaire Amazon, je réalise un bénéfice sur les achats remplissant les conditions requises. Certains liens peuvent être affiliés, sans surcoût pour vous.";
 
 async function readJson(filePath) {
   const raw = await fs.readFile(filePath, "utf8");
@@ -64,6 +67,30 @@ function metaDescription(text) {
   if (!sanitized) return fallback;
   if (sanitized.length <= 160) return sanitized;
   return `${sanitized.slice(0, 157).trim()}…`;
+}
+
+function siteStructuredData() {
+  const payload = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: SITE_NAME,
+    url: SITE_URL + "/",
+    inLanguage: "fr-FR",
+    publisher: { "@type": "Organization", name: SITE_NAME, url: SITE_URL + "/" },
+  };
+  return "<script type='application/ld+json'>" + safeJson(payload) + "</script>";
+}
+
+function archiveStructuredData() {
+  const payload = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: "Archives | " + SITE_NAME,
+    url: SITE_URL + "/archive.html",
+    inLanguage: "fr-FR",
+    isPartOf: { "@type": "WebSite", name: SITE_NAME, url: SITE_URL + "/" },
+  };
+  return "<script type='application/ld+json'>" + safeJson(payload) + "</script>";
 }
 
 async function loadTemplate(name) {
@@ -196,6 +223,9 @@ async function buildHome(template, articles) {
     HOME_DATA_SCRIPT: `<script id="zr-home-data" type="application/json">${safeJson({ articles: listData })}</script>`,
   };
 
+  replacements.SITE_URL = htmlEscape(SITE_URL);
+  replacements.HOME_STRUCTURED_DATA = siteStructuredData();
+  replacements.AFFILIATE_DISCLOSURE = htmlEscape(AFFILIATE_DISCLOSURE);
   const html = renderTemplate(template, replacements);
   await fs.writeFile(path.join(distDir, "index.html"), html, "utf8");
   console.log(`[build] Accueil généré (${articles.length} articles).`);
@@ -208,6 +238,9 @@ async function buildArchive(template, entries) {
     ARCHIVE_EMPTY_STATE_ATTR: entries.length ? "hidden" : "",
     ARCHIVE_DATA_SCRIPT: `<script id="zr-archive-data" type="application/json">${safeJson({ entries })}</script>`,
   };
+  replacements.SITE_URL = htmlEscape(SITE_URL);
+  replacements.ARCHIVE_STRUCTURED_DATA = archiveStructuredData();
+  replacements.AFFILIATE_DISCLOSURE = htmlEscape(AFFILIATE_DISCLOSURE);
   const html = renderTemplate(template, replacements);
   await fs.writeFile(path.join(distDir, "archive.html"), html, "utf8");
   console.log(`[build] Archives générées (${entries.length} entrées).`);
@@ -227,10 +260,12 @@ function structuredData(article, canonicalUrl, description) {
     datePublished: article.created_at,
     dateModified: article.updated_at || article.created_at,
     mainEntityOfPage: canonicalUrl,
-    author: { "@type": "Organization", name: "Zen Retraite" },
+    inLanguage: "fr-FR",
+    isPartOf: { "@type": "WebSite", name: SITE_NAME, url: SITE_URL + "/" },
+    author: { "@type": "Organization", name: SITE_NAME, url: SITE_URL + "/" },
     publisher: {
       "@type": "Organization",
-      name: "Zen Retraite",
+      name: SITE_NAME,
       logo: {
         "@type": "ImageObject",
         url: `${SITE_URL}/favicon.png`,
@@ -239,6 +274,62 @@ function structuredData(article, canonicalUrl, description) {
   };
   if (article.image) payload.image = [article.image];
   return `<script type="application/ld+json">${safeJson(payload)}</script>`;
+}
+
+function relatedArticles(article, articles, limit = 3) {
+  const theme = String(article.theme || "").trim().toLocaleLowerCase("fr-FR");
+  const subtheme = String(article.subtheme || "").trim().toLocaleLowerCase("fr-FR");
+  return sortByDateDesc(articles)
+    .filter((candidate) => candidate.id !== article.id)
+    .map((candidate) => {
+      const candidateTheme = String(candidate.theme || "").trim().toLocaleLowerCase("fr-FR");
+      const candidateSubtheme = String(candidate.subtheme || "").trim().toLocaleLowerCase("fr-FR");
+      const score = (theme && candidateTheme === theme ? 2 : 0) + (subtheme && candidateSubtheme === subtheme ? 1 : 0);
+      return { candidate, score };
+    })
+    .filter((entry) => entry.score > 0)
+    .sort((left, right) => right.score - left.score || left.candidate.id.localeCompare(right.candidate.id, "fr"))
+    .slice(0, limit)
+    .map((entry) => entry.candidate);
+}
+
+function relatedArticlesBlock(article, articles) {
+  const links = relatedArticles(article, articles).map((candidate) =>
+    "<li><a href='../" + htmlEscape(candidate.id) + "/index.html'>" + htmlEscape(candidate.title) + "</a></li>"
+  );
+  if (!links.length) return "";
+  return "<section class='related-articles' aria-labelledby='related-articles-title'><h2 id='related-articles-title'>À lire aussi</h2><ul>" + links.join("") + "</ul></section>";
+}
+
+function sourcesBlock(article) {
+  if (!Array.isArray(article.sources)) return "";
+  const uniqueSources = new Map();
+
+  for (const source of article.sources) {
+    if (!source || typeof source.url !== "string") continue;
+    try {
+      const parsedUrl = new URL(source.url);
+      if (!["http:", "https:"].includes(parsedUrl.protocol) || !parsedUrl.hostname) continue;
+      parsedUrl.hash = "";
+      const url = parsedUrl.toString();
+      if (!uniqueSources.has(url)) {
+        uniqueSources.set(url, {
+          url,
+          label: String(source.title || source.name || url).trim(),
+        });
+      }
+    } catch {
+      // Une source invalide est ignorée plutôt que d’être publiée.
+    }
+  }
+
+  const links = [...uniqueSources.values()]
+    .slice(0, 8)
+    .map((source) =>
+      "<li><a href='" + htmlEscape(source.url) + "' rel='noopener noreferrer' target='_blank'>" + htmlEscape(source.label) + "</a></li>"
+    );
+  if (!links.length) return "";
+  return "<section class='article-sources' aria-labelledby='article-sources-title'><h2 id='article-sources-title'>Sources</h2><ul>" + links.join("") + "</ul></section>";
 }
 
 async function buildArticles(template, articles) {
@@ -279,6 +370,9 @@ async function buildArticles(template, articles) {
         url: canonicalPath,
       })}</script>`,
     };
+    replacements.ARTICLE_SOURCES = sourcesBlock(article);
+    replacements.ARTICLE_RELATED = relatedArticlesBlock(article, articles);
+    replacements.AFFILIATE_DISCLOSURE = htmlEscape(AFFILIATE_DISCLOSURE);
     const html = renderTemplate(template, replacements);
     await fs.writeFile(path.join(dir, "index.html"), html, "utf8");
   });
