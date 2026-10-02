@@ -21,6 +21,36 @@ const SITE_NAME = "Zen Retraite";
 const AFFILIATE_DISCLOSURE =
   "En tant que Partenaire Amazon, je réalise un bénéfice sur les achats remplissant les conditions requises. Certains liens peuvent être affiliés, sans surcoût pour vous.";
 
+const THEME_LABELS = {
+  maison_jardin: "Maison et jardin",
+  loisirs_vie_active: "Loisirs et vie active",
+  numerique_pratique: "Numérique pratique",
+};
+
+function normalizeTheme(value) {
+  return String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLocaleLowerCase("fr-FR")
+    .replace(/[_-]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function displayTheme(value) {
+  const raw = String(value || "").trim();
+  return THEME_LABELS[raw.toLocaleLowerCase("fr-FR")] || raw || "Inspiration";
+}
+
+function themeFamily(value) {
+  const normalized = normalizeTheme(value);
+  if (["maison jardin", "maison", "jardin"].includes(normalized)) return "maison_jardin";
+  if (["loisirs vie active", "loisirs", "voyage"].includes(normalized)) return "loisirs_vie_active";
+  if (["numerique pratique", "numerique"].includes(normalized)) return "numerique_pratique";
+  return normalized;
+}
+
+
 async function readJson(filePath) {
   const raw = await fs.readFile(filePath, "utf8");
   return JSON.parse(raw);
@@ -171,7 +201,7 @@ function buildCard(article, index) {
   const imageHtml = article.image
     ? `<img src="${htmlEscape(article.image)}" data-src="${htmlEscape(article.image)}" alt="${htmlEscape(article.title)}" loading="lazy">`
     : "";
-  const theme = article.theme || "Inspiration";
+  const theme = displayTheme(article.theme);
   const subtheme = article.subtheme || "Découverte";
   const href = `./articles/${htmlEscape(article.id)}/index.html`;
   return `
@@ -210,7 +240,7 @@ async function buildHome(template, articles) {
     id: article.id,
     title: article.title,
     excerpt: article.excerpt,
-    theme: article.theme,
+    theme: displayTheme(article.theme),
     subtheme: article.subtheme,
     image: article.image,
     created_at: article.created_at,
@@ -277,14 +307,14 @@ function structuredData(article, canonicalUrl, description) {
 }
 
 function relatedArticles(article, articles, limit = 3) {
-  const theme = String(article.theme || "").trim().toLocaleLowerCase("fr-FR");
-  const subtheme = String(article.subtheme || "").trim().toLocaleLowerCase("fr-FR");
+  const family = themeFamily(article.theme);
+  const subtheme = normalizeTheme(article.subtheme);
   return sortByDateDesc(articles)
     .filter((candidate) => candidate.id !== article.id)
     .map((candidate) => {
-      const candidateTheme = String(candidate.theme || "").trim().toLocaleLowerCase("fr-FR");
-      const candidateSubtheme = String(candidate.subtheme || "").trim().toLocaleLowerCase("fr-FR");
-      const score = (theme && candidateTheme === theme ? 2 : 0) + (subtheme && candidateSubtheme === subtheme ? 1 : 0);
+      const candidateFamily = themeFamily(candidate.theme);
+      const candidateSubtheme = normalizeTheme(candidate.subtheme);
+      const score = (family && candidateFamily === family ? 2 : 0) + (subtheme && candidateSubtheme === subtheme ? 1 : 0);
       return { candidate, score };
     })
     .filter((entry) => entry.score > 0)
@@ -354,14 +384,14 @@ async function buildArticles(template, articles) {
       ARTICLE_STRUCTURED_DATA: structuredData(article, canonicalUrl, description),
       ARTICLE_PUBLISHED_ISO: htmlEscape(article.created_at || ""),
       ARTICLE_PUBLISHED_HUMAN: htmlEscape(formatDateHuman(article.created_at)),
-      ARTICLE_THEME: htmlEscape(article.theme || "Inspiration"),
+      ARTICLE_THEME: htmlEscape(displayTheme(article.theme)),
       ARTICLE_SUBTHEME: htmlEscape(article.subtheme || "Découverte"),
       ARTICLE_IMAGE_BLOCK: articleImageBlock(article),
       ARTICLE_CONTENT: article.content || "",
       ARTICLE_DATA_SCRIPT: `<script id="zr-article-data" type="application/json">${safeJson({
         id: article.id,
         title: article.title,
-        theme: article.theme,
+        theme: displayTheme(article.theme),
         subtheme: article.subtheme,
         created_at: article.created_at,
         image: article.image,
