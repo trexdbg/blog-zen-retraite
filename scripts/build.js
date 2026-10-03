@@ -72,7 +72,8 @@ function safeJson(data) {
 function normalizeImage(value) {
   if (!value) return null;
   const trimmed = String(value).trim();
-  if (!trimmed || trimmed.toLowerCase() === "n/a") return null;
+  const normalized = trimmed.toLocaleLowerCase("fr-FR").replace(/\s+/g, " ");
+  if (["n/a", "pas d'image", "pas d\u2019image"].includes(normalized)) return null;
   return trimmed;
 }
 
