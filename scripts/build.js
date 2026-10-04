@@ -77,6 +77,27 @@ function normalizeImage(value) {
   return trimmed;
 }
 
+function normalizeImageText(value) {
+  if (typeof value !== "string") return "";
+  return value.trim();
+}
+
+function normalizeImageDimension(value) {
+  const candidate = typeof value === "number" ? value : typeof value === "string" && /^\d+$/.test(value.trim()) ? Number(value.trim()) : 0;
+  return Number.isSafeInteger(candidate) && candidate > 0 && candidate <= 10000 ? candidate : null;
+}
+
+function articleImageAlt(article) {
+  return article.image_alt || article.title || "Illustration de l'article";
+}
+
+function imageDimensionAttributes(article) {
+  const width = article.image_width;
+  const height = article.image_height;
+  if (!width || !height) return "";
+  return ` width="${width}" height="${height}"`;
+}
+
 function formatDateHuman(iso) {
   if (!iso) return "";
   const date = new Date(iso);
@@ -182,6 +203,10 @@ async function loadArticles() {
     articles.push({
       ...data,
       image: normalizeImage(data.image),
+      image_alt: normalizeImageText(data.image_alt),
+      image_caption: normalizeImageText(data.image_caption),
+      image_width: normalizeImageDimension(data.image_width),
+      image_height: normalizeImageDimension(data.image_height),
       created_at: data.created_at || data.createdAt || null,
     });
   }
@@ -200,7 +225,7 @@ function sortByDateDesc(items) {
 function buildCard(article, index) {
   const delay = (index * 0.06).toFixed(2);
   const imageHtml = article.image
-    ? `<img src="${htmlEscape(article.image)}" data-src="${htmlEscape(article.image)}" alt="${htmlEscape(article.title)}" loading="lazy">`
+    ? `<img src="${htmlEscape(article.image)}" data-src="${htmlEscape(article.image)}" alt="${htmlEscape(articleImageAlt(article))}" loading="lazy"${imageDimensionAttributes(article)}>`
     : "";
   const theme = displayTheme(article.theme);
   const subtheme = article.subtheme || "Découverte";
@@ -279,7 +304,9 @@ async function buildArchive(template, entries) {
 
 function articleImageBlock(article) {
   if (!article.image) return "";
-  return `<img src="${htmlEscape(article.image)}" alt="${htmlEscape(article.title)}" loading="lazy">`;
+  const image = `<img src="${htmlEscape(article.image)}" alt="${htmlEscape(articleImageAlt(article))}" loading="lazy"${imageDimensionAttributes(article)}>`;
+  if (!article.image_caption) return image;
+  return `<figure class="article-image">${image}<figcaption>${htmlEscape(article.image_caption)}</figcaption></figure>`;
 }
 
 function structuredData(article, canonicalUrl, description) {
@@ -377,10 +404,10 @@ async function buildArticles(template, articles) {
       ARTICLE_DESCRIPTION: htmlEscape(description),
       ARTICLE_CANONICAL_URL: htmlEscape(canonicalUrl),
       ARTICLE_OG_IMAGE_TAGS: article.image
-        ? `<meta property="og:image" content="${htmlEscape(article.image)}">\n<meta property="og:image:alt" content="${htmlEscape(article.title)}">`
+        ? `<meta property="og:image" content="${htmlEscape(article.image)}">\n<meta property="og:image:alt" content="${htmlEscape(articleImageAlt(article))}">`
         : "",
       ARTICLE_TWITTER_IMAGE_TAG: article.image
-        ? `<meta name="twitter:image" content="${htmlEscape(article.image)}">`
+        ? `<meta name="twitter:image" content="${htmlEscape(article.image)}">\n<meta name="twitter:image:alt" content="${htmlEscape(articleImageAlt(article))}">`
         : "",
       ARTICLE_STRUCTURED_DATA: structuredData(article, canonicalUrl, description),
       ARTICLE_PUBLISHED_ISO: htmlEscape(article.created_at || ""),
