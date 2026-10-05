@@ -4,7 +4,7 @@ import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
-import { keyTakeaways, relatedArticles, structuredDate } from "../scripts/build.js";
+import { keyTakeaways, relatedArticles, relatedArticlesBlock, structuredDate } from "../scripts/build.js";
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const run = (file, args, options) => new Promise((resolve, reject) => execFile(file, args, options, (error, stdout, stderr) => error ? reject(error) : resolve({ stdout, stderr })));
@@ -30,6 +30,14 @@ test("related articles require a shared topic inside the same family", () => {
   assert.deepEqual(relatedArticles(article, candidates).map((item) => item.id), ["photo-albums"]);
 });
 
+test("related article links use their canonical trailing-slash URL", () => {
+  const article = { id: "photos", theme: "numerique_pratique", subtheme: "gestion des photos", title: "Sauvegarder ses photos" };
+  const candidate = { id: "photo-albums", theme: "numerique_pratique", subtheme: "albums photos", title: "Classer ses photos", created_at: "2026-10-03T10:00:00Z" };
+  const html = relatedArticlesBlock(article, [candidate]);
+  assert.match(html, /href='\/articles\/photo-albums\/'/);
+  assert.doesNotMatch(html, /index\.html/);
+});
+
 test("generic retirement terms alone do not create a related link", () => {
   const article = { id: "budget", theme: "finances", subtheme: "budget", title: "Conseils simples pour la retraite en 2026" };
   const candidate = { id: "comfort", theme: "finances", subtheme: "confort", title: "Nos idées pour les seniors et leur vie après la retraite en 2026", created_at: "2026-10-04T10:00:00Z" };
@@ -53,10 +61,26 @@ test("static build preserves every archived article and adds the about page to t
     readFile(path.join(rootDir, "dist", "archive.html"), "utf8"),
     readFile(path.join(rootDir, "dist", "sitemap.xml"), "utf8"),
   ]);
+  const home = await readFile(path.join(rootDir, "dist", "index.html"), "utf8");
   const archiveData = archive.match(/<script id="zr-archive-data" type="application\/json">([\s\S]*?)<\/script>/);
   assert.ok(archiveData);
   const archiveEntries = JSON.parse(archiveData[1]).entries;
   assert.deepEqual(new Set(archiveEntries.map((entry) => entry.id)), expectedArchiveIds);
+  const homeData = home.match(/<script id="zr-home-data" type="application\/json">([\s\S]*?)<\/script>/);
+  assert.ok(homeData);
+  const homeArticles = JSON.parse(homeData[1]).articles;
+  for (const entry of [...homeArticles, ...archiveEntries]) {
+    assert.equal(entry.url, `/articles/${encodeURIComponent(entry.id)}/`);
+  }
+  for (const entry of homeArticles) {
+    assert.ok(home.includes(`href="/articles/${encodeURIComponent(entry.id)}/"`));
+  }
+  for (const entry of archiveEntries) {
+    assert.ok(archive.includes(`href="/articles/${encodeURIComponent(entry.id)}/"`));
+  }
+  const legacyArticleHref = /href=['\"][^'\"]*(?:\/articles\/[^'\"]+|(?:\.\.\/)+[A-Za-z0-9_%~-]+)\/index\.html/;
+  assert.doesNotMatch(home, legacyArticleHref);
+  assert.doesNotMatch(archive, legacyArticleHref);
   const sitemapLocs = new Set([...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1]));
   assert.equal(sitemapLocs.size, articleIds.size + 3);
   assert.match(sitemap, /https:\/\/zen-retraite\.fr\/a-propos\.html/);
@@ -65,6 +89,13 @@ test("static build preserves every archived article and adds the about page to t
   const photoId = "2026-10-04_07-56_gestion-des-photos_photos-souvenirs-famille";
   const source = JSON.parse(await readFile(path.join(articlesDir, `${photoId}.json`), "utf8"));
   const article = await readFile(path.join(rootDir, "dist", "articles", photoId, "index.html"), "utf8");
+  assert.doesNotMatch(article, legacyArticleHref);
+  const articleData = article.match(/<script id="zr-article-data" type="application\/json">([\s\S]*?)<\/script>/);
+  assert.ok(articleData);
+  assert.equal(JSON.parse(articleData[1]).url, `/articles/${photoId}/`);
+  const clientScript = await readFile(path.join(rootDir, "script.js"), "utf8");
+  assert.doesNotMatch(clientScript, /\/articles\/[^`"']*\/index\.html/);
+  assert.match(clientScript, /function articlePath\(id\)/);
   const jsonLd = article.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/);
   assert.ok(jsonLd);
   assert.equal(JSON.parse(jsonLd[1]).datePublished, structuredDate(source.created_at));

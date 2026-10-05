@@ -23,6 +23,10 @@ const PAGE = BODY.dataset.page || ""; // "home" | "article" | "archive"
 const YEAR_EL = document.getElementById("current-year");
 if (YEAR_EL) YEAR_EL.textContent = String(new Date().getFullYear());
 
+function articlePath(id) {
+  return `/articles/${encodeURIComponent(String(id))}/`;
+}
+
 // Formatage de date ISO → français lisible
 function formatDateFR(iso) {
   const d = new Date(iso);
@@ -215,7 +219,7 @@ async function initHome() {
     p.textContent = article.excerpt;
 
     const a = document.createElement("a");
-    a.href = article.url || `./articles/${encodeURIComponent(article.id)}/index.html`;
+    a.href = article.url || articlePath(article.id);
     a.textContent = "Lire la suite";
 
     wrap.appendChild(createMeta(article));
@@ -269,7 +273,7 @@ async function initHome() {
       .map((item) => ({
         ...item,
         excerpt: item.excerpt || "",
-        url: item.url || `./articles/${item.id}/index.html`,
+        url: item.url || articlePath(item.id),
       }))
       .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
     const themes = [...new Set(articles.map(a => a.theme))].filter(Boolean).sort((a, b) => a.localeCompare(b || "", "fr"));
@@ -289,7 +293,7 @@ async function initHome() {
       const loaded = await Promise.all(ids.map(async (id) => {
         try {
           const data = await fetchJson(`./data/articles/${id}.json`);
-          return { ...data, url: `./articles/${id}/index.html` };
+          return { ...data, url: articlePath(id) };
         } catch (e) {
           console.warn("Article ignoré", id, e);
           return null;
@@ -388,7 +392,7 @@ async function initArticle() {
 
   try {
     const article = await fetchJson(`./data/articles/${id}.json`);
-    renderArticleDetail(container, { ...article, url: `./articles/${article.id}/index.html` });
+    renderArticleDetail(container, { ...article, url: articlePath(article.id) });
   } catch (e) {
     console.error(e);
     container.innerHTML = '<p class="empty-state">Impossible de charger cet article.</p>';
@@ -425,7 +429,7 @@ async function initArchive() {
         right.appendChild(t);
       }
       const a = document.createElement('a');
-      a.href = item.url || `./articles/${encodeURIComponent(item.id)}/index.html`;
+      a.href = item.url || articlePath(item.id);
       a.textContent = 'Lire';
       right.appendChild(a);
       li.appendChild(left);
@@ -461,7 +465,7 @@ async function initArchive() {
       entries = entriesRaw.filter(Boolean);
     }
 
-    entries = entries.map(item => ({ ...item, url: `./articles/${item.id}/index.html` }));
+    entries = entries.map(item => ({ ...item, url: articlePath(item.id) }));
     renderEntries(entries);
   } catch (e) {
     console.error(e);
