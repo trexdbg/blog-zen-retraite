@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>À propos – Zen Retraite</title>
+<meta name="description" content="Découvrez la ligne éditoriale de Zen Retraite, ses sources, l’usage de l’intelligence artificielle et ses règles d’affiliation.">
+<link rel="canonical" href="{{SITE_URL}}/a-propos.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Zen Retraite">
+<meta property="og:title" content="À propos – Zen Retraite">
+<meta property="og:description" content="Notre méthode éditoriale, nos sources et notre transparence sur l’affiliation.">
+<meta property="og:url" content="{{SITE_URL}}/a-propos.html">
+<meta name="twitter:card" content="summary">
+{{ABOUT_STRUCTURED_DATA}}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="icon" type="image/png" href="./favicon.png">
+<link rel="apple-touch-icon" href="./favicon.png">
+<script>
+  (function(){ try { var t = localStorage.getItem('zr-theme'); if (t === 'dark' || t === 'light') document.documentElement.setAttribute('data-theme', t); } catch (e) {} })();
+</script>
+<link rel="stylesheet" href="./style.css">
+</head>
+<body data-page="about">
+<header class="site-header archive-header">
+<a class="brand" href="./index.html"><span class="brand-mark">Zen</span><span class="brand-text">Retraite</span></a>
+<nav class="site-nav" aria-label="Navigation principale"><a href="./index.html">Accueil</a><a href="./archive.html">Archives</a></nav>
+<button id="theme-toggle" class="theme-toggle" aria-label="Basculer le mode jour/nuit" title="Basculer le mode jour/nuit">☀️/🌙</button>
+</header>
+<main class="content">
+<article class="article-detail about-page">
+<h1>À propos de Zen Retraite</h1>
+<p>Zen Retraite propose des repères pratiques pour les personnes qui viennent de prendre leur retraite ou préparent cette nouvelle étape : vie quotidienne, loisirs, maison, numérique et projets personnels.</p>
+<section>
+<h2>Notre méthode éditoriale</h2>
+<p>Les nouveaux guides sont préparés avec l’aide d’outils d’intelligence artificielle, puis publiés avec une structure pensée pour être lisible et actionnable. Quand un sujet le demande, nous cherchons des sources utiles et les indiquons dans l’article afin que chacun puisse les consulter.</p>
+<p>Les contrôles automatiques servent à repérer des problèmes de format, de liens ou de cohérence. Ils ne remplacent ni une expertise professionnelle, ni un essai physique de produit, ni un conseil adapté à une situation personnelle. Les articles plus anciens sont révisés progressivement selon les priorités éditoriales.</p>
+</section>
+<section>
+<h2>Sources et prudence</h2>
+<p>Les sources citées permettent de retrouver le contexte d’un conseil. Elles ne dispensent pas de demander l’avis d’un professionnel compétent lorsqu’une décision concerne la santé, le droit, les finances ou la sécurité.</p>
+</section>
+<section>
+<h2>Affiliation</h2>
+<p>Certains guides peuvent contenir des liens affiliés, lorsqu’un produit semble répondre au besoin précis présenté. L’affiliation est facultative pour lire et utiliser nos conseils : elle ne modifie pas le prix payé par le lecteur.</p>
+<p class="affiliate-disclosure">{{AFFILIATE_DISCLOSURE}}</p>
+</section>
+<section>
+<h2>Retrouver les guides</h2>
+<p>Les publications récentes sont sur l’<a href="./index.html">accueil</a>. Les anciens articles restent accessibles dans les <a href="./archive.html">archives</a>.</p>
+</section>
+</article>
+</main>
+<footer class="site-footer">
+<nav class="footer-nav"><a href="./index.html">Accueil</a><a href="./archive.html">Archives</a></nav>
+<p>&copy; <span id="current-year"></span> Zen Retraite. Tous droits réservés.</p>
+<p class="affiliate-disclosure">{{AFFILIATE_DISCLOSURE}}</p>
+</footer>
+<script src="./script.js" defer></script>
+</body>
+</html>

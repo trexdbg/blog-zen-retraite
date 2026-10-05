@@ -18,6 +18,7 @@ const STATIC_DIRECTORIES = ["assets"];
 const SITE_URL = (process.env.SITE_URL || "https://zen-retraite.fr").replace(/\/+$/, "");
 const DATE_FORMATTER = new Intl.DateTimeFormat("fr-FR", { year: "numeric", month: "long", day: "numeric" });
 const SITE_NAME = "Zen Retraite";
+const ABOUT_LASTMOD = "2026-10-05";
 const AFFILIATE_DISCLOSURE =
   "En tant que Partenaire Amazon, je réalise un bénéfice sur les achats remplissant les conditions requises. Certains liens peuvent être affiliés, sans surcoût pour vous.";
 
@@ -106,10 +107,36 @@ function formatDateHuman(iso) {
 }
 
 function toDateStamp(iso) {
-  if (!iso) return "";
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return "";
-  return date.toISOString().slice(0, 10);
+  const normalized = structuredDate(iso);
+  return normalized ? normalized.slice(0, 10) : "";
+}
+
+function structuredDate(value) {
+  if (typeof value !== "string") return null;
+  const raw = value.trim();
+  if (!raw) return null;
+
+  const match = raw.match(/^(\d{4})-(\d{2})-(\d{2})(?:T(\d{2}):(\d{2}):(\d{2})(?:\.\d+)?(?:(Z)|([+-])(\d{2}):(\d{2}))?)?$/);
+  if (!match) return null;
+  const [, year, month, day, hour = "00", minute = "00", second = "00", utc, offsetSign, offsetHour = "00", offsetMinute = "00"] = match;
+  const [parsedYear, parsedMonth, parsedDay, parsedHour, parsedMinute, parsedSecond] = [year, month, day, hour, minute, second].map(Number);
+  const calendarDate = new Date(Date.UTC(parsedYear, parsedMonth - 1, parsedDay, parsedHour, parsedMinute, parsedSecond));
+  const validCalendar =
+    calendarDate.getUTCFullYear() === parsedYear &&
+    calendarDate.getUTCMonth() === parsedMonth - 1 &&
+    calendarDate.getUTCDate() === parsedDay &&
+    calendarDate.getUTCHours() === parsedHour &&
+    calendarDate.getUTCMinutes() === parsedMinute &&
+    calendarDate.getUTCSeconds() === parsedSecond;
+  const validOffset = !offsetSign || (Number(offsetHour) <= 23 && Number(offsetMinute) <= 59);
+  if (!validCalendar || !validOffset) return null;
+
+  // GitHub Actions historically writes some publication timestamps without an
+  // offset. They represent UTC, so make that explicit for schema.org while
+  // leaving the source JSON untouched. Dates carrying an offset are preserved.
+  if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) return raw;
+  if (!utc && !offsetSign) return `${raw}Z`;
+  return raw;
 }
 
 function metaDescription(text) {
@@ -141,6 +168,23 @@ function archiveStructuredData() {
     url: SITE_URL + "/archive.html",
     inLanguage: "fr-FR",
     isPartOf: { "@type": "WebSite", name: SITE_NAME, url: SITE_URL + "/" },
+  };
+  return "<script type='application/ld+json'>" + safeJson(payload) + "</script>";
+}
+
+function aboutStructuredData() {
+  const payload = {
+    "@context": "https://schema.org",
+    "@type": "AboutPage",
+    name: "À propos | " + SITE_NAME,
+    url: SITE_URL + "/a-propos.html",
+    inLanguage: "fr-FR",
+    isPartOf: { "@type": "WebSite", name: SITE_NAME, url: SITE_URL + "/" },
+    about: {
+      "@type": "Organization",
+      name: SITE_NAME,
+      url: SITE_URL + "/",
+    },
   };
   return "<script type='application/ld+json'>" + safeJson(payload) + "</script>";
 }
@@ -318,12 +362,10 @@ function structuredData(article, canonicalUrl, description) {
     "@type": "Article",
     headline: article.title,
     description,
-    datePublished: article.created_at,
-    dateModified: article.updated_at || article.created_at,
     mainEntityOfPage: canonicalUrl,
     inLanguage: "fr-FR",
     isPartOf: { "@type": "WebSite", name: SITE_NAME, url: SITE_URL + "/" },
-    author: { "@type": "Organization", name: SITE_NAME, url: SITE_URL + "/" },
+    author: { "@type": "Organization", name: SITE_NAME, url: SITE_URL + "/a-propos.html" },
     publisher: {
       "@type": "Organization",
       name: SITE_NAME,
@@ -333,23 +375,46 @@ function structuredData(article, canonicalUrl, description) {
       },
     },
   };
+  const datePublished = structuredDate(article.created_at);
+  const dateModified = structuredDate(article.updated_at) || structuredDate(article.created_at);
+  if (datePublished) payload.datePublished = datePublished;
+  if (dateModified) payload.dateModified = dateModified;
   if (article.image) payload.image = [article.image];
   return `<script type="application/ld+json">${safeJson(payload)}</script>`;
 }
 
+const TOPIC_STOP_WORDS = new Set([
+  "a", "apres", "ans", "au", "aux", "avant", "avec", "ce", "ces", "comment", "confort", "conseil", "conseils", "dans", "de", "des", "du", "en", "et", "facile", "faciles", "faire", "guide", "guides", "idees", "la", "le", "leur", "leurs", "les", "mon", "nos", "notre", "nous", "pour", "retraite", "retraites", "sans", "senior", "seniors", "ses", "simple", "simples", "son", "sur", "un", "une", "vie", "vous", "votre", "vos",
+]);
+
+function topicTerms(article) {
+  return new Set(
+    `${article.title || ""} ${article.subtheme || ""}`
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLocaleLowerCase("fr-FR")
+      .match(/[a-z0-9]+/g)
+      ?.filter((term) => term.length >= 3 && !/^\d+$/.test(term) && !TOPIC_STOP_WORDS.has(term)) || []
+  );
+}
+
 function relatedArticles(article, articles, limit = 3) {
   const family = themeFamily(article.theme);
-  const subtheme = normalizeTheme(article.subtheme);
-  return sortByDateDesc(articles)
+  const terms = topicTerms(article);
+  const seen = new Set([article.id]);
+  return articles
     .filter((candidate) => candidate.id !== article.id)
     .map((candidate) => {
+      if (seen.has(candidate.id)) return null;
+      seen.add(candidate.id);
       const candidateFamily = themeFamily(candidate.theme);
-      const candidateSubtheme = normalizeTheme(candidate.subtheme);
-      const score = (family && candidateFamily === family ? 2 : 0) + (subtheme && candidateSubtheme === subtheme ? 1 : 0);
-      return { candidate, score };
+      if (!family || candidateFamily !== family) return null;
+      const sharedTerms = [...topicTerms(candidate)].filter((term) => terms.has(term));
+      if (!sharedTerms.length) return null;
+      return { candidate, score: sharedTerms.length, date: new Date(candidate.created_at).getTime() || 0 };
     })
-    .filter((entry) => entry.score > 0)
-    .sort((left, right) => right.score - left.score || left.candidate.id.localeCompare(right.candidate.id, "fr"))
+    .filter(Boolean)
+    .sort((left, right) => right.score - left.score || right.date - left.date || left.candidate.id.localeCompare(right.candidate.id, "fr"))
     .slice(0, limit)
     .map((entry) => entry.candidate);
 }
@@ -358,8 +423,22 @@ function relatedArticlesBlock(article, articles) {
   const links = relatedArticles(article, articles).map((candidate) =>
     "<li><a href='../" + htmlEscape(candidate.id) + "/index.html'>" + htmlEscape(candidate.title) + "</a></li>"
   );
-  if (!links.length) return "";
+  if (!links.length) {
+    return "<section class='related-articles' aria-labelledby='related-articles-title'><h2 id='related-articles-title'>Continuer votre lecture</h2><p>Explorez les guides classés par date dans les <a href='../../archive.html'>archives</a>.</p></section>";
+  }
   return "<section class='related-articles' aria-labelledby='related-articles-title'><h2 id='related-articles-title'>À lire aussi</h2><ul>" + links.join("") + "</ul></section>";
+}
+
+function keyTakeaways(article) {
+  if (!Array.isArray(article.key_takeaways) || article.key_takeaways.length < 2 || article.key_takeaways.length > 4) return [];
+  const values = article.key_takeaways.map((item) => (typeof item === "string" ? item.trim() : ""));
+  return values.every((item) => item && item.length <= 320) ? values : [];
+}
+
+function keyTakeawaysBlock(article) {
+  const takeaways = keyTakeaways(article);
+  if (!takeaways.length) return "";
+  return "<section class='key-takeaways' aria-labelledby='key-takeaways-title'><h2 id='key-takeaways-title'>À retenir</h2><ul>" + takeaways.map((item) => `<li>${htmlEscape(item)}</li>`).join("") + "</ul></section>";
 }
 
 function sourcesBlock(article) {
@@ -402,6 +481,8 @@ async function buildArticles(template, articles) {
     const canonicalPath = `/articles/${article.id}/`;
     const canonicalUrl = `${SITE_URL}${canonicalPath}`;
     const description = metaDescription(article.excerpt);
+    const publishedDate = structuredDate(article.created_at);
+    const updatedDate = structuredDate(article.updated_at);
     const replacements = {
       ARTICLE_TITLE: htmlEscape(article.title),
       ARTICLE_DESCRIPTION: htmlEscape(description),
@@ -413,8 +494,11 @@ async function buildArticles(template, articles) {
         ? `<meta name="twitter:image" content="${htmlEscape(article.image)}">\n<meta name="twitter:image:alt" content="${htmlEscape(articleImageAlt(article))}">`
         : "",
       ARTICLE_STRUCTURED_DATA: structuredData(article, canonicalUrl, description),
-      ARTICLE_PUBLISHED_ISO: htmlEscape(article.created_at || ""),
+      ARTICLE_PUBLISHED_ISO: htmlEscape(publishedDate || ""),
       ARTICLE_PUBLISHED_HUMAN: htmlEscape(formatDateHuman(article.created_at)),
+      ARTICLE_UPDATED_BLOCK: updatedDate
+        ? `<span>Mis à jour le <time dateTime="${htmlEscape(updatedDate)}">${htmlEscape(formatDateHuman(article.updated_at))}</time></span>`
+        : "",
       ARTICLE_THEME: htmlEscape(displayTheme(article.theme)),
       ARTICLE_SUBTHEME: htmlEscape(article.subtheme || "Découverte"),
       ARTICLE_IMAGE_BLOCK: articleImageBlock(article),
@@ -432,6 +516,7 @@ async function buildArticles(template, articles) {
       })}</script>`,
     };
     replacements.ARTICLE_SOURCES = sourcesBlock(article);
+    replacements.ARTICLE_KEY_TAKEAWAYS = keyTakeawaysBlock(article);
     replacements.ARTICLE_RELATED = relatedArticlesBlock(article, articles);
     replacements.AFFILIATE_DISCLOSURE = htmlEscape(AFFILIATE_DISCLOSURE);
     const html = renderTemplate(template, replacements);
@@ -440,6 +525,16 @@ async function buildArticles(template, articles) {
 
   await Promise.all(tasks);
   console.log(`[build] Pages articles générées (${articles.length}).`);
+}
+
+async function buildAbout(template) {
+  const replacements = {
+    SITE_URL: htmlEscape(SITE_URL),
+    ABOUT_STRUCTURED_DATA: aboutStructuredData(),
+    AFFILIATE_DISCLOSURE: htmlEscape(AFFILIATE_DISCLOSURE),
+  };
+  await fs.writeFile(path.join(distDir, "a-propos.html"), renderTemplate(template, replacements), "utf8");
+  console.log("[build] Page À propos générée.");
 }
 
 async function buildSitemap(articles, homeNewestDate, archiveNewestDate) {
@@ -456,12 +551,18 @@ async function buildSitemap(articles, homeNewestDate, archiveNewestDate) {
       changefreq: "daily",
       priority: "0.9",
     },
+    {
+      loc: `${SITE_URL}/a-propos.html`,
+      lastmod: ABOUT_LASTMOD,
+      changefreq: "monthly",
+      priority: "0.6",
+    },
   ];
 
   articles.forEach((article) => {
     urls.push({
       loc: `${SITE_URL}/articles/${article.id}/`,
-      lastmod: toDateStamp(article.created_at) || new Date().toISOString().slice(0, 10),
+      lastmod: toDateStamp(article.updated_at) || toDateStamp(article.created_at) || new Date().toISOString().slice(0, 10),
       changefreq: "weekly",
       priority: "0.8",
     });
@@ -535,12 +636,13 @@ async function main() {
       loadTemplate("home.html"),
       loadTemplate("archive.html"),
       loadTemplate("article-page.html"),
+      loadTemplate("about.html"),
     ]),
     loadArticles(),
     readJson(path.join(articlesDataDir, "index.json")).catch(() => []),
   ]);
 
-  const [homeTemplate, archiveTemplate, articleTemplate] = templates;
+  const [homeTemplate, archiveTemplate, articleTemplate, aboutTemplate] = templates;
 
   await prepareDist();
 
@@ -568,6 +670,7 @@ async function main() {
   await buildHome(homeTemplate, homeArticles, archiveEntries.length);
   await buildArchive(archiveTemplate, archiveEntries);
   await buildArticles(articleTemplate, sortByDateDesc(articles));
+  await buildAbout(aboutTemplate);
   await buildSitemap(
     sortByDateDesc(articles),
     toDateStamp(homeArticles[0]?.created_at),
@@ -578,7 +681,11 @@ async function main() {
   console.log("[build] Terminé ✅");
 }
 
-main().catch((error) => {
-  console.error("[build] Erreur:", error);
-  process.exitCode = 1;
-});
+if (process.argv[1] && path.resolve(process.argv[1]) === __filename) {
+  main().catch((error) => {
+    console.error("[build] Erreur:", error);
+    process.exitCode = 1;
+  });
+}
+
+export { keyTakeaways, relatedArticles, structuredDate };
