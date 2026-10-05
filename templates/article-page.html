@@ -6,77 +6,39 @@
 <title>{{ARTICLE_TITLE}} – Zen Retraite</title>
 <meta name="description" content="{{ARTICLE_DESCRIPTION}}">
 <link rel="canonical" href="{{ARTICLE_CANONICAL_URL}}">
-<meta property="og:type" content="article">
-<meta property="og:site_name" content="Zen Retraite">
-<meta property="og:title" content="{{ARTICLE_TITLE}}">
-<meta property="og:description" content="{{ARTICLE_DESCRIPTION}}">
-<meta property="og:url" content="{{ARTICLE_CANONICAL_URL}}">
+<meta property="og:type" content="article"><meta property="og:site_name" content="Zen Retraite"><meta property="og:title" content="{{ARTICLE_TITLE}}"><meta property="og:description" content="{{ARTICLE_DESCRIPTION}}"><meta property="og:url" content="{{ARTICLE_CANONICAL_URL}}">
 {{ARTICLE_OG_IMAGE_TAGS}}
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="{{ARTICLE_TITLE}}">
-<meta name="twitter:description" content="{{ARTICLE_DESCRIPTION}}">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="{{ARTICLE_TITLE}}"><meta name="twitter:description" content="{{ARTICLE_DESCRIPTION}}">
 {{ARTICLE_TWITTER_IMAGE_TAG}}
 {{ARTICLE_STRUCTURED_DATA}}
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
-<link rel="icon" type="image/png" href="../../favicon.png">
-<link rel="apple-touch-icon" href="../../favicon.png">
-<script>
-  (function(){
-    try {
-      var t = localStorage.getItem('zr-theme');
-      if (t === 'dark' || t === 'light') {
-        document.documentElement.setAttribute('data-theme', t);
-      }
-    } catch (e) {}
-  })();
-  </script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="icon" type="image/png" href="../../favicon.png"><link rel="apple-touch-icon" href="../../favicon.png">
+<script>(function(){ try { var t = localStorage.getItem('zr-theme'); if (t === 'dark' || t === 'light') document.documentElement.setAttribute('data-theme', t); } catch (e) {} })();</script>
 <link rel="stylesheet" href="../../style.css">
 </head>
 <body data-page="article">
+<a class="skip-link" href="#main-content">Aller au contenu</a>
 <header class="site-header article-header">
-<a class="brand" href="../../index.html">
-<span class="brand-mark">Zen</span>
-<span class="brand-text">Retraite</span>
-</a>
-<nav class="site-nav" aria-label="Navigation principale">
-<a href="../../index.html">Accueil</a>
-<a href="../../archive.html">Archives</a>
-<a href="../../a-propos.html">À propos</a>
-</nav>
+<a class="brand" href="../../index.html"><span class="brand-mark">Zen</span><span class="brand-text">Retraite</span></a>
+<nav class="site-nav" aria-label="Navigation principale"><a href="../../index.html">Accueil</a><a href="../../archive.html">Archives</a><a href="../../a-propos.html">À propos</a></nav>
 <button id="theme-toggle" class="theme-toggle" aria-label="Basculer le mode jour/nuit" title="Basculer le mode jour/nuit">☀️/🌙</button>
 </header>
-<main class="content">
+<main id="main-content" class="content article-layout">
+<nav class="breadcrumb" aria-label="Fil d’Ariane"><a href="../../index.html">Accueil</a><span aria-hidden="true">/</span><a href="../../archive.html">Guides</a><span aria-hidden="true">/</span><span aria-current="page">{{ARTICLE_THEME}}</span></nav>
 <article id="article-detail" class="article-detail" aria-live="polite">
-<h1>{{ARTICLE_TITLE}}</h1>
-<div class="card-meta">
-<time dateTime="{{ARTICLE_PUBLISHED_ISO}}">{{ARTICLE_PUBLISHED_HUMAN}}</time>
-{{ARTICLE_UPDATED_BLOCK}}
-<span>{{ARTICLE_THEME}} – {{ARTICLE_SUBTHEME}}</span>
-</div>
+<header class="article-intro"><p class="eyebrow">{{ARTICLE_THEME}}</p><h1>{{ARTICLE_TITLE}}</h1><div class="article-meta"><span>Publié le <time dateTime="{{ARTICLE_PUBLISHED_ISO}}">{{ARTICLE_PUBLISHED_HUMAN}}</time></span>{{ARTICLE_UPDATED_BLOCK}}<span>{{ARTICLE_SUBTHEME}}</span></div></header>
 {{ARTICLE_IMAGE_BLOCK}}
 {{ARTICLE_KEY_TAKEAWAYS}}
 <p class="affiliate-disclosure article-disclosure">{{AFFILIATE_DISCLOSURE}}</p>
-<div class="article-body">
-{{ARTICLE_CONTENT}}
-</div>
+{{ARTICLE_TOC}}
+<div class="article-body">{{ARTICLE_CONTENT}}</div>
 {{ARTICLE_SOURCES}}
 {{ARTICLE_RELATED}}
 </article>
-<div class="article-actions">
-<a class="back-link" href="../../index.html">← Retour à l’accueil</a>
-<a class="article-method-link" href="../../a-propos.html">Notre méthode éditoriale</a>
-</div>
+<div class="article-actions"><a class="button-secondary" href="../../archive.html">Voir tous les guides</a><a class="article-method-link" href="../../a-propos.html">Notre méthode éditoriale</a></div>
 </main>
-<footer class="site-footer">
-<nav class="footer-nav">
-<a href="../../archive.html">Archives</a>
-<a href="../../a-propos.html">À propos</a>
-</nav>
-<p>&copy; <span id="current-year"></span> Zen Retraite. Tous droits réservés.</p>
-<p class="affiliate-disclosure">{{AFFILIATE_DISCLOSURE}}</p>
-</footer>
+<footer class="site-footer"><nav class="footer-nav"><a href="../../archive.html">Archives</a><a href="../../a-propos.html">À propos</a></nav><p>&copy; <span id="current-year"></span> Zen Retraite. Tous droits réservés.</p><p class="affiliate-disclosure">{{AFFILIATE_DISCLOSURE}}</p></footer>
 {{ARTICLE_DATA_SCRIPT}}
 <script src="../../script.js" defer></script>
 </body>

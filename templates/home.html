@@ -3,94 +3,61 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Zen Retraite – Inspirer les jeunes retraités actifs</title>
-<meta name="description" content="Zen Retraite partage des idées voyage, bien-être, cuisine, jardinage et culture pour une retraite active et sereine.">
+<title>Zen Retraite – Des guides pratiques pour une retraite active</title>
+<meta name="description" content="Des guides concrets pour organiser son quotidien, maîtriser son budget, utiliser le numérique et profiter de sa retraite.">
 <link rel="canonical" href="{{SITE_URL}}/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Zen Retraite">
-<meta property="og:title" content="Zen Retraite – Inspirer les jeunes retraités actifs">
-<meta property="og:description" content="Des idées voyage, bien-être, cuisine, jardinage et culture pour une retraite active et sereine.">
+<meta property="og:title" content="Zen Retraite – Des guides pratiques pour une retraite active">
+<meta property="og:description" content="Des guides concrets pour organiser son quotidien, maîtriser son budget, utiliser le numérique et profiter de sa retraite.">
 <meta property="og:url" content="{{SITE_URL}}/">
 <meta name="twitter:card" content="summary">
 {{HOME_STRUCTURED_DATA}}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="icon" type="image/png" href="./favicon.png">
 <link rel="apple-touch-icon" href="./favicon.png">
-<script>
-  (function(){
-    try {
-      var t = localStorage.getItem('zr-theme');
-      if (t === 'dark' || t === 'light') {
-        document.documentElement.setAttribute('data-theme', t);
-      }
-    } catch (e) {}
-  })();
-  </script>
+<script>(function(){ try { var t = localStorage.getItem('zr-theme'); if (t === 'dark' || t === 'light') document.documentElement.setAttribute('data-theme', t); } catch (e) {} })();</script>
 <link rel="stylesheet" href="./style.css">
 </head>
 <body data-page="home">
+<a class="skip-link" href="#main-content">Aller au contenu</a>
 <header class="site-header">
-<a class="brand" href="./index.html">
-<span class="brand-mark">Zen</span>
-<span class="brand-text">Retraite</span>
-</a>
-<nav class="site-nav" aria-label="Navigation principale">
-<a href="./archive.html">Archives</a>
-<a href="./a-propos.html">À propos</a>
-</nav>
-<button id="filters-toggle" class="menu-button" aria-controls="filters-panel" aria-expanded="false" aria-label="Afficher les filtres">
-<span class="menu-icon" aria-hidden="true"></span>
-<span class="menu-text">Filtres</span>
- </button>
- <button id="theme-toggle" class="theme-toggle" aria-label="Basculer le mode jour/nuit" title="Basculer le mode jour/nuit">☀️/🌙</button>
-<div id="filters-panel" class="filters-panel">
-<div class="header-controls">
-<label class="control search-control">
-<span class="control-label">Recherche</span>
-<input id="search-input" type="search" placeholder="Chercher un article..." aria-label="Rechercher un article">
-</label>
-<label class="control">
-<span class="control-label">Thème</span>
-<select id="theme-filter" aria-label="Filtrer par thème">
-<option value="">Tous</option>
-</select>
-</label>
-<label class="control">
-<span class="control-label">Sous-thème</span>
-<select id="subtheme-filter" aria-label="Filtrer par sous-thème">
-<option value="">Tous</option>
-</select>
-</label>
-</div>
-</div>
+<a class="brand" href="./index.html"><span class="brand-mark">Zen</span><span class="brand-text">Retraite</span></a>
+<nav class="site-nav" aria-label="Navigation principale"><a href="./index.html" aria-current="page">Accueil</a><a href="./archive.html">Archives</a><a href="./a-propos.html">À propos</a></nav>
+<button id="theme-toggle" class="theme-toggle" aria-label="Basculer le mode jour/nuit" title="Basculer le mode jour/nuit">☀️/🌙</button>
 </header>
-<main class="content">
-<section class="intro">
-<h1>Des idées pour savourer chaque journée</h1>
-<p>Voyages inspirants, recettes de saison, activités douces et bons plans pour cultiver votre équilibre.</p>
+<main id="main-content" class="content home-content">
+<section class="home-hero" aria-labelledby="home-title">
+<p class="eyebrow">Des repères pour bien vivre sa retraite</p>
+<h1 id="home-title">Des guides concrets pour choisir, organiser et profiter de son temps.</h1>
+<p>Maison, budget, numérique et loisirs : des idées à explorer à son rythme, avec des sources lorsque le sujet le demande.</p>
+<div class="hero-actions"><a class="button-primary" href="#dernieres-publications">Voir les derniers guides</a><a class="text-link" href="./a-propos.html">Découvrir notre méthode</a></div>
 </section>
-<section aria-live="polite">
-<div id="articles-grid" class="card-grid" data-state="ready">
-{{HOME_ARTICLE_LIST}}
-</div>
-<p id="empty-state" class="empty-state" {{HOME_EMPTY_STATE_ATTR}}>Aucun article ne correspond à votre recherche pour le moment. Essayez d’autres filtres.</p>
+<section class="home-section" aria-labelledby="guides-title">
+<div class="section-heading"><div><p class="eyebrow">Nos sélections</p><h2 id="guides-title">Guides à découvrir</h2></div></div>
+<div class="guide-grid">{{HOME_FEATURED_GUIDES}}</div>
+<div class="guide-links" aria-label="Autres guides utiles">{{HOME_MORE_GUIDES}}</div>
 </section>
-<section class="archives-callout" {{HOME_ARCHIVE_LINK_ATTR}} aria-label="Archives du site">
-<h2>Explorer les archives</h2>
-<p>Retrouvez aussi {{HOME_ARCHIVE_COUNT}} articles publiés précédemment.</p>
-<a class="back-link" href="./archive.html">Parcourir les archives</a>
+<section class="home-section" aria-labelledby="themes-title">
+<div class="section-heading"><div><p class="eyebrow">Explorer par besoin</p><h2 id="themes-title">Choisir un thème</h2></div><a class="text-link" href="./archive.html">Tous les articles</a></div>
+<nav class="theme-links" aria-label="Thèmes des articles">{{HOME_THEME_LINKS}}</nav>
 </section>
+<section id="dernieres-publications" class="home-section" aria-labelledby="latest-title">
+<div class="section-heading"><div><p class="eyebrow">À lire en ce moment</p><h2 id="latest-title">Les dernières publications</h2></div></div>
+<form class="catalogue-controls" role="search" onsubmit="return false">
+<label class="control search-control" for="search-input"><span class="control-label">Rechercher dans tous les articles</span><input id="search-input" type="search" placeholder="Ex. photos, budget, jardin" autocomplete="off"></label>
+<label class="control" for="theme-filter"><span class="control-label">Catégorie</span><select id="theme-filter"><option value="">Toutes les catégories</option></select></label>
+<label class="control" for="subtheme-filter"><span class="control-label">Sujet</span><select id="subtheme-filter"><option value="">Tous les sujets</option></select></label>
+</form>
+<p id="catalogue-status" class="catalogue-status" aria-live="polite">{{HOME_LATEST_COUNT}} publications récentes affichées.</p>
+<div aria-live="polite"><div id="articles-grid" class="card-grid" data-state="ready">{{HOME_ARTICLE_LIST}}</div><p id="empty-state" class="empty-state" {{HOME_EMPTY_STATE_ATTR}}>Aucun article ne correspond à votre recherche. Essayez un autre mot ou une autre catégorie.</p></div>
+<button id="load-more" class="button-secondary" type="button">Voir plus d’articles</button>
+</section>
+<section class="archives-callout" {{HOME_ARCHIVE_LINK_ATTR}} aria-label="Archives du site"><h2>Retrouver un article plus ancien</h2><p>Les archives restent disponibles par date et par catégorie.</p><a class="button-secondary" href="./archive.html">Parcourir les archives</a></section>
 </main>
-<footer class="site-footer">
-<nav class="footer-nav">
-<a href="./archive.html">Archives</a>
-<a href="./a-propos.html">À propos</a>
-</nav>
-<p>&copy; <span id="current-year"></span> Zen Retraite. Tous droits réservés.</p>
-<p class="affiliate-disclosure">{{AFFILIATE_DISCLOSURE}}</p>
-</footer>
+<footer class="site-footer"><nav class="footer-nav"><a href="./archive.html">Archives</a><a href="./a-propos.html">À propos</a></nav><p>&copy; <span id="current-year"></span> Zen Retraite. Tous droits réservés.</p><p class="affiliate-disclosure">{{AFFILIATE_DISCLOSURE}}</p></footer>
 {{HOME_DATA_SCRIPT}}
 <script src="./script.js" defer></script>
 </body>
