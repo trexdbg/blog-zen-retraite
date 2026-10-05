@@ -4,7 +4,7 @@ import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
-import { keyTakeaways, relatedArticles, relatedArticlesBlock, structuredDate } from "../scripts/build.js";
+import { articleContentWithToc, keyTakeaways, relatedArticles, relatedArticlesBlock, structuredDate } from "../scripts/build.js";
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const run = (file, args, options) => new Promise((resolve, reject) => execFile(file, args, options, (error, stdout, stderr) => error ? reject(error) : resolve({ stdout, stderr })));
@@ -50,6 +50,18 @@ test("key takeaways only render valid editorial metadata", () => {
   assert.deepEqual(keyTakeaways({ key_takeaways: ["Une idée.", 42] }), []);
 });
 
+test("table of contents only annotates h2 headings with collision-proof anchors", () => {
+  const content = '<p><a href="#existing">Lien conservé</a></p><h2 id="existing">Déjà présent</h2><h2>Choisir son matériel</h2><h2>Choisir son matériel</h2>';
+  const rendered = articleContentWithToc(content);
+  assert.match(rendered.toc, /article-toc/);
+  assert.match(rendered.html, /href="#existing"/);
+  assert.match(rendered.html, /<h2 id="existing">Déjà présent<\/h2>/);
+  assert.match(rendered.html, /id="choisir-son-materiel"/);
+  assert.match(rendered.html, /id="choisir-son-materiel-1"/);
+  assert.match(rendered.toc, /href="#choisir-son-materiel-1"/);
+  assert.equal(articleContentWithToc("<h2>Un</h2><h2>Deux</h2>").toc, "");
+});
+
 test("static build preserves every archived article and adds the about page to the sitemap", async () => {
   await run(process.execPath, ["scripts/build.js"], { cwd: rootDir });
   const articlesDir = path.join(rootDir, "data", "articles");
@@ -69,10 +81,20 @@ test("static build preserves every archived article and adds the about page to t
   const homeData = home.match(/<script id="zr-home-data" type="application\/json">([\s\S]*?)<\/script>/);
   assert.ok(homeData);
   const homeArticles = JSON.parse(homeData[1]).articles;
+  assert.deepEqual(new Set(homeArticles.map((entry) => entry.id)), articleIds);
+  const latestIds = [...homeArticles]
+    .sort((left, right) => new Date(right.created_at).getTime() - new Date(left.created_at).getTime())
+    .slice(0, 6)
+    .map((entry) => entry.id);
+  const visibleCardIds = [...home.matchAll(/<article class="card" data-article-id="([^"]+)"/g)].map((match) => match[1]);
+  assert.deepEqual(visibleCardIds, latestIds);
+  assert.match(home, /id="search-input"/);
+  assert.match(home, /id="load-more"/);
+  assert.match(home, /archive\.html\?theme=/);
   for (const entry of [...homeArticles, ...archiveEntries]) {
     assert.equal(entry.url, `/articles/${encodeURIComponent(entry.id)}/`);
   }
-  for (const entry of homeArticles) {
+  for (const entry of homeArticles.filter((entry) => visibleCardIds.includes(entry.id))) {
     assert.ok(home.includes(`href="/articles/${encodeURIComponent(entry.id)}/"`));
   }
   for (const entry of archiveEntries) {

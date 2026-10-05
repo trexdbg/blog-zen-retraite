@@ -28,6 +28,21 @@ const THEME_LABELS = {
   numerique_pratique: "Numérique pratique",
 };
 
+const CATEGORY_LABELS = {
+  maison: "Maison et quotidien",
+  budget: "Budget et démarches",
+  numerique_pratique: "Numérique pratique",
+  bien_etre: "Bien-être et loisirs",
+};
+
+const FEATURED_GUIDES = [
+  "2025-11-15_20-39_cuisine-conomique-et-anti-inflation_cuisine-conomie-plaisir",
+  "2025-11-11_18-43_habitat-alternatif-minimalisme_maison-libert-nature",
+  "2025-11-20_18-46_technologie-confort-autonomie_maison-connect-e-sant",
+  "2026-10-04_07-56_gestion-des-photos_photos-souvenirs-famille",
+  "2025-11-30_11-29_mode-l-gance_mode-l-gance-chic",
+];
+
 function normalizeTheme(value) {
   return String(value || "")
     .normalize("NFD")
@@ -49,6 +64,19 @@ function themeFamily(value) {
   if (["loisirs vie active", "loisirs", "voyage"].includes(normalized)) return "loisirs_vie_active";
   if (["numerique pratique", "numerique"].includes(normalized)) return "numerique_pratique";
   return normalized;
+}
+
+function articleCategory(article) {
+  const text = normalizeTheme(`${article?.theme || ""} ${article?.subtheme || ""} ${article?.title || ""}`);
+  if (/habitat|tiny house|logement|minimalisme/.test(text)) return "maison";
+  if (/budget|finance|econom|inflation|revenu|assurance|demarche/.test(text)) return "budget";
+  if (/numerique|digital|technolog|connect|photo|informatique|ecran|domotique/.test(text)) return "numerique_pratique";
+  if (/maison|habitat|jardin|deco|decoration|bricolage|energie|rangement|cuisine/.test(text)) return "maison";
+  return "bien_etre";
+}
+
+function displayCategory(article) {
+  return CATEGORY_LABELS[articleCategory(article)];
 }
 
 
@@ -273,13 +301,13 @@ function articlePath(id) {
 function buildCard(article, index) {
   const delay = (index * 0.06).toFixed(2);
   const imageHtml = article.image
-    ? `<img src="${htmlEscape(article.image)}" data-src="${htmlEscape(article.image)}" alt="${htmlEscape(articleImageAlt(article))}" loading="lazy"${imageDimensionAttributes(article)}>`
+    ? `<img src="${htmlEscape(article.image)}" data-src="${htmlEscape(article.image)}" alt="${htmlEscape(articleImageAlt(article))}" loading="lazy" onerror="this.remove();this.parentElement.classList.add('card-without-image')"${imageDimensionAttributes(article)}>`
     : "";
-  const theme = displayTheme(article.theme);
+  const theme = displayCategory(article);
   const subtheme = article.subtheme || "Découverte";
   const href = htmlEscape(articlePath(article.id));
   return `
-<article class="card" style="animation-delay: ${delay}s">
+<article class="card" data-article-id="${htmlEscape(article.id)}" style="animation-delay: ${delay}s">
 ${imageHtml}
 <div class="card-content">
 <div class="card-meta"><span>${htmlEscape(theme)}</span><span>${htmlEscape(subtheme)}</span></div>
@@ -299,7 +327,7 @@ function buildArchiveItem(entry) {
     : "";
   const href = entry.url || articlePath(entry.id);
   return `
-<li>
+<li data-theme="${htmlEscape(entry.category || "bien_etre")}">
   <div>${htmlEscape(title)}</div>
   <div>
     ${timeBlock}
@@ -309,23 +337,43 @@ function buildArchiveItem(entry) {
 }
 
 async function buildHome(template, articles, archiveCount) {
-  const cards = articles.map(buildCard).join("\n");
+  const sortedArticles = sortByDateDesc(articles);
+  const latestArticles = sortedArticles.slice(0, 6);
+  const cards = latestArticles.map(buildCard).join("\n");
   const listData = articles.map((article) => ({
     id: article.id,
     title: article.title,
     excerpt: article.excerpt,
     theme: displayTheme(article.theme),
+    category: articleCategory(article),
+    category_label: displayCategory(article),
     subtheme: article.subtheme,
     image: article.image,
     created_at: article.created_at,
     url: articlePath(article.id),
   }));
 
+  const articleMap = new Map(articles.map((article) => [article.id, article]));
+  const guideCards = FEATURED_GUIDES.map((id) => articleMap.get(id)).filter(Boolean);
+  const buildGuide = (article, prominent) => {
+    const href = htmlEscape(articlePath(article.id));
+    const className = prominent ? "guide-card guide-card-featured" : "guide-link";
+    return `<article class="${className}"><p class="eyebrow">${htmlEscape(displayCategory(article))}</p><h3><a href="${href}">${htmlEscape(article.title)}</a></h3><p>${htmlEscape(article.excerpt || "")}</p></article>`;
+  };
+  const themeLinks = Object.entries(CATEGORY_LABELS)
+    .filter(([key]) => articles.some((article) => articleCategory(article) === key))
+    .map(([key, label]) => `<a class="theme-link" href="./archive.html?theme=${encodeURIComponent(key)}">${htmlEscape(label)}<span aria-hidden="true">→</span></a>`)
+    .join("\n");
+
   const replacements = {
     HOME_ARTICLE_LIST: cards,
+    HOME_LATEST_COUNT: String(latestArticles.length),
     HOME_EMPTY_STATE_ATTR: articles.length ? "hidden" : "",
     HOME_ARCHIVE_LINK_ATTR: archiveCount ? "" : "hidden",
     HOME_ARCHIVE_COUNT: String(archiveCount),
+    HOME_FEATURED_GUIDES: guideCards.slice(0, 3).map((article) => buildGuide(article, true)).join("\n"),
+    HOME_MORE_GUIDES: guideCards.slice(3).map((article) => buildGuide(article, false)).join("\n"),
+    HOME_THEME_LINKS: themeLinks,
     HOME_DATA_SCRIPT: `<script id="zr-home-data" type="application/json">${safeJson({ articles: listData })}</script>`,
   };
 
@@ -476,6 +524,46 @@ function sourcesBlock(article) {
   return "<section class='article-sources' aria-labelledby='article-sources-title'><h2 id='article-sources-title'>Sources</h2><ul>" + links.join("") + "</ul></section>";
 }
 
+function headingSlug(value) {
+  const normalized = String(value || "")
+    .replace(/<[^>]*>/g, " ")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLocaleLowerCase("fr-FR")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  return normalized || "section";
+}
+
+function articleContentWithToc(content) {
+  const original = typeof content === "string" ? content : "";
+  const usedIds = new Set([...original.matchAll(/\bid\s*=\s*(["'])(.*?)\1/gi)].map((match) => match[2]));
+  const headings = [];
+  let sequence = 0;
+  const html = original.replace(/<h2(\s[^>]*)?>([\s\S]*?)<\/h2>/gi, (full, rawAttributes = "", label) => {
+    const existing = rawAttributes.match(/\bid\s*=\s*(["'])(.*?)\1/i)?.[2];
+    if (existing) {
+      headings.push({ id: existing, label: label.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim() });
+      return full;
+    }
+    const base = headingSlug(label);
+    let id = base;
+    while (usedIds.has(id)) id = `${base}-${++sequence}`;
+    usedIds.add(id);
+    headings.push({ id, label: label.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim() });
+    return `<h2${rawAttributes} id="${htmlEscape(id)}">${label}</h2>`;
+  });
+  if (headings.length < 3) return { html, toc: "" };
+  const links = headings
+    .filter((heading) => heading.label)
+    .map((heading) => `<li><a href="#${htmlEscape(heading.id)}">${htmlEscape(heading.label)}</a></li>`)
+    .join("");
+  return {
+    html,
+    toc: `<nav class="article-toc" aria-label="Dans cet article"><p>Dans cet article</p><ol>${links}</ol></nav>`,
+  };
+}
+
 async function buildArticles(template, articles) {
   await fs.mkdir(articlesOutputDir, { recursive: true });
 
@@ -487,6 +575,7 @@ async function buildArticles(template, articles) {
     const description = metaDescription(article.excerpt);
     const publishedDate = structuredDate(article.created_at);
     const updatedDate = structuredDate(article.updated_at);
+    const renderedContent = articleContentWithToc(article.content);
     const replacements = {
       ARTICLE_TITLE: htmlEscape(article.title),
       ARTICLE_DESCRIPTION: htmlEscape(description),
@@ -506,7 +595,8 @@ async function buildArticles(template, articles) {
       ARTICLE_THEME: htmlEscape(displayTheme(article.theme)),
       ARTICLE_SUBTHEME: htmlEscape(article.subtheme || "Découverte"),
       ARTICLE_IMAGE_BLOCK: articleImageBlock(article),
-      ARTICLE_CONTENT: article.content || "",
+      ARTICLE_CONTENT: renderedContent.html,
+      ARTICLE_TOC: renderedContent.toc,
       ARTICLE_DATA_SCRIPT: `<script id="zr-article-data" type="application/json">${safeJson({
         id: article.id,
         title: article.title,
@@ -616,6 +706,7 @@ async function loadArchiveEntries(articleMap, homeIds) {
       id: normalizedId,
       title: typeof entry === "object" && entry?.title ? entry.title : article.title || null,
       created_at: typeof entry === "object" && entry?.created_at ? entry.created_at : article.created_at || null,
+      category: articleCategory(article),
     });
   };
 
@@ -671,7 +762,9 @@ async function main() {
     }))
   );
 
-  await buildHome(homeTemplate, homeArticles, archiveEntries.length);
+  // index.json only controls the archive split. The home catalogue is built
+  // from every published article so a visitor can search the whole site.
+  await buildHome(homeTemplate, sortByDateDesc(articles), archiveEntries.length);
   await buildArchive(archiveTemplate, archiveEntries);
   await buildArticles(articleTemplate, sortByDateDesc(articles));
   await buildAbout(aboutTemplate);
@@ -692,4 +785,4 @@ if (process.argv[1] && path.resolve(process.argv[1]) === __filename) {
   });
 }
 
-export { keyTakeaways, relatedArticles, relatedArticlesBlock, structuredDate };
+export { articleContentWithToc, articleCategory, keyTakeaways, relatedArticles, relatedArticlesBlock, structuredDate };

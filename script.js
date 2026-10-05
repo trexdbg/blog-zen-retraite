@@ -1,25 +1,8 @@
-﻿/*
-  Zen Retraite – script principal
-  --------------------------------
-  Objectif: Blog statique (HTML+CSS+JS) avec recherche, filtres et
-  chargement d’articles JSON. Compatible GitHub Pages et ouverture locale.
-
-  Sections:
-    1) Constantes et utilitaires
-    2) Données fallback (mode file://)
-    3) Chargement JSON avec rattrapage
-    4) Lazy‑loading des images
-    5) Accueil: grille, tri, recherche, filtres
-    6) Article: affichage à partir de ?id=
-    7) Archives: liste simple
-*/
-
-// 1) Constantes et utilitaires ----------------------------------------------
 const BODY = document.body;
 const HTML = document.documentElement;
-const PAGE = BODY.dataset.page || ""; // "home" | "article" | "archive"
+const PAGE = BODY.dataset.page || "";
+const PAGE_SIZE = 6;
 
-// Année courante dans le pied de page
 const YEAR_EL = document.getElementById("current-year");
 if (YEAR_EL) YEAR_EL.textContent = String(new Date().getFullYear());
 
@@ -27,454 +10,211 @@ function articlePath(id) {
   return `/articles/${encodeURIComponent(String(id))}/`;
 }
 
-// Formatage de date ISO → français lisible
 function formatDateFR(iso) {
-  const d = new Date(iso);
-  return Number.isNaN(d.getTime())
-    ? ""
-    : d.toLocaleDateString("fr-FR", { year: "numeric", month: "long", day: "numeric" });
+  const date = new Date(iso);
+  return Number.isNaN(date.getTime()) ? "" : date.toLocaleDateString("fr-FR", { year: "numeric", month: "long", day: "numeric" });
 }
-
-// Polyfill trivial pour structuredClone si indisponible
-function structuredClone(obj) { return JSON.parse(JSON.stringify(obj)); }
 
 function readInlineJson(id) {
   const node = document.getElementById(id);
   if (!node) return null;
-  try {
-    return JSON.parse(node.textContent);
-  } catch (error) {
-    console.warn("JSON inline invalide", id, error);
-    return null;
-  }
+  try { return JSON.parse(node.textContent); } catch (error) { console.warn("JSON inline invalide", id, error); return null; }
 }
 
-// Gestion du thème jour/nuit -------------------------------------------------
 function effectiveTheme() {
-  const saved = (() => { try { return localStorage.getItem('zr-theme'); } catch(e) { return null; } })();
-  if (saved === 'dark' || saved === 'light') return saved;
-  return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  try {
+    const saved = localStorage.getItem("zr-theme");
+    if (saved === "dark" || saved === "light") return saved;
+  } catch (error) { /* storage may be unavailable */ }
+  return window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 }
 
 function updateThemeButton() {
-  const btn = document.getElementById('theme-toggle');
-  if (!btn) return;
-  const current = (HTML.getAttribute('data-theme') || effectiveTheme());
-  const isDark = current === 'dark';
-  btn.textContent = isDark ? '☀️' : '🌙';
-  btn.title = isDark ? 'Passer en mode jour' : 'Passer en mode nuit';
-  btn.setAttribute('aria-label', btn.title);
-}
-
-function setTheme(theme) {
-  if (theme !== 'dark' && theme !== 'light') return;
-  HTML.setAttribute('data-theme', theme);
-  try { localStorage.setItem('zr-theme', theme); } catch (e) {}
-  updateThemeButton();
+  const button = document.getElementById("theme-toggle");
+  if (!button) return;
+  const isDark = (HTML.getAttribute("data-theme") || effectiveTheme()) === "dark";
+  button.textContent = isDark ? "☀️" : "🌙";
+  button.title = isDark ? "Passer en mode jour" : "Passer en mode nuit";
+  button.setAttribute("aria-label", button.title);
 }
 
 function initThemeToggle() {
   updateThemeButton();
-  const btn = document.getElementById('theme-toggle');
-  if (!btn) return;
-  btn.addEventListener('click', () => {
-    const current = (HTML.getAttribute('data-theme') || effectiveTheme());
-    const next = current === 'dark' ? 'light' : 'dark';
-    setTheme(next);
+  const button = document.getElementById("theme-toggle");
+  if (!button) return;
+  button.addEventListener("click", () => {
+    const next = (HTML.getAttribute("data-theme") || effectiveTheme()) === "dark" ? "light" : "dark";
+    HTML.setAttribute("data-theme", next);
+    try { localStorage.setItem("zr-theme", next); } catch (error) { /* preference remains for this page */ }
+    updateThemeButton();
   });
-  // Si le système change et aucun thème forcé, mettre à jour l'icône
-  const attr = HTML.getAttribute('data-theme');
-  if (!attr && window.matchMedia) {
-    const mq = window.matchMedia('(prefers-color-scheme: dark)');
-    const onChange = () => updateThemeButton();
-    if (typeof mq.addEventListener === 'function') mq.addEventListener('change', onChange);
-    else if (typeof mq.addListener === 'function') mq.addListener(onChange);
-  }
 }
 
-// 2) Données fallback (mode file://) ----------------------------------------
-// Ouvrir en file:// bloque fetch des JSON. Pour une démo fluide hors serveur,
-// on embarque un petit échantillon identique aux fichiers /data.
-const IS_LOCAL = location.protocol === "file:";
-
-const FALLBACK = {
-  index: ["2025-11-01-1", "2025-10-30-1", "2025-10-18-1"],
-  articles: {
-    "2025-11-01-1": {
-      id: "2025-11-01-1",
-      theme: "Cuisine",
-      subtheme: "Soupes",
-      title: "Velouté de potimarron facile et parfumé",
-      image: "https://images.unsplash.com/photo-1504754524776-8f4f37790ca0?auto=format&fit=crop&w=900&q=80",
-      excerpt: "Une recette réconfortante, prête en 20 minutes, parfaite pour l’automne.",
-      content: "<p>Ce velouté de potimarron est onctueux et très simple à préparer. Le potimarron se mixe avec la peau, ce qui fait gagner du temps et donne une belle texture.</p><p><strong>Ingrédients (2 à 3 bols)</strong>: 1 petit potimarron, 1 oignon, 1 gousse d’ail, 600 ml d’eau ou bouillon, 1 c. à s. d’huile d’olive, 1 pincée de noix de muscade, sel, poivre, un trait de crème (optionnel).</p><ol><li>Lavez le potimarron, retirez les graines et coupez-le en cubes.</li><li>Faites revenir l’oignon émincé et l’ail dans l’huile 2 minutes.</li><li>Ajoutez le potimarron, couvrez d’eau/bouillon, assaisonnez, puis laissez mijoter 12 à 15 minutes.</li><li>Mixez finement. Ajoutez un peu de crème et une pincée de muscade.</li></ol><p>Servez bien chaud avec quelques graines de courge grillées et un filet d’huile de noisette. Bon appétit !</p>",
-      created_at: "2025-11-01T08:00:00Z"
-    },
-    "2025-10-30-1": {
-      id: "2025-10-30-1",
-      theme: "Bien-être",
-      subtheme: "Gym douce",
-      title: "Bouger sans se blesser : la gym douce à la maison",
-      image: "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=900&q=80",
-      excerpt: "Quelques exercices simples pour garder la forme et le sourire à tout âge.",
-      content: "<p>La gym douce combine respiration, étirements et renforcement léger pour garder ses articulations souples sans forcer. Installez un tapis antidérapant et ouvrez les fenêtres pour respirer un air frais.</p><p>Avant de commencer, prenez cinq minutes pour échauffer vos poignets, vos chevilles et votre nuque. Ensuite, enchaînez trois séries de respiration abdominale puis deux exercices doux de mobilisation des épaules.</p><ul><li>Serrez légèrement vos abdominaux et levez les bras à l’horizontale avant de les relâcher, dix fois.</li><li>Assis sur une chaise, étirez vos jambes en gardant le dos droit, huit fois de chaque côté.</li><li>Terminez par un automassage des mollets avec une crème chauffante pour favoriser la récupération.</li></ul><p>Hydratez-vous et écoutez vos sensations : la régularité vaut plus que l’intensité. En dix minutes par jour, vous ressentirez rapidement plus d’énergie.</p>",
-      created_at: "2025-10-30T08:00:00Z"
-    },
-    "2025-10-18-1": {
-      id: "2025-10-18-1",
-      theme: "Voyage",
-      subtheme: "City break",
-      title: "Un week-end slow à Nantes",
-      image: "https://images.unsplash.com/photo-1505761671935-60b3a7427bad?auto=format&fit=crop&w=900&q=80",
-      excerpt: "Balade en bord de Loire, musées intimistes et pauses gourmandes pour un séjour apaisant.",
-      content: "<p>Nantes est une destination idéale pour un city break sans stress. Arrivez la veille au soir pour profiter d’un dîner au bord de l’Erdre et d’une promenade digestive sous les lanternes.</p><p>Le lendemain, commencez par le marché de Talensac pour goûter les produits locaux, puis rejoignez l’île de Versailles à pied ou à vélo. Les jardins japonais invitent à la contemplation et offrent des bancs confortables pour une pause lecture.</p><p>L’après-midi, explorez le passage Pommeraye avant de rejoindre Les Machines de l’île. Réservez votre balade sur le Grand Éléphant à l’avance : sensations douces garanties et vue panoramique sur la ville.</p><p>Terminez votre escapade au Jardin des plantes pour admirer les serres et savourer un café à la terrasse ombragée. Nantes se découvre en douceur, au fil des pas et des rencontres.</p>",
-      created_at: "2025-10-18T09:30:00Z"
-    }
-  },
-  archive: {
-    articles: [
-      { id: "2025-11-01-1", title: "Velouté de potimarron facile et parfumé", created_at: "2025-11-01T08:00:00Z" }
-    ]
-  }
-};
-
-// 3) Chargement JSON avec rattrapage ---------------------------------------
-async function fetchJson(path) {
-  try {
-    const res = await fetch(path, { cache: "no-store" });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    return await res.json();
-  } catch (error) {
-    if (IS_LOCAL) {
-      if (path.endsWith("index.json")) return structuredClone(FALLBACK.index);
-      if (path.endsWith("archive.json")) return structuredClone(FALLBACK.archive);
-      if (path.includes("/data/articles/")) {
-        const id = path.split("/").pop().replace(".json", "");
-        if (FALLBACK.articles[id]) return structuredClone(FALLBACK.articles[id]);
-      }
-    }
-    throw error;
-  }
+function normalized(value) {
+  return String(value || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase("fr-FR");
 }
 
-// 4) Lazy‑loading des images ------------------------------------------------
-const IO = "IntersectionObserver" in window
-  ? new IntersectionObserver((entries, obs) => {
-      entries.forEach((e) => {
-        if (e.isIntersecting) {
-          const img = e.target;
-          if (img.dataset.src) img.src = img.dataset.src;
-          obs.unobserve(img);
-        }
-      });
-    })
-  : null;
-
-function observeImage(img) {
-  img.loading = "lazy";
-  if (IO && img.dataset.src) IO.observe(img);
-  else if (img.dataset.src) img.src = img.dataset.src;
+function sortByPublicationDate(items) {
+  return [...items].sort((left, right) => {
+    const a = new Date(left.created_at || 0).getTime() || 0;
+    const b = new Date(right.created_at || 0).getTime() || 0;
+    return b - a || String(right.id).localeCompare(String(left.id), "fr");
+  });
 }
 
-function createMeta(article) {
-  const div = document.createElement("div");
-  div.className = "card-meta";
-  div.innerHTML = `<span>${article.theme}</span><span>${article.subtheme}</span>`;
-  return div;
-}
-
-// 5) Accueil -----------------------------------------------------------------
-async function initHome() {
-  const grid = document.getElementById("articles-grid");
-  if (!grid) return;
-  const empty = document.getElementById("empty-state");
-  const input = document.getElementById("search-input");
-  const themeSel = document.getElementById("theme-filter");
-  const subSel = document.getElementById("subtheme-filter");
-
-  let articles = [];
-  const state = { search: "", theme: "", subtheme: "" };
-
-  function setOptions(select, values) {
-    if (!select) return;
-    const opts = ["<option value=\"\">Tous</option>"];
-    values.forEach(v => opts.push(`<option value="${v}">${v}</option>`));
-    select.innerHTML = opts.join("");
-  }
-
-  function buildCard(article, index) {
-    const card = document.createElement("article");
-    card.className = "card";
-    card.style.animationDelay = `${(index * 0.06).toFixed(2)}s`;
-
-    const wrap = document.createElement("div");
-    wrap.className = "card-content";
-
-    const h2 = document.createElement("h2");
-    h2.className = "card-title";
-    h2.textContent = article.title;
-
-    const p = document.createElement("p");
-    p.className = "card-excerpt";
-    p.textContent = article.excerpt;
-
-    const a = document.createElement("a");
-    a.href = article.url || articlePath(article.id);
-    a.textContent = "Lire la suite";
-
-    wrap.appendChild(createMeta(article));
-    wrap.appendChild(h2);
-    wrap.appendChild(p);
-    wrap.appendChild(a);
-
-    if (article.image) {
-      const img = document.createElement("img");
-      img.alt = article.title;
-      img.dataset.src = article.image;
-      img.src = article.image;
-      observeImage(img);
-      card.appendChild(img);
-    }
-    card.appendChild(wrap);
-    return card;
-  }
-
-  function render(items) {
-    grid.innerHTML = "";
-    grid.dataset.state = "ready";
-    if (!items.length) { empty.hidden = false; return; }
-    empty.hidden = true;
-    items.forEach((a, i) => grid.appendChild(buildCard(a, i)));
-  }
-
-  function applyFilters() {
-    const q = state.search.toLowerCase();
-    const filtered = articles.filter(a => {
-      const byTheme = !state.theme || a.theme === state.theme;
-      const bySub = !state.subtheme || a.subtheme === state.subtheme;
-      const byText = !q || a.title.toLowerCase().includes(q) || a.excerpt.toLowerCase().includes(q);
-      return byTheme && bySub && byText;
-    });
-    render(filtered);
-  }
-
-  function resetSubthemes() {
-    if (!subSel) return;
-    const set = new Set();
-    articles.forEach(a => { if (!state.theme || a.theme === state.theme) set.add(a.subtheme); });
-    const list = [...set].sort((a, b) => a.localeCompare(b, "fr"));
-    setOptions(subSel, list);
-    if (!list.includes(state.subtheme)) { state.subtheme = ""; subSel.value = ""; }
-  }
-
-  function hydrate(list) {
-    articles = list
-      .filter(Boolean)
-      .map((item) => ({
-        ...item,
-        excerpt: item.excerpt || "",
-        url: item.url || articlePath(item.id),
-      }))
-      .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-    const themes = [...new Set(articles.map(a => a.theme))].filter(Boolean).sort((a, b) => a.localeCompare(b || "", "fr"));
-    setOptions(themeSel, themes);
-    resetSubthemes();
-    applyFilters();
-  }
-
-  const inline = readInlineJson("zr-home-data");
-  if (inline && Array.isArray(inline.articles) && inline.articles.length) {
-    hydrate(structuredClone(inline.articles));
-  } else {
-    try {
-      const ids = await fetchJson("./data/articles/index.json");
-      if (!Array.isArray(ids)) throw new Error("Index absent");
-
-      const loaded = await Promise.all(ids.map(async (id) => {
-        try {
-          const data = await fetchJson(`./data/articles/${id}.json`);
-          return { ...data, url: articlePath(id) };
-        } catch (e) {
-          console.warn("Article ignoré", id, e);
-          return null;
-        }
-      }));
-
-      hydrate(loaded);
-    } catch (e) {
-      console.error(e);
-      grid.dataset.state = "ready";
-      grid.innerHTML = '<p class="empty-state">Impossible de charger les articles. Merci de réessayer plus tard.</p>';
-    }
-  }
-
-  if (input) input.addEventListener("input", (ev) => { state.search = ev.target.value.trim(); applyFilters(); });
-  if (themeSel) themeSel.addEventListener("change", (ev) => { state.theme = ev.target.value; resetSubthemes(); applyFilters(); });
-  if (subSel) subSel.addEventListener("change", (ev) => { state.subtheme = ev.target.value; applyFilters(); });
-
-  // Hamburger toggle (mobile): open/close filters panel
-  const toggleBtn = document.getElementById("filters-toggle");
-  const headerEl = document.querySelector(".site-header");
-  const panelEl = document.getElementById("filters-panel");
-  if (toggleBtn && headerEl && panelEl) {
-    toggleBtn.addEventListener("click", () => {
-      const open = !headerEl.classList.contains("filters-open");
-      headerEl.classList.toggle("filters-open", open);
-      toggleBtn.setAttribute("aria-expanded", String(open));
-    });
-
-    // Close panel when resizing to desktop
-    const mq = window.matchMedia("(min-width: 641px)");
-    const onChange = (e) => {
-      if (e.matches) {
-        headerEl.classList.remove("filters-open");
-        toggleBtn.setAttribute("aria-expanded", "false");
-      }
-    };
-    if (typeof mq.addEventListener === "function") mq.addEventListener("change", onChange);
-    else if (typeof mq.addListener === "function") mq.addListener(onChange);
-  }
-}
-
-// 6) Article ----------------------------------------------------------------
-function renderArticleDetail(container, article) {
-  if (!article || !container) return;
-  document.title = `${article.title} - Zen Retraite`;
-  container.innerHTML = "";
-
-  const h1 = document.createElement("h1");
-  h1.textContent = article.title;
-
+function appendMeta(parent, article) {
   const meta = document.createElement("div");
   meta.className = "card-meta";
-  if (article.created_at) {
-    const time = document.createElement("time");
-    time.dateTime = article.created_at;
-    time.textContent = formatDateFR(article.created_at);
-    meta.appendChild(time);
+  const category = document.createElement("span");
+  category.textContent = article.category_label || article.theme || "Guide";
+  meta.appendChild(category);
+  if (article.subtheme) {
+    const subject = document.createElement("span");
+    subject.textContent = article.subtheme;
+    meta.appendChild(subject);
   }
-  const tags = document.createElement("span");
-  tags.textContent = `${article.theme} - ${article.subtheme}`;
-  meta.appendChild(tags);
+  parent.appendChild(meta);
+}
 
-  const body = document.createElement("div");
-  body.className = "article-body";
-  body.innerHTML = article.content;
-
-  container.appendChild(h1);
-  container.appendChild(meta);
-
+function buildCard(article, index) {
+  const card = document.createElement("article");
+  card.className = "card";
+  card.style.animationDelay = `${Math.min(index, 8) * 0.05}s`;
   if (article.image) {
-    const img = document.createElement("img");
-    img.alt = article.title;
-    img.dataset.src = article.image;
-    img.src = article.image;
-    observeImage(img);
-    container.appendChild(img);
+    const image = document.createElement("img");
+    image.src = article.image;
+    image.alt = article.image_alt || "";
+    image.loading = "lazy";
+    image.addEventListener("error", () => { image.remove(); card.classList.add("card-without-image"); }, { once: true });
+    card.appendChild(image);
+  } else {
+    card.classList.add("card-without-image");
   }
-
-  container.appendChild(body);
+  const content = document.createElement("div");
+  content.className = "card-content";
+  appendMeta(content, article);
+  const title = document.createElement("h3");
+  title.className = "card-title";
+  title.textContent = article.title || "Guide Zen Retraite";
+  const excerpt = document.createElement("p");
+  excerpt.className = "card-excerpt";
+  excerpt.textContent = article.excerpt || "";
+  const link = document.createElement("a");
+  link.href = article.url || articlePath(article.id);
+  link.textContent = "Lire le guide";
+  content.append( title, excerpt, link );
+  card.appendChild(content);
+  return card;
 }
 
-async function initArticle() {
-  const container = document.getElementById("article-detail");
-  if (!container) return;
-
-  const inline = readInlineJson("zr-article-data");
-  if (inline && inline.id) {
-    renderArticleDetail(container, inline);
-    return;
-  }
-
-  const params = new URLSearchParams(location.search);
-  const id = params.get("id");
-  if (!id) { container.innerHTML = '<p class="empty-state">Article introuvable.</p>'; return; }
-
-  try {
-    const article = await fetchJson(`./data/articles/${id}.json`);
-    renderArticleDetail(container, { ...article, url: articlePath(article.id) });
-  } catch (e) {
-    console.error(e);
-    container.innerHTML = '<p class="empty-state">Impossible de charger cet article.</p>';
-  }
+function fillSelect(select, values, placeholder) {
+  if (!select) return;
+  const selected = select.value;
+  select.replaceChildren();
+  const empty = new Option(placeholder, "");
+  select.add(empty);
+  values.forEach((value) => select.add(new Option(value.label || value, value.value || value)));
+  select.value = [...select.options].some((option) => option.value === selected) ? selected : "";
 }
 
-// 7) Archives ---------------------------------------------------------------
-async function initArchive() {
-  const list = document.getElementById('archive-list');
-  if (!list) return;
-  const empty = document.getElementById('archive-empty');
+function initHome() {
+  const grid = document.getElementById("articles-grid");
+  const data = readInlineJson("zr-home-data");
+  if (!grid || !Array.isArray(data?.articles)) return;
+  const empty = document.getElementById("empty-state");
+  const status = document.getElementById("catalogue-status");
+  const search = document.getElementById("search-input");
+  const categorySelect = document.getElementById("theme-filter");
+  const subjectSelect = document.getElementById("subtheme-filter");
+  const loadMore = document.getElementById("load-more");
+  const articles = sortByPublicationDate(data.articles.filter(Boolean).map((article) => ({ ...article, url: article.url || articlePath(article.id), excerpt: article.excerpt || "" })));
+  const state = { query: "", category: "", subject: "", visible: PAGE_SIZE };
 
-  function renderEntries(entries) {
-    list.innerHTML = '';
-    if (!entries.length) { empty.hidden = false; return; }
-    empty.hidden = true;
+  const categories = [...new Map(articles.filter((article) => article.category).map((article) => [article.category, article.category_label || article.category])).entries()]
+    .sort((a, b) => a[1].localeCompare(b[1], "fr"))
+    .map(([value, label]) => ({ value, label }));
+  fillSelect(categorySelect, categories, "Toutes les catégories");
 
-    const sorted = [...entries].sort((a, b) => {
-      const da = a.created_at ? new Date(a.created_at).getTime() : 0;
-      const db = b.created_at ? new Date(b.created_at).getTime() : 0;
-      if (db !== da) return db - da;
-      return String(b.id).localeCompare(String(a.id), 'fr');
-    });
+  function updateSubjects() {
+    const values = [...new Set(articles.filter((article) => !state.category || article.category === state.category).map((article) => article.subtheme).filter(Boolean))]
+      .sort((a, b) => a.localeCompare(b, "fr"));
+    fillSelect(subjectSelect, values, "Tous les sujets");
+    if (state.subject && !values.includes(state.subject)) state.subject = "";
+  }
 
-    sorted.forEach((item) => {
-      const li = document.createElement('li');
-      const left = document.createElement('div');
-      left.textContent = item.title || `Article ${item.id}`;
-      const right = document.createElement('div');
-      if (item.created_at) {
-        const t = document.createElement('time');
-        t.dateTime = item.created_at;
-        t.textContent = formatDateFR(item.created_at);
-        right.appendChild(t);
-      }
-      const a = document.createElement('a');
-      a.href = item.url || articlePath(item.id);
-      a.textContent = 'Lire';
-      right.appendChild(a);
-      li.appendChild(left);
-      li.appendChild(right);
-      list.appendChild(li);
+  function filteredArticles() {
+    const query = normalized(state.query);
+    return articles.filter((article) => {
+      const haystack = normalized(`${article.title} ${article.excerpt} ${article.theme} ${article.subtheme} ${article.category_label}`);
+      return (!state.category || article.category === state.category) && (!state.subject || article.subtheme === state.subject) && (!query || haystack.includes(query));
     });
   }
 
-  const inline = readInlineJson('zr-archive-data');
-  if (inline && Array.isArray(inline.entries) && inline.entries.length) {
-    renderEntries(structuredClone(inline.entries));
-    return;
+  function render() {
+    const filtered = filteredArticles();
+    const visible = filtered.slice(0, state.visible);
+    grid.replaceChildren(...visible.map(buildCard));
+    grid.dataset.state = "ready";
+    if (empty) empty.hidden = visible.length > 0;
+    if (status) status.textContent = filtered.length === articles.length && state.visible <= PAGE_SIZE
+      ? `${visible.length} publications récentes affichées.`
+      : `${filtered.length} guide${filtered.length > 1 ? "s" : ""} trouvé${filtered.length > 1 ? "s" : ""}, ${visible.length} affiché${visible.length > 1 ? "s" : ""}.`;
+    if (loadMore) loadMore.hidden = visible.length >= filtered.length;
   }
 
-  try {
-    const data = await fetchJson('./data/archive.json');
-    let entriesRaw = Array.isArray(data) ? data : (Array.isArray(data.articles) ? data.articles : []);
-    if (!entriesRaw.length) { empty.hidden = false; return; }
-    let entries = [];
-    if (typeof entriesRaw[0] === 'string') {
-      const ids = entriesRaw;
-      const loaded = await Promise.all(ids.map(async (id) => {
-        try {
-          const a = await fetchJson(`./data/articles/${id}.json`);
-          return { id, title: a.title, created_at: a.created_at };
-        } catch (e) {
-          console.warn('Archive ignorée', id, e);
-          return { id };
-        }
-      }));
-      entries = loaded.filter(Boolean);
-    } else {
-      entries = entriesRaw.filter(Boolean);
-    }
-
-    entries = entries.map(item => ({ ...item, url: articlePath(item.id) }));
-    renderEntries(entries);
-  } catch (e) {
-    console.error(e);
-    empty.hidden = false;
-    empty.textContent = 'Impossible de charger les archives.';
-  }
+  search?.addEventListener("input", (event) => { state.query = event.target.value; state.visible = PAGE_SIZE; render(); });
+  categorySelect?.addEventListener("change", (event) => { state.category = event.target.value; state.visible = PAGE_SIZE; updateSubjects(); render(); });
+  subjectSelect?.addEventListener("change", (event) => { state.subject = event.target.value; state.visible = PAGE_SIZE; render(); });
+  loadMore?.addEventListener("click", () => { state.visible += PAGE_SIZE; render(); });
+  updateSubjects();
+  render();
 }
-// Point d’entrée – selon la page courante
+
+function initArchive() {
+  const list = document.getElementById("archive-list");
+  const data = readInlineJson("zr-archive-data");
+  if (!list || !Array.isArray(data?.entries)) return;
+  const search = document.getElementById("archive-search");
+  const categorySelect = document.getElementById("archive-theme");
+  const empty = document.getElementById("archive-empty");
+  const status = document.getElementById("archive-status");
+  const entries = sortByPublicationDate(data.entries.filter(Boolean));
+  const requestedCategory = new URLSearchParams(location.search).get("theme") || "";
+  const state = { query: "", category: requestedCategory };
+  const labels = { maison: "Maison et quotidien", budget: "Budget et démarches", numerique_pratique: "Numérique pratique", bien_etre: "Bien-être et loisirs" };
+  fillSelect(categorySelect, [...new Set(entries.map((entry) => entry.category).filter(Boolean))].sort().map((value) => ({ value, label: labels[value] || value })), "Toutes les catégories");
+  categorySelect.value = [...categorySelect.options].some((option) => option.value === requestedCategory) ? requestedCategory : "";
+  state.category = categorySelect.value;
+
+  function render() {
+    const query = normalized(state.query);
+    const filtered = entries.filter((entry) => (!state.category || entry.category === state.category) && (!query || normalized(`${entry.title} ${entry.category}`).includes(query)));
+    list.replaceChildren(...filtered.map((entry) => {
+      const item = document.createElement("li");
+      const title = document.createElement("div");
+      const label = document.createElement("p");
+      label.className = "archive-category";
+      label.textContent = labels[entry.category] || "Guide";
+      const heading = document.createElement("h2");
+      const link = document.createElement("a");
+      link.href = entry.url || articlePath(entry.id);
+      link.textContent = entry.title || `Article ${entry.id}`;
+      heading.appendChild(link);
+      title.append(label, heading);
+      const details = document.createElement("div");
+      if (entry.created_at) { const date = document.createElement("time"); date.dateTime = entry.created_at; date.textContent = formatDateFR(entry.created_at); details.appendChild(date); }
+      const read = document.createElement("a"); read.href = entry.url || articlePath(entry.id); read.textContent = "Lire"; details.appendChild(read);
+      item.append(title, details);
+      return item;
+    }));
+    if (empty) empty.hidden = filtered.length > 0;
+    if (status) status.textContent = `${filtered.length} guide${filtered.length > 1 ? "s" : ""} disponible${filtered.length > 1 ? "s" : ""}.`;
+  }
+  search?.addEventListener("input", (event) => { state.query = event.target.value; render(); });
+  categorySelect?.addEventListener("change", (event) => { state.category = event.target.value; render(); });
+  render();
+}
+
 initThemeToggle();
 if (PAGE === "home") initHome();
-else if (PAGE === "article") initArticle();
-else if (PAGE === "archive") initArchive();
+if (PAGE === "archive") initArchive();
