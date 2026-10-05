@@ -260,7 +260,7 @@ function buildArchiveItem(entry) {
 </li>`.trim();
 }
 
-async function buildHome(template, articles) {
+async function buildHome(template, articles, archiveCount) {
   const cards = articles.map(buildCard).join("\n");
   const listData = articles.map((article) => ({
     id: article.id,
@@ -276,6 +276,8 @@ async function buildHome(template, articles) {
   const replacements = {
     HOME_ARTICLE_LIST: cards,
     HOME_EMPTY_STATE_ATTR: articles.length ? "hidden" : "",
+    HOME_ARCHIVE_LINK_ATTR: archiveCount ? "" : "hidden",
+    HOME_ARCHIVE_COUNT: String(archiveCount),
     HOME_DATA_SCRIPT: `<script id="zr-home-data" type="application/json">${safeJson({ articles: listData })}</script>`,
   };
 
@@ -292,6 +294,7 @@ async function buildArchive(template, entries) {
   const replacements = {
     ARCHIVE_LIST: listHtml,
     ARCHIVE_EMPTY_STATE_ATTR: entries.length ? "hidden" : "",
+    ARCHIVE_COUNT: String(entries.length),
     ARCHIVE_DATA_SCRIPT: `<script id="zr-archive-data" type="application/json">${safeJson({ entries })}</script>`,
   };
   replacements.SITE_URL = htmlEscape(SITE_URL);
@@ -486,33 +489,44 @@ async function buildSitemap(articles, homeNewestDate, archiveNewestDate) {
   console.log("[build] sitemap.xml mis à jour.");
 }
 
-async function loadArchiveEntries(articleMap) {
+async function loadArchiveEntries(articleMap, homeIds) {
+  const archiveEntries = new Map();
+
+  // The archive is a complete index of every published article except those
+  // shown on the home page. archive.json can still supply labels for existing
+  // entries, but it is never the sole source of archive coverage.
+  const addEntry = (entry) => {
+    const id = typeof entry === "string" ? entry : typeof entry?.id === "string" ? entry.id : "";
+    const normalizedId = id.trim();
+    if (!normalizedId || homeIds.has(normalizedId)) return;
+
+    const article = articleMap.get(normalizedId);
+    if (!article) {
+      console.warn(`[build] Article inconnu ignoré dans les archives: ${normalizedId}`);
+      return;
+    }
+    if (archiveEntries.has(normalizedId)) return;
+
+    archiveEntries.set(normalizedId, {
+      id: normalizedId,
+      title: typeof entry === "object" && entry?.title ? entry.title : article.title || null,
+      created_at: typeof entry === "object" && entry?.created_at ? entry.created_at : article.created_at || null,
+    });
+  };
+
   try {
     const raw = await readJson(archiveDataPath);
     const source = Array.isArray(raw) ? raw : Array.isArray(raw.articles) ? raw.articles : [];
-    return source
-      .map((entry) => {
-        if (typeof entry === "string") {
-          const article = articleMap.get(entry);
-          return {
-            id: entry,
-            title: article?.title || null,
-            created_at: article?.created_at || null,
-          };
-        }
-        if (!entry || !entry.id) return null;
-        const article = articleMap.get(entry.id);
-        return {
-          id: entry.id,
-          title: entry.title || article?.title || null,
-          created_at: entry.created_at || article?.created_at || null,
-        };
-      })
-      .filter(Boolean);
+    source.forEach(addEntry);
   } catch (error) {
     console.warn("[build] Impossible de lire archive.json :", error.message);
-    return [];
   }
+
+  // A new synchronisation may replace archive.json. Add every non-home article
+  // from the authoritative article collection so old URLs keep an internal path
+  // from the public archive without adding duplicate cards to the home page.
+  articleMap.forEach((article) => addEntry(article));
+  return [...archiveEntries.values()];
 }
 
 async function main() {
@@ -542,7 +556,8 @@ async function main() {
       .filter(Boolean)
   );
 
-  const archiveEntriesRaw = await loadArchiveEntries(articleMap);
+  const homeIdSet = new Set(homeArticles.map((article) => article.id));
+  const archiveEntriesRaw = await loadArchiveEntries(articleMap, homeIdSet);
   const archiveEntries = sortByDateDesc(
     archiveEntriesRaw.map((entry) => ({
       ...entry,
@@ -550,7 +565,7 @@ async function main() {
     }))
   );
 
-  await buildHome(homeTemplate, homeArticles);
+  await buildHome(homeTemplate, homeArticles, archiveEntries.length);
   await buildArchive(archiveTemplate, archiveEntries);
   await buildArticles(articleTemplate, sortByDateDesc(articles));
   await buildSitemap(
