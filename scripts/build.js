@@ -266,6 +266,10 @@ function sortByDateDesc(items) {
   });
 }
 
+function articlePath(id) {
+  return `/articles/${encodeURIComponent(String(id))}/`;
+}
+
 function buildCard(article, index) {
   const delay = (index * 0.06).toFixed(2);
   const imageHtml = article.image
@@ -273,7 +277,7 @@ function buildCard(article, index) {
     : "";
   const theme = displayTheme(article.theme);
   const subtheme = article.subtheme || "Découverte";
-  const href = `./articles/${htmlEscape(article.id)}/index.html`;
+  const href = htmlEscape(articlePath(article.id));
   return `
 <article class="card" style="animation-delay: ${delay}s">
 ${imageHtml}
@@ -293,7 +297,7 @@ function buildArchiveItem(entry) {
   const timeBlock = dateIso
     ? `<time dateTime="${htmlEscape(dateIso)}">${htmlEscape(dateHuman)}</time>`
     : "";
-  const href = entry.url || `./articles/${htmlEscape(entry.id)}/index.html`;
+  const href = entry.url || articlePath(entry.id);
   return `
 <li>
   <div>${htmlEscape(title)}</div>
@@ -314,7 +318,7 @@ async function buildHome(template, articles, archiveCount) {
     subtheme: article.subtheme,
     image: article.image,
     created_at: article.created_at,
-    url: `./articles/${article.id}/index.html`,
+    url: articlePath(article.id),
   }));
 
   const replacements = {
@@ -421,7 +425,7 @@ function relatedArticles(article, articles, limit = 3) {
 
 function relatedArticlesBlock(article, articles) {
   const links = relatedArticles(article, articles).map((candidate) =>
-    "<li><a href='../" + htmlEscape(candidate.id) + "/index.html'>" + htmlEscape(candidate.title) + "</a></li>"
+    "<li><a href='" + htmlEscape(articlePath(candidate.id)) + "'>" + htmlEscape(candidate.title) + "</a></li>"
   );
   if (!links.length) {
     return "<section class='related-articles' aria-labelledby='related-articles-title'><h2 id='related-articles-title'>Continuer votre lecture</h2><p>Explorez les guides classés par date dans les <a href='../../archive.html'>archives</a>.</p></section>";
@@ -663,7 +667,7 @@ async function main() {
   const archiveEntries = sortByDateDesc(
     archiveEntriesRaw.map((entry) => ({
       ...entry,
-      url: `./articles/${entry.id}/index.html`,
+      url: articlePath(entry.id),
     }))
   );
 
@@ -688,4 +692,4 @@ if (process.argv[1] && path.resolve(process.argv[1]) === __filename) {
   });
 }
 
-export { keyTakeaways, relatedArticles, structuredDate };
+export { keyTakeaways, relatedArticles, relatedArticlesBlock, structuredDate };
