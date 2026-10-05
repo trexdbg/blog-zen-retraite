@@ -46,7 +46,12 @@
   "editorial_revision": {
     "method": "manual_edit_by_assistant",
     "date_utc": "2026-10-04",
-    "notes": "Révision éditoriale de clarté et de prudence : méthode par petits lots, distinction entre synchronisation et copie indépendante, critères de choix sans recommandation commerciale et deux sources publiques primaires dans la version initiale. Correction de l’encadré d’affiliation : référence remplacée par le Seagate Basic 2 To après contrôle documentaire de la fiche fabricant et de la page de référence Amazon.fr ; la disponibilité de la livraison reste à vérifier pour l’adresse de l’acheteur."
+    "notes": "Révision éditoriale de clarté et de prudence : méthode par petits lots, distinction entre synchronisation et copie indépendante, critères de choix sans recommandation commerciale et deux sources publiques primaires dans la version initiale. Correction de l’encadré d’affiliation : référence remplacée par le Seagate Basic 2 To après contrôle documentaire de la fiche fabricant et de la page de référence Amazon.fr ; la disponibilité de la livraison reste à vérifier pour l’adresse de l’acheteur.",
+    "summary_revision": {
+      "method": "manual_edit_by_assistant",
+      "revised_at": "2026-10-05T06:02:02.2166813Z",
+      "notes": "Ajout de trois points clés fidèles au guide, sans modification de son contenu, de ses sources, de son image ou de son lien affilié."
+    }
   },
   "image_status": "available",
   "image_alt": "Une femme trie ses photos sur un ordinateur portable, avec un disque externe pour les sauvegarder.",
@@ -59,5 +64,10 @@
     "generated_at": "2026-10-04",
     "purpose": "Illustration éditoriale fictive, sans représentation d’un produit recommandé."
   },
-  "updated_at": "2026-10-04T20:20:54.903Z"
+  "updated_at": "2026-10-05T06:02:02.2166813Z",
+  "key_takeaways": [
+    "Classez les photos par petites séances, en dossiers par année puis événement ou mois, et gardez les choix incertains dans « À revoir ».",
+    "Conservez plusieurs copies indépendantes : ordinateur, support externe débranché et, si vous le choisissez, copie en ligne.",
+    "Vérifiez chaque copie en ouvrant plusieurs fichiers et testez aussi un téléchargement ou une restauration avant de considérer la sauvegarde fiable."
+  ]
 }

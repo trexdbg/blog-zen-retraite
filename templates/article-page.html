@@ -40,6 +40,11 @@
 <span class="brand-mark">Zen</span>
 <span class="brand-text">Retraite</span>
 </a>
+<nav class="site-nav" aria-label="Navigation principale">
+<a href="../../index.html">Accueil</a>
+<a href="../../archive.html">Archives</a>
+<a href="../../a-propos.html">À propos</a>
+</nav>
 <button id="theme-toggle" class="theme-toggle" aria-label="Basculer le mode jour/nuit" title="Basculer le mode jour/nuit">☀️/🌙</button>
 </header>
 <main class="content">
@@ -47,9 +52,11 @@
 <h1>{{ARTICLE_TITLE}}</h1>
 <div class="card-meta">
 <time dateTime="{{ARTICLE_PUBLISHED_ISO}}">{{ARTICLE_PUBLISHED_HUMAN}}</time>
+{{ARTICLE_UPDATED_BLOCK}}
 <span>{{ARTICLE_THEME}} – {{ARTICLE_SUBTHEME}}</span>
 </div>
 {{ARTICLE_IMAGE_BLOCK}}
+{{ARTICLE_KEY_TAKEAWAYS}}
 <p class="affiliate-disclosure article-disclosure">{{AFFILIATE_DISCLOSURE}}</p>
 <div class="article-body">
 {{ARTICLE_CONTENT}}
@@ -59,11 +66,13 @@
 </article>
 <div class="article-actions">
 <a class="back-link" href="../../index.html">← Retour à l’accueil</a>
+<a class="article-method-link" href="../../a-propos.html">Notre méthode éditoriale</a>
 </div>
 </main>
 <footer class="site-footer">
 <nav class="footer-nav">
 <a href="../../archive.html">Archives</a>
+<a href="../../a-propos.html">À propos</a>
 </nav>
 <p>&copy; <span id="current-year"></span> Zen Retraite. Tous droits réservés.</p>
 <p class="affiliate-disclosure">{{AFFILIATE_DISCLOSURE}}</p>
