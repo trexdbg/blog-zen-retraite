@@ -42,6 +42,7 @@ const FEATURED_GUIDES = [
   "2026-10-04_07-56_gestion-des-photos_photos-souvenirs-famille",
   "2025-11-30_11-29_mode-l-gance_mode-l-gance-chic",
 ];
+const HERO_GUIDE_ID = "2026-10-04_07-56_gestion-des-photos_photos-souvenirs-famille";
 
 function normalizeTheme(value) {
   return String(value || "")
@@ -118,6 +119,17 @@ function normalizeImageDimension(value) {
 
 function articleImageAlt(article) {
   return article.image_alt || article.title || "Illustration de l'article";
+}
+
+function localSiteImageUrl(value) {
+  if (!value) return "";
+  try {
+    const imageUrl = new URL(value);
+    if (imageUrl.origin === SITE_URL) return `${imageUrl.pathname}${imageUrl.search}`;
+  } catch {
+    // An invalid image URL is handled by the existing card/article safeguards.
+  }
+  return value;
 }
 
 function imageDimensionAttributes(article) {
@@ -355,11 +367,15 @@ async function buildHome(template, articles, archiveCount) {
 
   const articleMap = new Map(articles.map((article) => [article.id, article]));
   const guideCards = FEATURED_GUIDES.map((id) => articleMap.get(id)).filter(Boolean);
+  const heroGuide = guideCards.find((article) => article.id === HERO_GUIDE_ID && article.image) || guideCards.find((article) => article.image) || sortedArticles.find((article) => article.image);
   const buildGuide = (article, prominent) => {
     const href = htmlEscape(articlePath(article.id));
     const className = prominent ? "guide-card guide-card-featured" : "guide-link";
     return `<article class="${className}"><p class="eyebrow">${htmlEscape(displayCategory(article))}</p><h3><a href="${href}">${htmlEscape(article.title)}</a></h3><p>${htmlEscape(article.excerpt || "")}</p></article>`;
   };
+  const heroFeature = heroGuide
+    ? `<a class="hero-feature" href="${htmlEscape(articlePath(heroGuide.id))}" aria-label="Lire le guide : ${htmlEscape(heroGuide.title)}"><img src="${htmlEscape(localSiteImageUrl(heroGuide.image))}" alt="${htmlEscape(articleImageAlt(heroGuide))}" fetchpriority="high"${imageDimensionAttributes(heroGuide)}><span class="hero-feature-label">Guide à découvrir</span><strong>${htmlEscape(heroGuide.title)}</strong><span class="hero-feature-link">Lire le guide <span aria-hidden="true">→</span></span></a>`
+    : "";
   const themeLinks = Object.entries(CATEGORY_LABELS)
     .filter(([key]) => articles.some((article) => articleCategory(article) === key))
     .map(([key, label]) => `<a class="theme-link" href="./archive.html?theme=${encodeURIComponent(key)}">${htmlEscape(label)}<span aria-hidden="true">→</span></a>`)
@@ -373,6 +389,7 @@ async function buildHome(template, articles, archiveCount) {
     HOME_ARCHIVE_COUNT: String(archiveCount),
     HOME_FEATURED_GUIDES: guideCards.slice(0, 3).map((article) => buildGuide(article, true)).join("\n"),
     HOME_MORE_GUIDES: guideCards.slice(3).map((article) => buildGuide(article, false)).join("\n"),
+    HOME_HERO_FEATURE: heroFeature,
     HOME_THEME_LINKS: themeLinks,
     HOME_DATA_SCRIPT: `<script id="zr-home-data" type="application/json">${safeJson({ articles: listData })}</script>`,
   };
