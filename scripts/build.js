@@ -13,7 +13,7 @@ const templatesDir = path.join(rootDir, "templates");
 const distDir = path.join(rootDir, "dist");
 const articlesOutputDir = path.join(distDir, "articles");
 const STATIC_FILES = ["style.css", "script.js", "favicon.png", "robots.txt", "CNAME", "article.html"];
-const STATIC_DIRECTORIES = ["assets"];
+const STATIC_DIRECTORIES = ["assets", "data/images"];
 
 const SITE_URL = (process.env.SITE_URL || "https://zen-retraite.fr").replace(/\/+$/, "");
 const DATE_FORMATTER = new Intl.DateTimeFormat("fr-FR", { year: "numeric", month: "long", day: "numeric" });
