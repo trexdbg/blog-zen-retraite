@@ -66,8 +66,8 @@ test("content cleanup preserves Amazon URLs while deduplicating the disclosure",
   const input = '<p>Information d’affiliation : En tant que Partenaire Amazon, je réalise un bénéfice sur les achats remplissant les conditions requises.</p><p><a href="https://www.amazon.fr/dp/B081VJ79QZ?tag=example-21" rel="nofollow sponsored">Disque dur (lien affilié)</a></p>';
   const cleaned = cleanArticleContent(input);
   assert.doesNotMatch(cleaned, /Partenaire Amazon/);
-  assert.doesNotMatch(cleaned, /\\(lien affilié\\)/);
-  assert.match(cleaned, /https:\/\/www\\.amazon\\.fr\/dp\/B081VJ79QZ\\?tag=example-21/);
+  assert.doesNotMatch(cleaned, /\(lien affilié\)/);
+  assert.match(cleaned, /https:\/\/www\.amazon\.fr\/dp\/B081VJ79QZ\?tag=example-21/);
   assert.match(cleaned, /rel="nofollow sponsored"/);
 });
 
@@ -133,9 +133,9 @@ test("static build preserves every archived article and adds the about page to t
   assert.equal(JSON.parse(jsonLd[1]).dateModified, structuredDate(source.updated_at) || structuredDate(source.created_at));
   if (structuredDate(source.updated_at)) assert.match(article, /Mis à jour le/);
   assert.equal((article.match(/En tant que Partenaire Amazon/g) || []).length, 1, "affiliate notice should appear once per article");
-  assert.match(article, /<script type="application\\/ld\\+json">[\\s\\S]*?"citation":\\[/);
+  assert.match(article, /<script type="application\/ld\+json">[\s\S]*?"citation":\[/);
   assert.match(article, /"@type":"BreadcrumbList"/);
-  assert.match(article, /https:\/\/www\\.amazon\\.fr\/dp\/B081VJ79QZ/);
+  assert.match(article, /https:\/\/www\.amazon\.fr\/dp\/B081VJ79QZ/);
   const legacyId = "2025-11-20_18-46_technologie-confort-autonomie_maison-connect-e-sant";
   const legacy = await readFile(path.join(rootDir, "dist", "articles", legacyId, "index.html"), "utf8");
   assert.match(legacy, /<h2 id='key-takeaways-title'>/);
