@@ -310,6 +310,15 @@ function articlePath(id) {
   return `/articles/${encodeURIComponent(String(id))}/`;
 }
 
+// Keep historical URLs working, but don't surface editorially replaced guides
+// as competing entries in the public catalogue or the XML sitemap.
+function isSuperseded(article, allArticles) {
+  const target = article?.superseded_by;
+  return typeof target === "string"
+    && target !== article.id
+    && allArticles.some((candidate) => candidate.id === target && !candidate.superseded_by);
+}
+
 function buildCard(article, index) {
   const delay = (index * 0.06).toFixed(2);
   const imageHtml = article.image
@@ -506,7 +515,7 @@ function relatedArticles(article, articles, limit = 3) {
   const terms = topicTerms(article);
   const seen = new Set([article.id]);
   return articles
-    .filter((candidate) => candidate.id !== article.id)
+    .filter((candidate) => candidate.id !== article.id && !isSuperseded(candidate, articles))
     .map((candidate) => {
       if (seen.has(candidate.id)) return null;
       seen.add(candidate.id);
@@ -625,7 +634,8 @@ async function buildArticles(template, articles) {
     const dir = path.join(articlesOutputDir, article.id);
     await fs.mkdir(dir, { recursive: true });
     const canonicalPath = `/articles/${article.id}/`;
-    const canonicalUrl = `${SITE_URL}${canonicalPath}`;
+    const preferredId = isSuperseded(article, articles) ? article.superseded_by : article.id;
+    const canonicalUrl = `${SITE_URL}${articlePath(preferredId)}`;
     const description = metaDescription(article.excerpt);
     const publishedDate = structuredDate(article.created_at);
     const updatedDate = structuredDate(article.updated_at);
@@ -652,6 +662,9 @@ async function buildArticles(template, articles) {
       ARTICLE_IMAGE_BLOCK: articleImageBlock(article),
       ARTICLE_CONTENT: renderedContent.html,
       ARTICLE_TOC: renderedContent.toc,
+      ARTICLE_REVISION_NOTICE: preferredId !== article.id
+        ? `<p class="article-note">Une version plus récente de ce guide est disponible : <a href="${htmlEscape(articlePath(preferredId))}">lire le guide actualisé</a>.</p>`
+        : "",
       ARTICLE_DATA_SCRIPT: `<script id="zr-article-data" type="application/json">${safeJson({
         id: article.id,
         title: article.title,
@@ -796,7 +809,8 @@ async function main() {
 
   await prepareDist();
 
-  const articleMap = new Map(articles.map((article) => [article.id, article]));
+  const publishedArticles = sortByDateDesc(articles.filter((article) => !isSuperseded(article, articles)));
+  const articleMap = new Map(publishedArticles.map((article) => [article.id, article]));
   const homeArticles = sortByDateDesc(
     (indexIds || [])
       .map((id) => {
@@ -819,12 +833,12 @@ async function main() {
 
   // index.json only controls the archive split. The home catalogue is built
   // from every published article so a visitor can search the whole site.
-  await buildHome(homeTemplate, sortByDateDesc(articles), archiveEntries.length);
+  await buildHome(homeTemplate, publishedArticles, archiveEntries.length);
   await buildArchive(archiveTemplate, archiveEntries);
   await buildArticles(articleTemplate, sortByDateDesc(articles));
   await buildAbout(aboutTemplate);
   await buildSitemap(
-    sortByDateDesc(articles),
+    publishedArticles,
     toDateStamp(homeArticles[0]?.created_at),
     toDateStamp(archiveEntries[0]?.created_at)
   );
