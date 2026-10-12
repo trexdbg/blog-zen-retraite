@@ -63,7 +63,7 @@ test("table of contents only annotates h2 headings with collision-proof anchors"
 });
 
 test("content cleanup preserves Amazon URLs while deduplicating the disclosure", () => {
-  const input = '<p>Information d’affiliation : En tant que Partenaire Amazon, je réalise un bénéfice sur les achats remplissant les conditions requises.</p><p><a href="https://www.amazon.fr/dp/B081VJ79QZ?tag=example-21" rel="nofollow sponsored">Disque dur (lien affilié)</a></p>';
+  const input = '<aside class="affiliate-disclosure"><p><strong>Information d’affiliation :</strong> En tant que Partenaire Amazon, je réalise un bénéfice sur les achats remplissant les conditions requises.</p></aside><p><a href="https://www.amazon.fr/dp/B081VJ79QZ?tag=example-21" rel="nofollow sponsored">Disque dur (lien affilié)</a></p>';
   const cleaned = cleanArticleContent(input);
   assert.doesNotMatch(cleaned, /Partenaire Amazon/);
   assert.doesNotMatch(cleaned, /\(lien affilié\)/);
