@@ -310,6 +310,15 @@ function articlePath(id) {
   return `/articles/${encodeURIComponent(String(id))}/`;
 }
 
+// Keep historical URLs working, but don't surface editorially replaced guides
+// as competing entries in the public catalogue or the XML sitemap.
+function isSuperseded(article, allArticles) {
+  const target = article?.superseded_by;
+  return typeof target === "string"
+    && target !== article.id
+    && allArticles.some((candidate) => candidate.id === target && !candidate.superseded_by);
+}
+
 function buildCard(article, index) {
   const delay = (index * 0.06).toFixed(2);
   const imageHtml = article.image
@@ -425,6 +434,16 @@ function articleImageBlock(article) {
   return `<figure class="article-image">${image}<figcaption>${htmlEscape(article.image_caption)}</figcaption></figure>`;
 }
 
+// The site-wide article notice is rendered before the body: keep disclosures
+// from older generated HTML from appearing two or three times to readers.
+function cleanArticleContent(content) {
+  if (typeof content !== "string") return "";
+  return content
+    .replace(/<aside\b[^>]*class=["'][^"']*\baffiliate-disclosure\b[^"']*["'][^>]*>[\s\S]*?<\/aside>\s*/gi, "")
+    .replace(/<p(?:\s[^>]*)?>\s*(?:Information d[’']affiliation\s*:\s*)?En tant que Partenaire Amazon, je réalise un bénéfice sur les achats remplissant les conditions requises\.\s*(?:Certains liens peuvent être affiliés, sans surcoût pour vous\.)?\s*<\/p>\s*/gi, "")
+    .replace(/\s*\(lien affilié\)(?=\s*<\/a>)/gi, "");
+}
+
 function structuredData(article, canonicalUrl, description) {
   const payload = {
     "@context": "https://schema.org",
@@ -433,6 +452,7 @@ function structuredData(article, canonicalUrl, description) {
     description,
     mainEntityOfPage: canonicalUrl,
     inLanguage: "fr-FR",
+    articleSection: displayCategory(article),
     isPartOf: { "@type": "WebSite", name: SITE_NAME, url: SITE_URL + "/" },
     author: { "@type": "Organization", name: SITE_NAME, url: SITE_URL + "/a-propos.html" },
     publisher: {
@@ -449,7 +469,30 @@ function structuredData(article, canonicalUrl, description) {
   if (datePublished) payload.datePublished = datePublished;
   if (dateModified) payload.dateModified = dateModified;
   if (article.image) payload.image = [article.image];
-  return `<script type="application/ld+json">${safeJson(payload)}</script>`;
+  const takeaways = keyTakeaways(article);
+  if (takeaways.length) payload.abstract = takeaways.join(" ");
+  if (Array.isArray(article.sources)) {
+    const sources = article.sources
+      .map((source) => typeof source?.url === "string" ? source.url.trim() : "")
+      .filter((url) => {
+        try {
+          const parsed = new URL(url);
+          return ["https:", "http:"].includes(parsed.protocol) && Boolean(parsed.hostname);
+        } catch { return false; }
+      });
+    if (sources.length) payload.citation = [...new Set(sources)].slice(0, 8);
+  }
+  const breadcrumb = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Accueil", item: SITE_URL + "/" },
+      { "@type": "ListItem", position: 2, name: "Guides", item: SITE_URL + "/archive.html" },
+      { "@type": "ListItem", position: 3, name: article.title, item: canonicalUrl },
+    ],
+  };
+  return `<script type="application/ld+json">${safeJson(payload)}</script>\n<script type="application/ld+json">${safeJson(breadcrumb)}</script>`;
+
 }
 
 const TOPIC_STOP_WORDS = new Set([
@@ -472,7 +515,7 @@ function relatedArticles(article, articles, limit = 3) {
   const terms = topicTerms(article);
   const seen = new Set([article.id]);
   return articles
-    .filter((candidate) => candidate.id !== article.id)
+    .filter((candidate) => candidate.id !== article.id && !isSuperseded(candidate, articles))
     .map((candidate) => {
       if (seen.has(candidate.id)) return null;
       seen.add(candidate.id);
@@ -506,7 +549,10 @@ function keyTakeaways(article) {
 
 function keyTakeawaysBlock(article) {
   const takeaways = keyTakeaways(article);
-  if (!takeaways.length) return "";
+  if (!takeaways.length) {
+    const excerpt = String(article.excerpt || "").trim();
+    return excerpt ? "<section class='key-takeaways' aria-labelledby='key-takeaways-title'><h2 id='key-takeaways-title'>En bref</h2><p>" + htmlEscape(excerpt) + "</p></section>" : "";
+  }
   return "<section class='key-takeaways' aria-labelledby='key-takeaways-title'><h2 id='key-takeaways-title'>À retenir</h2><ul>" + takeaways.map((item) => `<li>${htmlEscape(item)}</li>`).join("") + "</ul></section>";
 }
 
@@ -588,11 +634,13 @@ async function buildArticles(template, articles) {
     const dir = path.join(articlesOutputDir, article.id);
     await fs.mkdir(dir, { recursive: true });
     const canonicalPath = `/articles/${article.id}/`;
-    const canonicalUrl = `${SITE_URL}${canonicalPath}`;
+    const preferredId = isSuperseded(article, articles) ? article.superseded_by : article.id;
+    const canonicalUrl = `${SITE_URL}${articlePath(preferredId)}`;
     const description = metaDescription(article.excerpt);
     const publishedDate = structuredDate(article.created_at);
     const updatedDate = structuredDate(article.updated_at);
-    const renderedContent = articleContentWithToc(article.content);
+    const cleanedContent = cleanArticleContent(article.content);
+    const renderedContent = articleContentWithToc(cleanedContent);
     const replacements = {
       ARTICLE_TITLE: htmlEscape(article.title),
       ARTICLE_DESCRIPTION: htmlEscape(description),
@@ -614,6 +662,9 @@ async function buildArticles(template, articles) {
       ARTICLE_IMAGE_BLOCK: articleImageBlock(article),
       ARTICLE_CONTENT: renderedContent.html,
       ARTICLE_TOC: renderedContent.toc,
+      ARTICLE_REVISION_NOTICE: preferredId !== article.id
+        ? `<p class="article-note">Une version plus récente de ce guide est disponible : <a href="${htmlEscape(articlePath(preferredId))}">lire le guide actualisé</a>.</p>`
+        : "",
       ARTICLE_DATA_SCRIPT: `<script id="zr-article-data" type="application/json">${safeJson({
         id: article.id,
         title: article.title,
@@ -621,7 +672,7 @@ async function buildArticles(template, articles) {
         subtheme: article.subtheme,
         created_at: article.created_at,
         image: article.image,
-        content: article.content,
+        content: cleanedContent,
         excerpt: article.excerpt,
         url: canonicalPath,
       })}</script>`,
@@ -758,7 +809,8 @@ async function main() {
 
   await prepareDist();
 
-  const articleMap = new Map(articles.map((article) => [article.id, article]));
+  const publishedArticles = sortByDateDesc(articles.filter((article) => !isSuperseded(article, articles)));
+  const articleMap = new Map(publishedArticles.map((article) => [article.id, article]));
   const homeArticles = sortByDateDesc(
     (indexIds || [])
       .map((id) => {
@@ -781,12 +833,12 @@ async function main() {
 
   // index.json only controls the archive split. The home catalogue is built
   // from every published article so a visitor can search the whole site.
-  await buildHome(homeTemplate, sortByDateDesc(articles), archiveEntries.length);
+  await buildHome(homeTemplate, publishedArticles, archiveEntries.length);
   await buildArchive(archiveTemplate, archiveEntries);
   await buildArticles(articleTemplate, sortByDateDesc(articles));
   await buildAbout(aboutTemplate);
   await buildSitemap(
-    sortByDateDesc(articles),
+    publishedArticles,
     toDateStamp(homeArticles[0]?.created_at),
     toDateStamp(archiveEntries[0]?.created_at)
   );
@@ -802,4 +854,4 @@ if (process.argv[1] && path.resolve(process.argv[1]) === __filename) {
   });
 }
 
-export { articleContentWithToc, articleCategory, keyTakeaways, relatedArticles, relatedArticlesBlock, structuredDate };
+export { articleContentWithToc, articleCategory, cleanArticleContent, keyTakeaways, relatedArticles, relatedArticlesBlock, structuredDate };

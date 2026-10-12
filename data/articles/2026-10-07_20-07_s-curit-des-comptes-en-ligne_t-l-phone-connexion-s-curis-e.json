@@ -38,5 +38,6 @@
     "editorial_review_model": "gemini-3.5-flash"
   },
   "image_status": "unavailable",
-  "image_reason": "Aucune image candidate n'a été trouvée pour les requêtes proposées."
+  "image_reason": "Aucune image candidate n'a été trouvée pour les requêtes proposées.",
+  "superseded_by": "2026-10-11_20-28_s-curit-des-comptes-en-ligne_t-l-phone-connexion-s-curis-e"
 }
