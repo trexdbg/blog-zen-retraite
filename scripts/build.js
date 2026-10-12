@@ -436,6 +436,11 @@ function articleImageBlock(article) {
 
 // The site-wide article notice is rendered before the body: keep disclosures
 // from older generated HTML from appearing two or three times to readers.
+function hasAmazonAffiliateLinks(content) {
+  return typeof content === "string" &&
+    /<a\b[^>]*href\s*=\s*["']https:\/\/(?:www\.)?amazon\.fr\//i.test(content);
+}
+
 function cleanArticleContent(content) {
   if (typeof content !== "string") return "";
   return content
@@ -662,6 +667,9 @@ async function buildArticles(template, articles) {
       ARTICLE_IMAGE_BLOCK: articleImageBlock(article),
       ARTICLE_CONTENT: renderedContent.html,
       ARTICLE_TOC: renderedContent.toc,
+      ARTICLE_AFFILIATE_DISCLOSURE: hasAmazonAffiliateLinks(cleanedContent)
+        ? `<p class="affiliate-disclosure article-disclosure">${htmlEscape(AFFILIATE_DISCLOSURE)}</p>`
+        : "",
       ARTICLE_REVISION_NOTICE: preferredId !== article.id
         ? `<p class="article-note">Une version plus récente de ce guide est disponible : <a href="${htmlEscape(articlePath(preferredId))}">lire le guide actualisé</a>.</p>`
         : "",
@@ -854,4 +862,4 @@ if (process.argv[1] && path.resolve(process.argv[1]) === __filename) {
   });
 }
 
-export { articleContentWithToc, articleCategory, cleanArticleContent, keyTakeaways, relatedArticles, relatedArticlesBlock, structuredDate };
+export { articleContentWithToc, articleCategory, cleanArticleContent, hasAmazonAffiliateLinks, keyTakeaways, relatedArticles, relatedArticlesBlock, structuredDate };
