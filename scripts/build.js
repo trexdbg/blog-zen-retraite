@@ -425,6 +425,15 @@ function articleImageBlock(article) {
   return `<figure class="article-image">${image}<figcaption>${htmlEscape(article.image_caption)}</figcaption></figure>`;
 }
 
+// The site-wide article notice is rendered before the body: keep disclosures
+// from older generated HTML from appearing two or three times to readers.
+function cleanArticleContent(content) {
+  if (typeof content !== "string") return "";
+  return content
+    .replace(/<p(?:\\s[^>]*)?>\\s*(?:Information d[’']affiliation\\s*:\\s*)?En tant que Partenaire Amazon, je réalise un bénéfice sur les achats remplissant les conditions requises\\.\\s*(?:Certains liens peuvent être affiliés, sans surcoût pour vous\\.)?\\s*<\\/p>\\s*/gi, "")
+    .replace(/\\s*\\(lien affilié\\)(?=\\s*<\\/a>)/gi, "");
+}
+
 function structuredData(article, canonicalUrl, description) {
   const payload = {
     "@context": "https://schema.org",
@@ -433,6 +442,7 @@ function structuredData(article, canonicalUrl, description) {
     description,
     mainEntityOfPage: canonicalUrl,
     inLanguage: "fr-FR",
+    articleSection: displayCategory(article),
     isPartOf: { "@type": "WebSite", name: SITE_NAME, url: SITE_URL + "/" },
     author: { "@type": "Organization", name: SITE_NAME, url: SITE_URL + "/a-propos.html" },
     publisher: {
@@ -449,7 +459,30 @@ function structuredData(article, canonicalUrl, description) {
   if (datePublished) payload.datePublished = datePublished;
   if (dateModified) payload.dateModified = dateModified;
   if (article.image) payload.image = [article.image];
-  return `<script type="application/ld+json">${safeJson(payload)}</script>`;
+  const takeaways = keyTakeaways(article);
+  if (takeaways.length) payload.abstract = takeaways.join(" ");
+  if (Array.isArray(article.sources)) {
+    const sources = article.sources
+      .map((source) => typeof source?.url === "string" ? source.url.trim() : "")
+      .filter((url) => {
+        try {
+          const parsed = new URL(url);
+          return ["https:", "http:"].includes(parsed.protocol) && Boolean(parsed.hostname);
+        } catch { return false; }
+      });
+    if (sources.length) payload.citation = [...new Set(sources)].slice(0, 8);
+  }
+  const breadcrumb = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Accueil", item: SITE_URL + "/" },
+      { "@type": "ListItem", position: 2, name: "Guides", item: SITE_URL + "/archive.html" },
+      { "@type": "ListItem", position: 3, name: article.title, item: canonicalUrl },
+    ],
+  };
+  return `<script type="application/ld+json">${safeJson(payload)}</script>\n<script type="application/ld+json">${safeJson(breadcrumb)}</script>`;
+
 }
 
 const TOPIC_STOP_WORDS = new Set([
@@ -506,7 +539,10 @@ function keyTakeaways(article) {
 
 function keyTakeawaysBlock(article) {
   const takeaways = keyTakeaways(article);
-  if (!takeaways.length) return "";
+  if (!takeaways.length) {
+    const excerpt = String(article.excerpt || "").trim();
+    return excerpt ? "<section class='key-takeaways' aria-labelledby='key-takeaways-title'><h2 id='key-takeaways-title'>En bref</h2><p>" + htmlEscape(excerpt) + "</p></section>" : "";
+  }
   return "<section class='key-takeaways' aria-labelledby='key-takeaways-title'><h2 id='key-takeaways-title'>À retenir</h2><ul>" + takeaways.map((item) => `<li>${htmlEscape(item)}</li>`).join("") + "</ul></section>";
 }
 
@@ -592,7 +628,8 @@ async function buildArticles(template, articles) {
     const description = metaDescription(article.excerpt);
     const publishedDate = structuredDate(article.created_at);
     const updatedDate = structuredDate(article.updated_at);
-    const renderedContent = articleContentWithToc(article.content);
+    const cleanedContent = cleanArticleContent(article.content);
+    const renderedContent = articleContentWithToc(cleanedContent);
     const replacements = {
       ARTICLE_TITLE: htmlEscape(article.title),
       ARTICLE_DESCRIPTION: htmlEscape(description),
@@ -621,7 +658,7 @@ async function buildArticles(template, articles) {
         subtheme: article.subtheme,
         created_at: article.created_at,
         image: article.image,
-        content: article.content,
+        content: cleanedContent,
         excerpt: article.excerpt,
         url: canonicalPath,
       })}</script>`,
@@ -802,4 +839,4 @@ if (process.argv[1] && path.resolve(process.argv[1]) === __filename) {
   });
 }
 
-export { articleContentWithToc, articleCategory, keyTakeaways, relatedArticles, relatedArticlesBlock, structuredDate };
+export { articleContentWithToc, articleCategory, cleanArticleContent, keyTakeaways, relatedArticles, relatedArticlesBlock, structuredDate };
