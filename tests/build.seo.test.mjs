@@ -75,9 +75,12 @@ test("static build preserves every archived article and adds the about page to t
   await run(process.execPath, ["scripts/build.js"], { cwd: rootDir });
   const articlesDir = path.join(rootDir, "data", "articles");
   const articleFiles = (await readdir(articlesDir)).filter((file) => file.endsWith(".json") && file !== "index.json");
-  const articleIds = new Set(await Promise.all(articleFiles.map(async (file) => JSON.parse(await readFile(path.join(articlesDir, file), "utf8")).id)));
-  const homeIds = new Set(JSON.parse(await readFile(path.join(articlesDir, "index.json"), "utf8")));
-  const expectedArchiveIds = new Set([...articleIds].filter((id) => !homeIds.has(id)));
+  const records = await Promise.all(articleFiles.map(async (file) => JSON.parse(await readFile(path.join(articlesDir, file), "utf8"))));
+  const articleIds = new Set(records.map((record) => record.id));
+  const supersededIds = new Set(records.filter((record) => articleIds.has(record.superseded_by)).map((record) => record.id));
+  const publishedIds = new Set([...articleIds].filter((id) => !supersededIds.has(id)));
+  const homeIds = new Set(JSON.parse(await readFile(path.join(articlesDir, "index.json"), "utf8")).filter((id) => publishedIds.has(id)));
+  const expectedArchiveIds = new Set([...publishedIds].filter((id) => !homeIds.has(id)));
   const [archive, sitemap] = await Promise.all([
     readFile(path.join(rootDir, "dist", "archive.html"), "utf8"),
     readFile(path.join(rootDir, "dist", "sitemap.xml"), "utf8"),
@@ -90,7 +93,7 @@ test("static build preserves every archived article and adds the about page to t
   const homeData = home.match(/<script id="zr-home-data" type="application\/json">([\s\S]*?)<\/script>/);
   assert.ok(homeData);
   const homeArticles = JSON.parse(homeData[1]).articles;
-  assert.deepEqual(new Set(homeArticles.map((entry) => entry.id)), articleIds);
+  assert.deepEqual(new Set(homeArticles.map((entry) => entry.id)), publishedIds);
   const latestIds = [...homeArticles]
     .sort((left, right) => new Date(right.created_at).getTime() - new Date(left.created_at).getTime())
     .slice(0, 6)
@@ -113,9 +116,10 @@ test("static build preserves every archived article and adds the about page to t
   assert.doesNotMatch(home, legacyArticleHref);
   assert.doesNotMatch(archive, legacyArticleHref);
   const sitemapLocs = new Set([...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1]));
-  assert.equal(sitemapLocs.size, articleIds.size + 3);
+  assert.equal(sitemapLocs.size, publishedIds.size + 3);
   assert.match(sitemap, /https:\/\/zen-retraite\.fr\/a-propos\.html/);
-  for (const id of articleIds) assert.ok(sitemapLocs.has(`https://zen-retraite.fr/articles/${id}/`), `missing article URL: ${id}`);
+  for (const id of publishedIds) assert.ok(sitemapLocs.has(`https://zen-retraite.fr/articles/${id}/`), `missing article URL: ${id}`);
+  for (const id of supersededIds) assert.ok(!sitemapLocs.has(`https://zen-retraite.fr/articles/${id}/`));
   assert.match(sitemap, /<loc>https:\/\/zen-retraite\.fr\/a-propos\.html<\/loc>\s*<lastmod>2026-10-05<\/lastmod>/);
   const photoId = "2026-10-04_07-56_gestion-des-photos_photos-souvenirs-famille";
   const source = JSON.parse(await readFile(path.join(articlesDir, `${photoId}.json`), "utf8"));
@@ -140,5 +144,12 @@ test("static build preserves every archived article and adds the about page to t
   const legacy = await readFile(path.join(rootDir, "dist", "articles", legacyId, "index.html"), "utf8");
   assert.match(legacy, /<h2 id='key-takeaways-title'>/);
   assert.match(legacy, /"@type":"BreadcrumbList"/);
+  const olderId = "2026-10-07_20-07_s-curit-des-comptes-en-ligne_t-l-phone-connexion-s-curis-e";
+  const newerId = "2026-10-11_20-28_s-curit-des-comptes-en-ligne_t-l-phone-connexion-s-curis-e";
+  const olderHtml = await readFile(path.join(rootDir, "dist", "articles", olderId, "index.html"), "utf8");
+  assert.match(olderHtml, new RegExp('rel="canonical" href="https://zen-retraite.fr/articles/' + newerId + '/"'));
+  assert.match(olderHtml, /lire le guide actualisé/);
+  assert.ok(!homeArticles.some((article) => article.id === olderId));
+  assert.ok(!archiveEntries.some((article) => article.id === olderId));
 
 });
