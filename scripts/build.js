@@ -430,6 +430,7 @@ function articleImageBlock(article) {
 function cleanArticleContent(content) {
   if (typeof content !== "string") return "";
   return content
+    .replace(/<aside\b[^>]*class=["'][^"']*\baffiliate-disclosure\b[^"']*["'][^>]*>[\s\S]*?<\/aside>\s*/gi, "")
     .replace(/<p(?:\s[^>]*)?>\s*(?:Information d[’']affiliation\s*:\s*)?En tant que Partenaire Amazon, je réalise un bénéfice sur les achats remplissant les conditions requises\.\s*(?:Certains liens peuvent être affiliés, sans surcoût pour vous\.)?\s*<\/p>\s*/gi, "")
     .replace(/\s*\(lien affilié\)(?=\s*<\/a>)/gi, "");
 }
