@@ -4,7 +4,7 @@ import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
-import { articleContentWithToc, cleanArticleContent, keyTakeaways, relatedArticles, relatedArticlesBlock, structuredDate } from "../scripts/build.js";
+import { articleContentWithToc, cleanArticleContent, hasAmazonAffiliateLinks, keyTakeaways, relatedArticles, relatedArticlesBlock, structuredDate } from "../scripts/build.js";
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const run = (file, args, options) => new Promise((resolve, reject) => execFile(file, args, options, (error, stdout, stderr) => error ? reject(error) : resolve({ stdout, stderr })));
@@ -69,6 +69,12 @@ test("content cleanup preserves Amazon URLs while deduplicating the disclosure",
   assert.doesNotMatch(cleaned, /\(lien affilié\)/);
   assert.match(cleaned, /https:\/\/www\.amazon\.fr\/dp\/B081VJ79QZ\?tag=example-21/);
   assert.match(cleaned, /rel="nofollow sponsored"/);
+});
+
+test("affiliate notices only accompany a real Amazon link", () => {
+  assert.equal(hasAmazonAffiliateLinks('<a href="https://www.amazon.fr/dp/B081VJ79QZ?tag=example-21">Produit</a>'), true);
+  assert.equal(hasAmazonAffiliateLinks('<a href="https://www.cybermalveillance.gouv.fr/">Conseils</a>'), false);
+  assert.equal(hasAmazonAffiliateLinks('Aucun produit à acheter.'), false);
 });
 
 test("static build preserves every archived article and adds the about page to the sitemap", async () => {
@@ -144,6 +150,10 @@ test("static build preserves every archived article and adds the about page to t
   const legacy = await readFile(path.join(rootDir, "dist", "articles", legacyId, "index.html"), "utf8");
   assert.match(legacy, /<h2 id='key-takeaways-title'>/);
   assert.match(legacy, /"@type":"BreadcrumbList"/);
+  assert.equal((legacy.match(/En tant que Partenaire Amazon/g) || []).length, 0, "no disclosure for non-commercial guides");
+  assert.equal((home.match(/En tant que Partenaire Amazon/g) || []).length, 0);
+  assert.equal((archive.match(/En tant que Partenaire Amazon/g) || []).length, 0);
+
   const olderId = "2026-10-07_20-07_s-curit-des-comptes-en-ligne_t-l-phone-connexion-s-curis-e";
   const newerId = "2026-10-11_20-28_s-curit-des-comptes-en-ligne_t-l-phone-connexion-s-curis-e";
   const olderHtml = await readFile(path.join(rootDir, "dist", "articles", olderId, "index.html"), "utf8");
