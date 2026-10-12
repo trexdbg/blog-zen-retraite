@@ -4,7 +4,7 @@ import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
-import { articleContentWithToc, keyTakeaways, relatedArticles, relatedArticlesBlock, structuredDate } from "../scripts/build.js";
+import { articleContentWithToc, cleanArticleContent, keyTakeaways, relatedArticles, relatedArticlesBlock, structuredDate } from "../scripts/build.js";
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const run = (file, args, options) => new Promise((resolve, reject) => execFile(file, args, options, (error, stdout, stderr) => error ? reject(error) : resolve({ stdout, stderr })));
@@ -60,6 +60,15 @@ test("table of contents only annotates h2 headings with collision-proof anchors"
   assert.match(rendered.html, /id="choisir-son-materiel-1"/);
   assert.match(rendered.toc, /href="#choisir-son-materiel-1"/);
   assert.equal(articleContentWithToc("<h2>Un</h2><h2>Deux</h2>").toc, "");
+});
+
+test("content cleanup preserves Amazon URLs while deduplicating the disclosure", () => {
+  const input = '<p>Information d’affiliation : En tant que Partenaire Amazon, je réalise un bénéfice sur les achats remplissant les conditions requises.</p><p><a href="https://www.amazon.fr/dp/B081VJ79QZ?tag=example-21" rel="nofollow sponsored">Disque dur (lien affilié)</a></p>';
+  const cleaned = cleanArticleContent(input);
+  assert.doesNotMatch(cleaned, /Partenaire Amazon/);
+  assert.doesNotMatch(cleaned, /\\(lien affilié\\)/);
+  assert.match(cleaned, /https:\/\/www\\.amazon\\.fr\/dp\/B081VJ79QZ\\?tag=example-21/);
+  assert.match(cleaned, /rel="nofollow sponsored"/);
 });
 
 test("static build preserves every archived article and adds the about page to the sitemap", async () => {
@@ -123,4 +132,13 @@ test("static build preserves every archived article and adds the about page to t
   assert.equal(JSON.parse(jsonLd[1]).datePublished, structuredDate(source.created_at));
   assert.equal(JSON.parse(jsonLd[1]).dateModified, structuredDate(source.updated_at) || structuredDate(source.created_at));
   if (structuredDate(source.updated_at)) assert.match(article, /Mis à jour le/);
+  assert.equal((article.match(/En tant que Partenaire Amazon/g) || []).length, 1, "affiliate notice should appear once per article");
+  assert.match(article, /<script type="application\\/ld\\+json">[\\s\\S]*?"citation":\\[/);
+  assert.match(article, /"@type":"BreadcrumbList"/);
+  assert.match(article, /https:\/\/www\\.amazon\\.fr\/dp\/B081VJ79QZ/);
+  const legacyId = "2025-11-20_18-46_technologie-confort-autonomie_maison-connect-e-sant";
+  const legacy = await readFile(path.join(rootDir, "dist", "articles", legacyId, "index.html"), "utf8");
+  assert.match(legacy, /<h2 id='key-takeaways-title'>/);
+  assert.match(legacy, /"@type":"BreadcrumbList"/);
+
 });
