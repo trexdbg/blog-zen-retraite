@@ -4,6 +4,10 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+  schedule:
+    # Redeploy quotidien de secours si une synchronisation automatique
+    # de donnees ne declenche pas le push attendu.
+    - cron: '47 21 * * *'
 
 permissions:
   contents: read
