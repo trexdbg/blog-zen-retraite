@@ -162,4 +162,35 @@ test("static build preserves every archived article and adds the about page to t
   assert.ok(!homeArticles.some((article) => article.id === olderId));
   assert.ok(!archiveEntries.some((article) => article.id === olderId));
 
+  const consolidation = {
+    "2025-11-01_06-43_activit-physique-et-quipement_marche-b-tons-nature": "2025-11-06_18-46_bien-tre-et-sant-douce_marche-for-t-sport",
+    "2025-10-30_21-45_bien-tre-et-sant-douce_marche-nature-saine": "2025-11-06_18-46_bien-tre-et-sant-douce_marche-for-t-sport",
+    "2025-10-30_21-37_bien-tre-et-sant-douce_sport-nature-active": "2025-11-06_18-46_bien-tre-et-sant-douce_marche-for-t-sport",
+    "2025-10-31_09-28_d-coration-int-rieure-automne_maison-chaleureuse-automne": "2025-11-05_15-00_d-coration-int-rieure-et-confort_int-rieur-cosy-automne",
+    "2025-10-30_22-16_d-coration-int-rieure_int-rieur-chaleureux-lumi-re": "2025-11-05_15-00_d-coration-int-rieure-et-confort_int-rieur-cosy-automne",
+  };
+  for (const [oldId, canonicalId] of Object.entries(consolidation)) {
+    const html = await readFile(path.join(rootDir, "dist", "articles", oldId, "index.html"), "utf8");
+    assert.ok(html.includes('rel="canonical" href="https://zen-retraite.fr/articles/' + canonicalId + '/"'), oldId + " should canonicalize");
+    assert.match(html, /lire le guide actualisé/);
+    assert.ok(!sitemapLocs.has("https://zen-retraite.fr/articles/" + oldId + "/"));
+    assert.ok(!homeArticles.some((entry) => entry.id === oldId));
+    assert.ok(!archiveEntries.some((entry) => entry.id === oldId));
+  }
+  for (const articleId of [
+    "2025-11-06_18-46_bien-tre-et-sant-douce_marche-for-t-sport",
+    "2025-11-05_15-00_d-coration-int-rieure-et-confort_int-rieur-cosy-automne",
+    "2025-12-06_06-45_finances-personnelles-et-retraite_budget-retraite-s-r-nit",
+  ]) {
+    const data = records.find((record) => record.id === articleId);
+    assert.ok(data, "missing evergreen content: " + articleId);
+    assert.ok(data.sources?.length >= 2, "must cite sources: " + articleId);
+    assert.ok(data.key_takeaways?.length >= 3, "must contain takeaways: " + articleId);
+    const html = await readFile(path.join(rootDir, "dist", "articles", articleId, "index.html"), "utf8");
+    assert.match(html, /"@type":"BreadcrumbList"/);
+    assert.match(html, /class='article-sources'/);
+    assert.match(html, /Mis à jour le/);
+    assert.ok(sitemapLocs.has("https://zen-retraite.fr/articles/" + articleId + "/"));
+  }
+
 });
