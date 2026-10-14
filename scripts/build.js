@@ -332,9 +332,9 @@ function buildCard(article, index) {
 ${imageHtml}
 <div class="card-content">
 <div class="card-meta"><span>${htmlEscape(theme)}</span><span>${htmlEscape(subtheme)}</span></div>
-<h2 class="card-title">${htmlEscape(article.title)}</h2>
+<h3 class="card-title"><a href="${href}">${htmlEscape(article.title)}</a></h3>
 <p class="card-excerpt">${htmlEscape(article.excerpt || "")}</p>
-<a href="${href}">Lire la suite</a>
+<a href="${href}">Découvrir le guide</a>
 </div>
 </article>`.trim();
 }
