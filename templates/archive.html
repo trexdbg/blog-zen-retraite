@@ -2,23 +2,23 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Archives – Zen Retraite</title><meta name="description" content="Retrouvez les guides Zen Retraite classés par date et par catégorie.">
+<title>Tous les guides – Zen Retraite</title><meta name="description" content="Parcourez tous les conseils Zen Retraite : maison, budget, numérique, bien-être et loisirs.">
 <link rel="canonical" href="{{SITE_URL}}/archive.html"><meta property="og:type" content="website"><meta property="og:site_name" content="Zen Retraite"><meta property="og:title" content="Archives – Zen Retraite"><meta property="og:description" content="Retrouvez les guides Zen Retraite classés par date et par catégorie."><meta property="og:url" content="{{SITE_URL}}/archive.html"><meta name="twitter:card" content="summary">
 {{ARCHIVE_STRUCTURED_DATA}}
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
-<link rel="icon" type="image/png" href="./favicon.png"><link rel="apple-touch-icon" href="./favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Fraunces:opsz,wght,SOFT,WONK@9..144,400..700,0..100,0..1&display=swap" rel="stylesheet">
+<link rel="icon" type="image/svg+xml" href="./assets/brand/zen-retraite-mark.svg"><link rel="apple-touch-icon" href="./favicon.png">
 <script>(function(){ try { var t = localStorage.getItem('zr-theme'); if (t === 'dark' || t === 'light') document.documentElement.setAttribute('data-theme', t); } catch (e) {} })();</script><link rel="stylesheet" href="./style.css">
 </head>
 <body data-page="archive">
 <a class="skip-link" href="#main-content">Aller au contenu</a>
-<header class="site-header archive-header"><a class="brand" href="./index.html"><span class="brand-mark">Zen</span><span class="brand-text">Retraite</span></a><nav class="site-nav" aria-label="Navigation principale"><a href="./index.html">Accueil</a><a href="./archive.html" aria-current="page">Archives</a><a href="./a-propos.html">À propos</a></nav><button id="theme-toggle" class="theme-toggle" aria-label="Basculer le mode jour/nuit" title="Basculer le mode jour/nuit">☀️/🌙</button></header>
+<header class="site-header archive-header"><a class="brand" href="./index.html"><img class="brand-icon" src="./assets/brand/zen-retraite-mark.svg" alt="" width="49" height="49"><span class="brand-copy"><span class="brand-text">zen retraite</span><span class="brand-tagline">Le goût des jours nouveaux</span></span></a><nav class="site-nav" aria-label="Navigation principale"><a href="./index.html">Accueil</a><a href="./archive.html" aria-current="page">Tous les guides</a><a href="./a-propos.html">Notre démarche</a></nav><button id="theme-toggle" class="theme-toggle" aria-label="Basculer le mode jour/nuit" title="Basculer le mode jour/nuit">☀️/🌙</button></header>
 <main id="main-content" class="content archive-content">
-<section class="archive-hero" aria-labelledby="archive-title"><p class="eyebrow">Le catalogue Zen Retraite</p><h1 id="archive-title">Tous les guides, à retrouver facilement</h1><p>Parcourez les {{ARCHIVE_COUNT}} articles classés par date ou utilisez la recherche et les catégories.</p></section>
+<section class="archive-hero" aria-labelledby="archive-title"><p class="eyebrow">La bibliothèque d’idées</p><h1 id="archive-title">Le bon guide, au bon moment.</h1><p>Parcourez nos {{ARCHIVE_COUNT}} publications à votre rythme, ou trouvez rapidement un sujet grâce à la recherche et aux catégories.</p></section>
 <section class="archive-tools" aria-label="Recherche dans les archives"><label class="control search-control" for="archive-search"><span class="control-label">Rechercher</span><input id="archive-search" type="search" placeholder="Ex. maison, budget, photos" autocomplete="off"></label><label class="control" for="archive-theme"><span class="control-label">Catégorie</span><select id="archive-theme"><option value="">Toutes les catégories</option></select></label></section>
 <p id="archive-status" class="catalogue-status" aria-live="polite">{{ARCHIVE_COUNT}} guides disponibles.</p>
 <section aria-live="polite"><ul id="archive-list" class="archive-list">{{ARCHIVE_LIST}}</ul><p id="archive-empty" class="empty-state" {{ARCHIVE_EMPTY_STATE_ATTR}}>Aucune archive ne correspond à cette recherche.</p></section>
 </main>
-<footer class="site-footer"><nav class="footer-nav"><a href="./index.html">Accueil</a><a href="./a-propos.html">À propos</a></nav><p>&copy; <span id="current-year"></span> Zen Retraite. Tous droits réservés.</p></footer>
+<footer class="site-footer"><div class="footer-inner"><div><a class="brand" href="./index.html" aria-label="Zen Retraite, accueil"><img class="brand-icon" src="./assets/brand/zen-retraite-mark.svg" alt="" width="49" height="49"><span class="brand-copy"><span class="brand-text">zen retraite</span><span class="brand-tagline">Le goût des jours nouveaux</span></span></a><p class="footer-description">Des guides clairs, de belles idées et des conseils utiles pour profiter pleinement de votre retraite, à votre rythme.</p></div><nav class="footer-nav" aria-label="Navigation de bas de page"><a href="./index.html">Accueil</a><a href="./archive.html">Tous les guides</a><a href="./a-propos.html">Notre démarche</a></nav></div><div class="footer-bottom"><p>&copy; <span id="current-year"></span> Zen Retraite · Une nouvelle étape, mille possibilités.</p></div></footer>
 {{ARCHIVE_DATA_SCRIPT}}
 <script src="./script.js" defer></script>
 </body>
