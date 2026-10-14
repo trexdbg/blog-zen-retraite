@@ -193,4 +193,20 @@ test("static build preserves every archived article and adds the about page to t
     assert.ok(sitemapLocs.has("https://zen-retraite.fr/articles/" + articleId + "/"));
   }
 
+  // A former autonomy guide must remain accessible but no longer compete in the sitemap.
+  const oldHousingId = "2025-11-15_18-38_autonomie-domicile_maison-autonomie-confort";
+  const newHousingId = "2025-12-01_11-33_am-nagement-logement-senior_maison-autonomie-confort";
+  const oldHousing = await readFile(path.join(rootDir, "dist", "articles", oldHousingId, "index.html"), "utf8");
+  assert.ok(oldHousing.includes('rel="canonical" href="https://zen-retraite.fr/articles/' + newHousingId + '/"'));
+  assert.ok(!sitemapLocs.has("https://zen-retraite.fr/articles/" + oldHousingId + "/"));
+  for (const id of [newHousingId, "2025-11-07_16-41_num-rique-vie-sociale_num-rique-connect-vie"]) {
+    const source = records.find((article) => article.id === id);
+    assert.ok(source?.sources?.length >= 2, "missing authoritative sources: " + id);
+    assert.ok(source?.key_takeaways?.length >= 3);
+    assert.ok(source?.updated_at);
+    const output = await readFile(path.join(rootDir, "dist", "articles", id, "index.html"), "utf8");
+    assert.match(output, /class='article-sources'/);
+    assert.match(output, /Mis à jour le/);
+  }
+
 });
