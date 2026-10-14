@@ -95,13 +95,16 @@ function buildCard(article, index) {
   appendMeta(content, article);
   const title = document.createElement("h3");
   title.className = "card-title";
-  title.textContent = article.title || "Guide Zen Retraite";
+  const titleLink = document.createElement("a");
+  titleLink.href = article.url || articlePath(article.id);
+  titleLink.textContent = article.title || "Guide Zen Retraite";
+  title.appendChild(titleLink);
   const excerpt = document.createElement("p");
   excerpt.className = "card-excerpt";
   excerpt.textContent = article.excerpt || "";
   const link = document.createElement("a");
   link.href = article.url || articlePath(article.id);
-  link.textContent = "Lire le guide";
+  link.textContent = "Découvrir le guide";
   content.append( title, excerpt, link );
   card.appendChild(content);
   return card;
