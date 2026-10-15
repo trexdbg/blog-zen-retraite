@@ -1,0 +1,51 @@
+{
+  "title": "Explorer les sentiers locaux : utiliser Géoportail et les cartes IGN en ligne",
+  "theme": "loisirs_vie_active",
+  "subtheme": "cartographie-et-promenade",
+  "excerpt": "Apprenez à utiliser Géoportail et les cartes IGN pour découvrir les sentiers balisés, mesurer vos parcours et préparer vos prochaines balades locales.",
+  "key_takeaways": [
+    "Utilisez le site Cartes.gouv.fr pour accéder gratuitement aux cartes officielles et planifier vos itinéraires de balade.",
+    "L'application mobile Cartes IGN vous aide à visualiser les sentiers de randonnée balisés et propose des suggestions de parcours.",
+    "La création d'un compte sur Cartes.gouv.fr est nécessaire si vous souhaitez sauvegarder vos propres cartes personnalisées.",
+    "Soyez conscient des limites : certaines cartes ne sont pas téléchargeables hors ligne sur mobile et le guidage vocal n'est pas encore disponible."
+  ],
+  "content": "<h2>Accéder aux cartes officielles et explorer le territoire</h2><p>Pour commencer à explorer les chemins de votre commune dès aujourd'hui, ouvrez votre navigateur internet et rendez-vous sur le site officiel <a href=\"https://cartes.gouv.fr/decouvrir/explorer-les-cartes/\" rel=\"nofollow\">Cartes.gouv.fr</a>. Ce service public, porté par l'Institut National de l'Information Géographique et Forestière (IGN) et ses partenaires, offre un accès à une multitude de cartes et de données précises sur le territoire français. Il permet de repérer les sentiers balisés, de mesurer des distances et de préparer vos balades locales.</p><p>Sur Cartes.gouv.fr, vous pouvez consulter des documents cartographiques variés. Les <b>plans IGN</b> offrent une vue générale du territoire. La <b>BD ORTHO</b> présente des prises de vues aériennes, des photographies du sol très précises. Les <b>SCAN 25</b> sont des cartes topographiques détaillées du relief et des chemins (échelle 1:25 000). Enfin, la <b>BD Parcellaire</b> contient les informations du cadastre. Ces ressources vous donnent une vue d'ensemble détaillée de votre environnement.</p><h3>Comment choisir les différents types de cartes ?</h3><p>Le site Cartes.gouv.fr vous permet de choisir et de superposer différentes couches cartographiques pour personnaliser votre affichage. Vous pouvez activer ou désactiver des cartes topographiques, des vues aériennes, ou des cartes historiques. Cette superposition permet de combiner les informations pour votre balade. Par exemple, afficher une carte détaillée du relief (type SCAN 25) avec des vues aériennes peut aider à mieux comprendre le type de terrain.</p><p>Il est important de noter une limite pratique : bien que l'accès soit gratuit via le site, l'application mobile « Cartes IGN » ne permet pas de télécharger toutes les couches cartographiques pour une utilisation hors ligne. Par exemple, les cartes SCAN 25 ne sont pas disponibles pour le téléchargement hors ligne sur l'application mobile en raison de droits de diffusion. Seules les données du Plan IGN sont téléchargeables pour un usage hors ligne sur cette application, ce qui reste très utile sans connexion internet.</p><h2>Repérer les sentiers balisés et préparer vos itinéraires</h2><p>Pour dénicher les chemins de randonnée près de chez vous, l'application mobile « Cartes IGN » offre des fonctionnalités utiles. Elle regroupe un grand nombre de suggestions d'itinéraires et permet de visualiser directement les sentiers de randonnée balisés sur la carte. Que vous soyez à pied, à vélo ou à cheval, les informations affichées peuvent vous aider à préparer votre parcours.</p><h3>Où trouver les chemins de randonnée près de chez moi ?</h3><p>L'application mobile « Cartes IGN » intègre les sentiers balisés provenant de partenaires spécialisés dans la randonnée, notamment l'intégralité des sentiers de la FFRandonnée et du Club Vosgien, comme le mentionnent les notes de recherche. De plus, elle propose plus de 6 000 suggestions de randonnées issues de collaborations avec divers organismes, dont les Parcs nationaux, les Parcs naturels régionaux et les offices de tourisme. Ces données peuvent servir de référence pour explorer les environs de votre commune.</p><ul><li>Téléchargez et ouvrez l'application mobile « Cartes IGN » sur votre smartphone ou tablette.</li><li>Utilisez la fonction de recherche pour localiser votre commune ou le point de départ souhaité.</li><li>Activez les couches cartographiques affichant les sentiers de randonnée.</li><li>Explorez les suggestions de randonnées proposées par les partenaires de l'IGN, généralement accompagnées de descriptions et de détails pratiques.</li><li>Comparez le tracé des sentiers balisés avec d'autres fonds de carte, comme les vues aériennes, pour mieux visualiser le type de terrain et anticiper les éventuelles difficultés.</li></ul><p>Gardez à l'esprit que les parcours suggérés par les partenaires ne couvrent pas l'intégralité des sentiers existants, mais sont une sélection basée sur des données officielles.</p><h2>Mesurer les distances et les profils d'altitude</h2><p>Une fois un sentier repéré, il est utile d'en connaître la longueur et le dénivelé. Ces informations peuvent être utiles pour évaluer le niveau de difficulté de votre balade et estimer le temps nécessaire. Le site Cartes.gouv.fr met à votre disposition des outils précis pour ces analyses.</p><h3>Comment connaître la longueur d'un parcours ou le dénivelé ?</h3><p>Le site Cartes.gouv.fr propose une boîte à outils pour mesurer des distances, des surfaces, des angles, et calculer un itinéraire. Pour une balade, l'outil de mesure de distance et la fonction de profil altimétrique sont particulièrement utiles. Un <b>profil altimétrique</b> est une représentation graphique des variations d'altitude le long d'un parcours, montrant les montées et les descentes.</p><ol><li>Sur le site Cartes.gouv.fr, localisez la boîte à outils.</li><li>Sélectionnez l'outil de mesure de distance. Cliquez sur la carte pour définir les points de votre itinéraire. La distance totale s'affiche en temps réel.</li><li>Une fois votre tracé terminé, cherchez l'option « profil altimétrique ». Un graphique devrait apparaître, montrant l'évolution de l'altitude le long du parcours dessiné. Cela vous permet de visualiser les pentes et d'anticiper l'effort.</li></ol><p>L'application mobile « Cartes IGN » permet de calculer des itinéraires à pied ou en véhicule motorisé. Le calcul d'itinéraire à vélo est encore en phase d'étude. Pour le moment, le guidage vocal n'est pas disponible sur l'application mobile, ce qui implique de consulter la carte régulièrement pendant votre parcours.</p><h2>Créer et sauvegarder ses propres cartes personnalisées</h2><p>Lorsque vous planifiez fréquemment des balades ou que vous souhaitez conserver des itinéraires spécifiques, la possibilité de personnaliser et de sauvegarder vos propres cartes est un atout. Le site Cartes.gouv.fr offre des fonctionnalités pour cela, vous permettant d'adapter la cartographie à vos besoins précis.</p><h3>Est-il possible de personnaliser et de garder mes propres tracés ?</h3><p>Oui, sur Cartes.gouv.fr, vous pouvez importer vos propres données (fichiers géographiques), ajouter des annotations personnelles, dessiner des tracés ou marquer des points d'intérêt sur la carte. Ces personnalisations sont utiles pour noter des endroits remarquables, des points de repos, ou des variantes d'itinéraires. Une fois votre carte enrichie, elle peut être partagée via un lien direct ou intégrée à d'autres services.</p><p>Pour sauvegarder durablement les cartes que vous avez créées sur Cartes.gouv.fr, la création d'un compte utilisateur est nécessaire. Ce compte vous permettra de retrouver vos travaux. Sans compte, vos personnalisations risquent de ne pas être conservées. L'utilisation générale de l'application mobile « Cartes IGN », en revanche, ne requiert pas de compte pour la simple consultation ou la recherche d'itinéraires. Si la sauvegarde de vos créations est importante, créer un compte sur Cartes.gouv.fr est une démarche utile. Il vous suffira de suivre les étapes habituelles de création de compte et de consulter l'aide officielle du service pour gérer vos cartes sauvegardées.</p>",
+  "id": "2026-10-15_13-42_cartographie-et-promenade_carte-carte-sentier",
+  "created_at": "2026-10-15T13:42:30",
+  "image": "/data/images/2026-10-15_13-42_cartographie-et-promenade_carte-carte-sentier.jpg",
+  "pilier": "loisirs_vie_active",
+  "sources": [
+    {
+      "title": "ign.fr",
+      "url": "https://www.ign.fr/telechargez-application-cartographique-cartes-ign",
+      "grounding_url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEfSiIFlvCfVwkGSvHGrL3_xP0vJkClk31hSjWJXGOcJQecc1D_jecBRQNBCP04vSXSybpREbd5KBxkiV1M_4bwN3lxDnPoi6tOTeqHCoQDSRii9kjkuRZjhlnXB58t4YuBepqV8cIWidyjnVHN8Oa0CLsl5T1dYaUlA-pZunQm"
+    },
+    {
+      "title": "cartes.gouv.fr",
+      "url": "https://cartes.gouv.fr/explorer-les-cartes/",
+      "grounding_url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGSr1AygzC8j8ULIg85CsBVghI7muNk61xyNGJqRHvvTLfnD3XTxlqFY9Vanm82BJ5G_RdneT6YqOmmg4P30GkBQAhgqumeBSSeq3_w8I0hz4gv"
+    },
+    {
+      "title": "cartes.gouv.fr",
+      "url": "https://cartes.gouv.fr/decouvrir/explorer-les-cartes/",
+      "grounding_url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHVnYwTrUEG815hlULQ3iqjq487XiK5urWIEXvULkl0fXAyyp8PXbds6gfcKF0_agzqCUN4gwURdQ8DD346LGWHupVla8Ep--0Jemsetqf1tUhdHawbienDMQ7VyZSfl1wyUXO9xtrS9mCL8HA_n4WA"
+    }
+  ],
+  "research_method": "Angles explorés sans preuve éditoriale ; recherche spécifique du sujet avec Gemini Flash et Google Search ; URLs de grounding résolues et éditeurs institutionnels ou sans but commercial contrôlés.",
+  "quality_checks": {
+    "word_count": 1039,
+    "h2_count": 4,
+    "sponsor_links": 0,
+    "key_takeaways_count": 4,
+    "revision_count": 2,
+    "structural_revision_count": 1,
+    "editorial_revision_count": 1,
+    "editorial_review_passed": true,
+    "editorial_review_count": 2,
+    "writer_model": "gemini-2.5-flash",
+    "editorial_review_model": "gemini-2.5-flash"
+  },
+  "image_source": "https://commons.wikimedia.org/wiki/File:Carte_postale,_Arriv%C3%A9e_au_Plain-du-Canon_par_le_sentier_du_Touring_Club_fran%C3%A7ais.jpg",
+  "image_license": "cc0",
+  "image_status": "available"
+}
