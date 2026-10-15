@@ -12,7 +12,7 @@ const archiveDataPath = path.join(dataDir, "archive.json");
 const templatesDir = path.join(rootDir, "templates");
 const distDir = path.join(rootDir, "dist");
 const articlesOutputDir = path.join(distDir, "articles");
-const STATIC_FILES = ["style.css", "script.js", "favicon.png", "robots.txt", "CNAME", "article.html"];
+const STATIC_FILES = ["style.css", "script.js", "analytics-consent.js", "favicon.png", "robots.txt", "CNAME", "article.html"];
 const STATIC_DIRECTORIES = ["assets", "data/images"];
 
 const SITE_URL = (process.env.SITE_URL || "https://zen-retraite.fr").replace(/\/+$/, "");
