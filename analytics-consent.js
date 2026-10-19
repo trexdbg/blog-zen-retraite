@@ -51,6 +51,20 @@
     tag.src = "https://www.googletagmanager.com/gtag/js?id=" + encodeURIComponent(GA_ID);
     tag.referrerPolicy = "strict-origin-when-cross-origin";
     document.head.appendChild(tag);
+
+    // Measure outbound commercial intent only after explicit analytics consent.
+    // Never send full affiliate URLs, tags or product identifiers to GA4.
+    document.addEventListener("click", (event) => {
+      const anchor = event.target?.closest?.("a[href]");
+      if (!anchor || !trackingStarted) return;
+      let destination;
+      try { destination = new URL(anchor.href, location.href); } catch { return; }
+      if (destination.hostname !== "amazon.fr" && destination.hostname !== "www.amazon.fr") return;
+      window.gtag("event", "affiliate_click", {
+        affiliate_partner: "amazon",
+        page_path: location.pathname
+      });
+    });
   }
 
   function clearAnalyticsCookies() {
