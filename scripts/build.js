@@ -118,13 +118,18 @@ function normalizeImageDimension(value) {
 }
 
 const EDITORIAL_IMAGE_RULES = [
+  [/carte|cartograph|geoportail|\bign\b|orientation/, "cartes"],
+  [/permission|confidentialit|vie prive|applications mobiles|application mobile/, "confidentialite"],
+  [/tiny house|habitat alternatif/, "tiny-house"],
+  [/maison connectee|domotique/, "maison-connectee"],
+  [/salon|cocooning/, "salon"],
   [/franceconnect|identite numerique|demarches en ligne/, "franceconnect"],
   [/authentification|messagerie|courriel|email|mot de passe/, "messagerie"],
   [/randonnee|sentier|marche|promenade|balade|plein air/, "randonnee"],
   [/benevolat|associati|solidarite|engagement/, "benevolat"],
   [/photo|souvenir|album|memoire familiale/, "photos"],
   [/jardin|potager|balcon|plante|vegetal|biodiversite/, "jardin"],
-  [/cuisine|recette|repas|aliment|gastronomie|fermentation|nutrition/, "cuisine"],
+  [/cuisin|recette|repas|aliment|gastronomie|fermentation|nutrition/, "cuisine"],
   [/budget|finance|economie|economis|argent|inflation|patrimoine/, "budget"],
   [/animal|compagnon|chat|chien/, "animaux"],
   [/mode|vetement|habill|tenue|style elegant/, "mode"],

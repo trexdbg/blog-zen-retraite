@@ -100,6 +100,21 @@ test("static build preserves every archived article and adds the about page to t
   assert.ok(homeData);
   const homeArticles = JSON.parse(homeData[1]).articles;
   assert.deepEqual(new Set(homeArticles.map((entry) => entry.id)), publishedIds);
+  const artworkByArticle = new Map([
+    ["2026-10-15_13-42_cartographie-et-promenade_carte-carte-sentier", "cartes"],
+    ["2026-10-17_18-40_applications-mobiles-et-vie-priv-e_smartphone-applications-mobiles", "confidentialite"],
+    ["2025-11-15_20-39_cuisine-conomique-et-anti-inflation_cuisine-conomie-plaisir", "cuisine"],
+    ["2025-11-11_18-43_habitat-alternatif-minimalisme_maison-libert-nature", "tiny-house"],
+    ["2025-11-20_18-46_technologie-confort-autonomie_maison-connect-e-sant", "maison-connectee"],
+    ["2025-10-30_14-35_jardinage-urbain-pour-seniors_balcon-fleuri-urbain", "jardin"],
+    ["2025-11-05_15-00_d-coration-int-rieure-et-confort_int-rieur-cosy-automne", "salon"],
+  ]);
+  for (const [id, visual] of artworkByArticle) {
+    const article = records.find((record) => record.id === id);
+    assert.ok(article, "missing corrected article " + id);
+    assert.equal(article.image, `https://zen-retraite.fr/assets/images/editorial-${visual}.svg`);
+    assert.ok(article.image_alt, "corrected article must have alt text");
+  }
   assert.ok(homeArticles.every((entry) => typeof entry.image === "string" && /^(https?:\/\/|\/)/.test(entry.image)), "all published articles need a valid image reference");
   assert.ok(homeArticles.every((entry) => typeof entry.fallback_image === "string" && entry.fallback_image.endsWith(".svg")), "a locally hosted illustration must back up every article");
   for (const entry of homeArticles.filter((entry) => entry.image.includes("/assets/images/editorial-"))) {
