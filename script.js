@@ -85,7 +85,15 @@ function buildCard(article, index) {
     image.src = article.image;
     image.alt = article.image_alt || "";
     image.loading = "lazy";
-    image.addEventListener("error", () => { image.remove(); card.classList.add("card-without-image"); }, { once: true });
+    image.addEventListener("error", () => {
+      if (article.fallback_image && image.dataset.fallbackAttempted !== "1") {
+        image.dataset.fallbackAttempted = "1";
+        image.src = article.fallback_image;
+        return;
+      }
+      image.remove();
+      card.classList.add("card-without-image");
+    });
     card.appendChild(image);
   } else {
     card.classList.add("card-without-image");

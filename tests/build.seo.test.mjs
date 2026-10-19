@@ -100,6 +100,12 @@ test("static build preserves every archived article and adds the about page to t
   assert.ok(homeData);
   const homeArticles = JSON.parse(homeData[1]).articles;
   assert.deepEqual(new Set(homeArticles.map((entry) => entry.id)), publishedIds);
+  assert.ok(homeArticles.every((entry) => typeof entry.image === "string" && entry.image.startsWith("https://")), "all published articles need an image");
+  assert.ok(homeArticles.every((entry) => typeof entry.fallback_image === "string" && entry.fallback_image.endsWith(".svg")), "a locally hosted illustration must back up every article");
+  for (const entry of homeArticles.filter((entry) => entry.image.includes("/assets/images/editorial-"))) {
+    const file = path.join(rootDir, "assets", "images", path.basename(new URL(entry.image).pathname));
+    assert.match(await readFile(file, "utf8"), /^<svg /, `missing illustration for ${entry.id}`);
+  }
   const latestIds = [...homeArticles]
     .sort((left, right) => new Date(right.created_at).getTime() - new Date(left.created_at).getTime())
     .slice(0, 6)

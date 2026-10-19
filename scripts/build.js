@@ -117,6 +117,30 @@ function normalizeImageDimension(value) {
   return Number.isSafeInteger(candidate) && candidate > 0 && candidate <= 10000 ? candidate : null;
 }
 
+const EDITORIAL_IMAGE_RULES = [
+  [/franceconnect|identite numerique|demarches en ligne/, "franceconnect"],
+  [/authentification|messagerie|courriel|email|mot de passe/, "messagerie"],
+  [/randonnee|sentier|marche|promenade|balade|plein air/, "randonnee"],
+  [/benevolat|associati|solidarite|engagement/, "benevolat"],
+  [/photo|souvenir|album|memoire familiale/, "photos"],
+  [/jardin|potager|balcon|plante|vegetal|biodiversite/, "jardin"],
+  [/cuisine|recette|repas|aliment|gastronomie|fermentation|nutrition/, "cuisine"],
+  [/budget|finance|economie|economis|argent|inflation|patrimoine/, "budget"],
+  [/animal|compagnon|chat|chien/, "animaux"],
+  [/mode|vetement|habill|tenue|style elegant/, "mode"],
+  [/maison|habitat|logement|domicile|decoration|interieur|amenagement/, "maison"],
+  [/application|numerique|smartphone|ordinateur|internet|technologie|connecte|domotique/, "numerique"],
+  [/voyage|destination|tourisme|evasion|decouverte/, "voyage"],
+  [/creation|creativ|artisanat|artistique|peinture|bricolage|loisir/, "creativite"],
+  [/bien etre|yoga|sante|sommeil|equilibre|sport|vitalite|fitness/, "bienetre"],
+];
+
+function articleFallbackImage(article) {
+  const subject = normalizeTheme([article?.title, article?.subtheme, article?.theme].filter(Boolean).join(" "));
+  const scene = EDITORIAL_IMAGE_RULES.find(([pattern]) => pattern.test(subject))?.[1] || "bienetre";
+  return SITE_URL + "/assets/images/editorial-" + scene + ".svg";
+}
+
 function articleImageAlt(article) {
   return article.image_alt || article.title || "Illustration de l'article";
 }
@@ -284,13 +308,16 @@ async function loadArticles() {
       console.warn(`[build] Fichier ignoré (id manquant): ${file}`);
       continue;
     }
+    const providedImage = normalizeImage(data.image);
+    const fallbackImage = articleFallbackImage(data);
     articles.push({
       ...data,
-      image: normalizeImage(data.image),
-      image_alt: normalizeImageText(data.image_alt),
+      image: providedImage || fallbackImage,
+      fallback_image: fallbackImage,
+      image_alt: normalizeImageText(data.image_alt) || (providedImage ? "" : `Illustration du guide : ${data.title}`),
       image_caption: normalizeImageText(data.image_caption),
-      image_width: normalizeImageDimension(data.image_width),
-      image_height: normalizeImageDimension(data.image_height),
+      image_width: normalizeImageDimension(data.image_width) || (providedImage ? null : 1200),
+      image_height: normalizeImageDimension(data.image_height) || (providedImage ? null : 700),
       created_at: data.created_at || data.createdAt || null,
     });
   }
@@ -322,7 +349,7 @@ function isSuperseded(article, allArticles) {
 function buildCard(article, index) {
   const delay = (index * 0.06).toFixed(2);
   const imageHtml = article.image
-    ? `<img src="${htmlEscape(article.image)}" data-src="${htmlEscape(article.image)}" alt="${htmlEscape(articleImageAlt(article))}" loading="lazy" onerror="this.remove();this.parentElement.classList.add('card-without-image')"${imageDimensionAttributes(article)}>`
+    ? `<img src="${htmlEscape(article.image)}" data-src="${htmlEscape(article.image)}" alt="${htmlEscape(articleImageAlt(article))}" loading="lazy" onerror="if(this.dataset.retry!=='1'){this.dataset.retry='1';this.src='${htmlEscape(article.fallback_image)}'}else{this.remove();this.parentElement.classList.add('card-without-image')}"${imageDimensionAttributes(article)}>`
     : "";
   const theme = displayCategory(article);
   const subtheme = article.subtheme || "Découverte";
@@ -370,6 +397,8 @@ async function buildHome(template, articles, archiveCount) {
     category_label: displayCategory(article),
     subtheme: article.subtheme,
     image: article.image,
+    image_alt: articleImageAlt(article),
+    fallback_image: article.fallback_image,
     created_at: article.created_at,
     url: articlePath(article.id),
   }));
@@ -383,7 +412,7 @@ async function buildHome(template, articles, archiveCount) {
     return `<article class="${className}"><p class="eyebrow">${htmlEscape(displayCategory(article))}</p><h3><a href="${href}">${htmlEscape(article.title)}</a></h3><p>${htmlEscape(article.excerpt || "")}</p></article>`;
   };
   const heroFeature = heroGuide
-    ? `<a class="hero-feature" href="${htmlEscape(articlePath(heroGuide.id))}" aria-label="Lire le guide : ${htmlEscape(heroGuide.title)}"><img src="${htmlEscape(localSiteImageUrl(heroGuide.image))}" alt="${htmlEscape(articleImageAlt(heroGuide))}" fetchpriority="high"${imageDimensionAttributes(heroGuide)}><span class="hero-feature-label">Guide à découvrir</span><strong>${htmlEscape(heroGuide.title)}</strong><span class="hero-feature-link">Lire le guide <span aria-hidden="true">→</span></span></a>`
+    ? `<a class="hero-feature" href="${htmlEscape(articlePath(heroGuide.id))}" aria-label="Lire le guide : ${htmlEscape(heroGuide.title)}"><img src="${htmlEscape(localSiteImageUrl(heroGuide.image))}" alt="${htmlEscape(articleImageAlt(heroGuide))}" fetchpriority="high" onerror="if(this.dataset.retry!=='1'){this.dataset.retry='1';this.src='${htmlEscape(heroGuide.fallback_image)}'}else{this.style.visibility='hidden'}"${imageDimensionAttributes(heroGuide)}><span class="hero-feature-label">Guide à découvrir</span><strong>${htmlEscape(heroGuide.title)}</strong><span class="hero-feature-link">Lire le guide <span aria-hidden="true">→</span></span></a>`
     : "";
   const themeLinks = Object.entries(CATEGORY_LABELS)
     .filter(([key]) => articles.some((article) => articleCategory(article) === key))
@@ -429,7 +458,7 @@ async function buildArchive(template, entries) {
 
 function articleImageBlock(article) {
   if (!article.image) return "";
-  const image = `<img src="${htmlEscape(article.image)}" alt="${htmlEscape(articleImageAlt(article))}" loading="lazy"${imageDimensionAttributes(article)}>`;
+  const image = `<img src="${htmlEscape(article.image)}" alt="${htmlEscape(articleImageAlt(article))}" loading="lazy" onerror="if(this.dataset.retry!=='1'){this.dataset.retry='1';this.src='${htmlEscape(article.fallback_image)}'}else{this.remove()}"${imageDimensionAttributes(article)}>`;
   if (!article.image_caption) return image;
   return `<figure class="article-image">${image}<figcaption>${htmlEscape(article.image_caption)}</figcaption></figure>`;
 }
