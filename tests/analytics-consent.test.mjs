@@ -28,6 +28,17 @@ test("the analytics script is consent gated and offers accept, reject, and rever
   assert.match(js, /ad_storage: "denied"/);
 });
 
+test("outbound Amazon events are measured only after consent and without affiliate tags", async () => {
+  const js = await readFile(path.join(root, "analytics-consent.js"), "utf8");
+  const start = js.slice(js.indexOf("function startAnalytics()"), js.indexOf("function clearAnalyticsCookies()"));
+  assert.match(start, /document\.addEventListener\("click"/);
+  assert.match(start, /trackingStarted/);
+  assert.match(start, /affiliate_click/);
+  assert.match(start, /amazon\.fr/);
+  assert.doesNotMatch(start, /destination\.href[,) ]/);
+  assert.doesNotMatch(start, /destination\.searchParams/);
+});
+
 test("build copies the first-party consent manager to dist", async () => {
   const build = await readFile(path.join(root, "scripts/build.js"), "utf8");
   assert.match(build, /"analytics-consent\.js"/);
