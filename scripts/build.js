@@ -120,7 +120,7 @@ function normalizeImageDimension(value) {
 const EDITORIAL_IMAGE_RULES = [
   [/musique|musical|piano|chant|concert|instrument/, "musique"],
   [/lecture|lire|livre|bibliotheque|liseuse/, "lecture"],
-  [/\\bjeux?\\b|jeu de societe|stimulation cognitive/, "jeux"],
+  [/\bjeux?\b|jeu de societe|stimulation cognitive/, "jeux"],
   [/plantes? d.interieur|jardin d.interieur|potager interieur|plantes? maison/, "jardin-interieur"],
   [/entrepreneuriat|seconde carriere|passion en revenu|creer son activite/, "projets"],
   [/carte|cartograph|geoportail|\bign\b|orientation/, "cartes"],
@@ -136,7 +136,7 @@ const EDITORIAL_IMAGE_RULES = [
   [/jardin|potager|balcon|plante|vegetal|biodiversite/, "jardin"],
   [/cuisin|recette|repas|aliment|gastronomie|fermentation|nutrition/, "cuisine"],
   [/budget|finance|economie|economis|argent|inflation|patrimoine/, "budget"],
-  [/animal|compagnon|\\bchat\\b|\\bchien\\b/, "animaux"],
+  [/animal|compagnon|\bchat\b|\bchien\b/, "animaux"],
   [/mode|vetement|habill|tenue|style elegant/, "mode"],
   [/maison|habitat|logement|domicile|decoration|interieur|amenagement/, "maison"],
   [/application|numerique|smartphone|ordinateur|internet|technologie|connecte|domotique/, "numerique"],
