@@ -100,6 +100,16 @@ test("static build preserves every archived article and adds the about page to t
   assert.ok(homeData);
   const homeArticles = JSON.parse(homeData[1]).articles;
   assert.deepEqual(new Set(homeArticles.map((entry) => entry.id)), publishedIds);
+  for (const [id, scene] of [
+    ["2025-12-04_11-33_musique-et-sant-cognitive_musique-esprit-bien-tre", "musique"],
+    ["2025-12-02_18-50_am-nagement-int-rieur-lecture_lecture-confort-maison", "lecture"],
+    ["2025-12-01_06-52_loisirs-convivialit-stimulation-cognitive_jeux-esprit-amis", "jeux"],
+    ["2025-12-05_18-43_maison-nature-bien-tre_plantes-int-rieur-air", "jardin-interieur"],
+    ["2025-12-06_20-41_entrepreneuriat-et-activit-s-r-mun-ratrices_passion-projet-revenu", "projets"],
+  ]) {
+    assert.equal(records.find(article => article.id === id)?.image, `https://zen-retraite.fr/assets/images/editorial-${scene}.svg`);
+  }
+
   const artworkByArticle = new Map([
     ["2026-10-15_13-42_cartographie-et-promenade_carte-carte-sentier", "cartes"],
     ["2026-10-17_18-40_applications-mobiles-et-vie-priv-e_smartphone-applications-mobiles", "confidentialite"],

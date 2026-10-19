@@ -118,6 +118,11 @@ function normalizeImageDimension(value) {
 }
 
 const EDITORIAL_IMAGE_RULES = [
+  [/musique|musical|piano|chant|concert|instrument/, "musique"],
+  [/lecture|lire|livre|bibliotheque|liseuse/, "lecture"],
+  [/\\bjeux?\\b|jeu de societe|stimulation cognitive/, "jeux"],
+  [/plantes? d.interieur|jardin d.interieur|potager interieur|plantes? maison/, "jardin-interieur"],
+  [/entrepreneuriat|seconde carriere|passion en revenu|creer son activite/, "projets"],
   [/carte|cartograph|geoportail|\bign\b|orientation/, "cartes"],
   [/permission|confidentialit|vie prive|applications mobiles|application mobile/, "confidentialite"],
   [/tiny house|habitat alternatif/, "tiny-house"],
@@ -131,7 +136,7 @@ const EDITORIAL_IMAGE_RULES = [
   [/jardin|potager|balcon|plante|vegetal|biodiversite/, "jardin"],
   [/cuisin|recette|repas|aliment|gastronomie|fermentation|nutrition/, "cuisine"],
   [/budget|finance|economie|economis|argent|inflation|patrimoine/, "budget"],
-  [/animal|compagnon|chat|chien/, "animaux"],
+  [/animal|compagnon|\\bchat\\b|\\bchien\\b/, "animaux"],
   [/mode|vetement|habill|tenue|style elegant/, "mode"],
   [/maison|habitat|logement|domicile|decoration|interieur|amenagement/, "maison"],
   [/application|numerique|smartphone|ordinateur|internet|technologie|connecte|domotique/, "numerique"],
@@ -148,6 +153,18 @@ function articleFallbackImage(article) {
 
 function articleImageAlt(article) {
   return article.image_alt || article.title || "Illustration de l'article";
+}
+
+function absoluteImageUrl(value) {
+  const src = String(value || "").trim();
+  if (!src) return "";
+  if (src.startsWith("/") && !src.startsWith("//")) return SITE_URL + src;
+  try {
+    const url = new URL(src);
+    return url.protocol === "https:" || url.protocol === "http:" ? url.href : "";
+  } catch {
+    return "";
+  }
 }
 
 function localSiteImageUrl(value) {
@@ -507,7 +524,7 @@ function structuredData(article, canonicalUrl, description) {
   const dateModified = structuredDate(article.updated_at) || structuredDate(article.created_at);
   if (datePublished) payload.datePublished = datePublished;
   if (dateModified) payload.dateModified = dateModified;
-  if (article.image) payload.image = [article.image];
+  if (article.image) payload.image = [absoluteImageUrl(article.image) || article.image];
   const takeaways = keyTakeaways(article);
   if (takeaways.length) payload.abstract = takeaways.join(" ");
   if (Array.isArray(article.sources)) {
@@ -685,10 +702,10 @@ async function buildArticles(template, articles) {
       ARTICLE_DESCRIPTION: htmlEscape(description),
       ARTICLE_CANONICAL_URL: htmlEscape(canonicalUrl),
       ARTICLE_OG_IMAGE_TAGS: article.image
-        ? `<meta property="og:image" content="${htmlEscape(article.image)}">\n<meta property="og:image:alt" content="${htmlEscape(articleImageAlt(article))}">`
+        ? `<meta property="og:image" content="${htmlEscape(absoluteImageUrl(article.image))}">\n<meta property="og:image:alt" content="${htmlEscape(articleImageAlt(article))}">`
         : "",
       ARTICLE_TWITTER_IMAGE_TAG: article.image
-        ? `<meta name="twitter:image" content="${htmlEscape(article.image)}">\n<meta name="twitter:image:alt" content="${htmlEscape(articleImageAlt(article))}">`
+        ? `<meta name="twitter:image" content="${htmlEscape(absoluteImageUrl(article.image))}">\n<meta name="twitter:image:alt" content="${htmlEscape(articleImageAlt(article))}">`
         : "",
       ARTICLE_STRUCTURED_DATA: structuredData(article, canonicalUrl, description),
       ARTICLE_PUBLISHED_ISO: htmlEscape(publishedDate || ""),
