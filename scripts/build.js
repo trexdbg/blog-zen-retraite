@@ -36,11 +36,11 @@ const CATEGORY_LABELS = {
 };
 
 const FEATURED_GUIDES = [
-  "2025-11-15_20-39_cuisine-conomique-et-anti-inflation_cuisine-conomie-plaisir",
-  "2025-11-11_18-43_habitat-alternatif-minimalisme_maison-libert-nature",
-  "2025-11-20_18-46_technologie-confort-autonomie_maison-connect-e-sant",
   "2026-10-04_07-56_gestion-des-photos_photos-souvenirs-famille",
-  "2025-11-30_11-29_mode-l-gance_mode-l-gance-chic",
+  "2026-10-11_20-28_s-curit-des-comptes-en-ligne_t-l-phone-connexion-s-curis-e",
+  "2026-10-17_18-40_applications-mobiles-et-vie-priv-e_smartphone-applications-mobiles",
+  "2025-11-20_18-46_technologie-confort-autonomie_maison-connect-e-sant",
+  "2025-12-01_11-33_am-nagement-logement-senior_maison-autonomie-confort",
 ];
 const HERO_GUIDE_ID = "2026-10-04_07-56_gestion-des-photos_photos-souvenirs-famille";
 
