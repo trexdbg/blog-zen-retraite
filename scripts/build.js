@@ -18,7 +18,8 @@ const STATIC_DIRECTORIES = ["assets", "data/images"];
 const SITE_URL = (process.env.SITE_URL || "https://zen-retraite.fr").replace(/\/+$/, "");
 const DATE_FORMATTER = new Intl.DateTimeFormat("fr-FR", { year: "numeric", month: "long", day: "numeric" });
 const SITE_NAME = "Zen Retraite";
-const ABOUT_LASTMOD = "2026-10-05";
+const ABOUT_LASTMOD = "2026-10-21";
+const HOME_EDITORIAL_LASTMOD = "2026-10-21";
 const AFFILIATE_DISCLOSURE =
   "En tant que Partenaire Amazon, je réalise un bénéfice sur les achats remplissant les conditions requises. Certains liens peuvent être affiliés, sans surcoût pour vous.";
 
@@ -763,7 +764,7 @@ async function buildSitemap(articles, homeNewestDate, archiveNewestDate) {
   const urls = [
     {
       loc: `${SITE_URL}/`,
-      lastmod: homeNewestDate || new Date().toISOString().slice(0, 10),
+      lastmod: [homeNewestDate, HOME_EDITORIAL_LASTMOD].filter(Boolean).sort().at(-1),
       changefreq: "hourly",
       priority: "1.0",
     },
