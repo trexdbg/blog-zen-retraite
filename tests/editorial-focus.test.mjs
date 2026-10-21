@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
+import { articleCategory } from "../scripts/build.js";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const read = (p) => readFile(path.join(root, p), "utf8");
@@ -44,4 +45,9 @@ test("about page defines new mission without claiming physical product tests", a
   assert.match(about, /apprivoiser le numérique/);
   assert.match(about, /simplifier le quotidien à la maison/);
   assert.match(about, /ne remplacent pas la vérification humaine/);
+});
+
+test("FranceConnect belongs to digital help even when the title mentions procedures", () => {
+  assert.equal(articleCategory({ title: "Démarches en ligne : mieux comprendre FranceConnect", theme: "numerique_pratique", subtheme: "identite-numerique" }), "numerique_pratique");
+  assert.equal(articleCategory({ title: "Réduire son budget courses", theme: "maison", subtheme: "budget" }), "budget");
 });
