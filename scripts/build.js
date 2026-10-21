@@ -30,9 +30,9 @@ const THEME_LABELS = {
 };
 
 const CATEGORY_LABELS = {
-  maison: "Maison et quotidien",
+  maison: "Maison pratique",
   budget: "Budget et démarches",
-  numerique_pratique: "Numérique pratique",
+  numerique_pratique: "Numérique facile",
   bien_etre: "Bien-être et loisirs",
 };
 
@@ -72,6 +72,9 @@ function themeFamily(value) {
 function articleCategory(article) {
   const text = normalizeTheme(`${article?.theme || ""} ${article?.subtheme || ""} ${article?.title || ""}`);
   if (/habitat|tiny house|logement|minimalisme/.test(text)) return "maison";
+  // FranceConnect and online identity are digital how-to guides, even if they
+  // mention administrative procedures or budgets.
+  if (/franceconnect|identite numerique|messagerie|reseau wi fi|\bwifi\b/.test(text)) return "numerique_pratique";
   if (/budget|finance|econom|inflation|revenu|assurance|demarche/.test(text)) return "budget";
   if (/numerique|digital|technolog|connect|photo|informatique|ecran|domotique/.test(text)) return "numerique_pratique";
   if (/maison|habitat|jardin|deco|decoration|bricolage|energie|rangement|cuisine/.test(text)) return "maison";
