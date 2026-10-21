@@ -113,6 +113,13 @@ function displayCategory(article) {
   return CATEGORY_LABELS[articleCategory(article)];
 }
 
+function hubForArticle(article) {
+  const category = articleCategory(article);
+  if (category === "numerique_pratique") return { url: SITE_URL + "/guides-numerique.html", path: "/guides-numerique.html", name: "Numérique facile" };
+  if (category === "maison") return { url: SITE_URL + "/maison-pratique.html", path: "/maison-pratique.html", name: "Maison pratique" };
+  return null;
+}
+
 
 async function readJson(filePath) {
   const raw = await fs.readFile(filePath, "utf8");
@@ -571,14 +578,17 @@ function structuredData(article, canonicalUrl, description) {
       });
     if (sources.length) payload.citation = [...new Set(sources)].slice(0, 8);
   }
+  const hub = hubForArticle(article);
+  const items = [
+    { name: "Accueil", item: SITE_URL + "/" },
+    { name: "Guides", item: SITE_URL + "/archive.html" },
+    ...(hub ? [{ name: hub.name, item: hub.url }] : []),
+    { name: article.title, item: canonicalUrl },
+  ];
   const breadcrumb = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
-    itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Accueil", item: SITE_URL + "/" },
-      { "@type": "ListItem", position: 2, name: "Guides", item: SITE_URL + "/archive.html" },
-      { "@type": "ListItem", position: 3, name: article.title, item: canonicalUrl },
-    ],
+    itemListElement: items.map((item, index) => ({ "@type": "ListItem", position: index + 1, ...item })),
   };
   return `<script type="application/ld+json">${safeJson(payload)}</script>\n<script type="application/ld+json">${safeJson(breadcrumb)}</script>`;
 
@@ -745,6 +755,9 @@ async function buildArticles(template, articles) {
       ARTICLE_PUBLISHED_HUMAN: htmlEscape(formatDateHuman(article.created_at)),
       ARTICLE_UPDATED_BLOCK: updatedDate
         ? `<span>Mis à jour le <time dateTime="${htmlEscape(updatedDate)}">${htmlEscape(formatDateHuman(article.updated_at))}</time></span>`
+        : "",
+      ARTICLE_HUB_BREADCRUMB: hubForArticle(article)
+        ? `<span aria-hidden="true">/</span><a href="${htmlEscape(hubForArticle(article).path)}">${htmlEscape(hubForArticle(article).name)}</a>`
         : "",
       ARTICLE_THEME: htmlEscape(displayTheme(article.theme)),
       ARTICLE_SUBTHEME: htmlEscape(article.subtheme || "Découverte"),
