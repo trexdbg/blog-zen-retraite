@@ -265,8 +265,8 @@ img{max-width:100%;height:auto}
  .site-header{flex-wrap:wrap;gap:.45rem;padding:.65rem 1rem;min-height:auto}
  .brand-icon{width:42px;height:42px}
  .brand-text{font-size:1.2rem}
- .site-nav{order:3;width:100%;justify-content:space-between;gap:.15rem;margin:0}
- .site-nav a{min-height:40px;padding:.4rem .55rem;font-size:.79rem}
+ .site-nav{order:3;width:100%;justify-content:center;flex-wrap:wrap;gap:.2rem;margin:0}
+ .site-nav a{min-height:44px;padding:.42rem .55rem;font-size:.78rem}
  .theme-toggle{margin-left:auto;width:42px;height:42px}
  .content{padding:2rem 1rem 3rem}
  .home-content{padding-top:1rem}
