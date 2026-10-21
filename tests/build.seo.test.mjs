@@ -157,7 +157,7 @@ test("static build preserves every archived article and adds the about page to t
   assert.match(sitemap, /https:\/\/zen-retraite\.fr\/a-propos\.html/);
   for (const id of publishedIds) assert.ok(sitemapLocs.has(`https://zen-retraite.fr/articles/${id}/`), `missing article URL: ${id}`);
   for (const id of supersededIds) assert.ok(!sitemapLocs.has(`https://zen-retraite.fr/articles/${id}/`));
-  assert.match(sitemap, /<loc>https:\/\/zen-retraite\.fr\/a-propos\.html<\/loc>\s*<lastmod>2026-10-05<\/lastmod>/);
+  assert.match(sitemap, /<loc>https:\/\/zen-retraite\.fr\/a-propos\.html<\/loc>\s*<lastmod>2026-10-21<\/lastmod>/);
   const photoId = "2026-10-04_07-56_gestion-des-photos_photos-souvenirs-famille";
   const source = JSON.parse(await readFile(path.join(articlesDir, `${photoId}.json`), "utf8"));
   const article = await readFile(path.join(rootDir, "dist", "articles", photoId, "index.html"), "utf8");
