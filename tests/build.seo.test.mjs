@@ -153,8 +153,23 @@ test("static build preserves every archived article and adds the about page to t
   assert.doesNotMatch(home, legacyArticleHref);
   assert.doesNotMatch(archive, legacyArticleHref);
   const sitemapLocs = new Set([...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1]));
-  assert.equal(sitemapLocs.size, publishedIds.size + 3);
+  assert.equal(sitemapLocs.size, publishedIds.size + 5);
   assert.match(sitemap, /https:\/\/zen-retraite\.fr\/a-propos\.html/);
+  for (const file of ["guides-numerique.html", "maison-pratique.html"]) {
+    const url = "https://zen-retraite.fr/" + file;
+    assert.ok(sitemapLocs.has(url), "missing topical hub in sitemap: " + file);
+    const hubHtml = await readFile(path.join(rootDir, "dist", file), "utf8");
+    assert.match(hubHtml, new RegExp('<link rel="canonical" href="' + url.replaceAll(".", "\\.") + '"'));
+    assert.match(hubHtml, /"@type":"CollectionPage"/);
+    assert.match(hubHtml, /"@type":"ItemList"/);
+    assert.doesNotMatch(hubHtml, /{{[A-Z_]+}}/);
+    assert.match(home, new RegExp('href="./' + file.replaceAll(".", "\\.") + '"'));
+  }
+  const digitalHub = await readFile(path.join(rootDir, "dist", "guides-numerique.html"), "utf8");
+  assert.match(digitalHub, /Sécuriser son réseau|sécurité de son Wi-Fi|sécurité de son Wi-Fi/i);
+  const housingHub = await readFile(path.join(rootDir, "dist", "maison-pratique.html"), "utf8");
+  assert.match(housingHub, /Adapter son logement/);
+
   for (const id of publishedIds) assert.ok(sitemapLocs.has(`https://zen-retraite.fr/articles/${id}/`), `missing article URL: ${id}`);
   for (const id of supersededIds) assert.ok(!sitemapLocs.has(`https://zen-retraite.fr/articles/${id}/`));
   assert.match(sitemap, /<loc>https:\/\/zen-retraite\.fr\/a-propos\.html<\/loc>\s*<lastmod>2026-10-21<\/lastmod>/);
