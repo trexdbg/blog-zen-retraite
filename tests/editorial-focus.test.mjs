@@ -51,3 +51,27 @@ test("FranceConnect belongs to digital help even when the title mentions procedu
   assert.equal(articleCategory({ title: "Démarches en ligne : mieux comprendre FranceConnect", theme: "numerique_pratique", subtheme: "identite-numerique" }), "numerique_pratique");
   assert.equal(articleCategory({ title: "Réduire son budget courses", theme: "maison", subtheme: "budget" }), "budget");
 });
+
+test("topic hubs link exclusively to articles that are not superseded", async () => {
+  const templates = ["guides-numerique.html", "maison-pratique.html"];
+  for (const file of templates) {
+    const html = await read("templates/" + file);
+    const ids = [...html.matchAll(/href="\/articles\/([^/]+)\/"/g)].map(match => match[1]);
+    assert.ok(ids.length >= 3, "hub should feature substantive existing articles: " + file);
+    for (const id of ids) {
+      const article = JSON.parse(await read("data/articles/" + id + ".json"));
+      assert.ok(!article.superseded_by, "hub links to a replaced article: " + id);
+    }
+  }
+});
+
+test("permissions guide gives a tested, source-backed Android and iPhone path", async () => {
+  const guide = JSON.parse(await read("data/articles/2026-10-17_18-40_applications-mobiles-et-vie-priv-e_smartphone-applications-mobiles.json"));
+  assert.match(guide.content, /Sur Android : vérifier une autorisation/);
+  assert.match(guide.content, /Sur iPhone : voir quelles applications/);
+  assert.match(guide.content, /Gestionnaire d.autorisations/);
+  assert.match(guide.content, /Confidentialité et sécurité/);
+  assert.ok(guide.sources.some(source => source.url.includes("support.google.com/android/")));
+  assert.ok(guide.sources.some(source => source.url.includes("support.apple.com/fr-fr/guide/iphone/")));
+  assert.equal(guide.updated_at, "2026-10-21");
+});
