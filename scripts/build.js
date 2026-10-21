@@ -97,13 +97,13 @@ function themeFamily(value) {
 function articleCategory(article) {
   const text = normalizeTheme(`${article?.theme || ""} ${article?.subtheme || ""} ${article?.title || ""}`);
   if (/habitat|tiny house|logement|minimalisme/.test(text)) return "maison";
-  // A connected-home guide is still a home guide, not a phone tutorial.
-  const theme = normalizeTheme(article?.theme || "");
-  if (["maison", "maison jardin"].includes(theme) && /maison|domotique|logement/.test(text)) return "maison";
   // FranceConnect and online identity are digital how-to guides, even if they
   // mention administrative procedures or budgets.
   if (/franceconnect|identite numerique|messagerie|reseau wi fi|\bwifi\b/.test(text)) return "numerique_pratique";
   if (/budget|finance|econom|inflation|revenu|assurance|demarche/.test(text)) return "budget";
+  // A connected-home guide is still a home guide, not a phone tutorial.
+  const theme = normalizeTheme(article?.theme || "");
+  if (["maison", "maison jardin"].includes(theme) && /maison|domotique|logement/.test(text)) return "maison";
   if (/numerique|digital|technolog|connect|photo|informatique|ecran|domotique/.test(text)) return "numerique_pratique";
   if (/maison|habitat|jardin|deco|decoration|bricolage|energie|rangement|cuisine/.test(text)) return "maison";
   return "bien_etre";
