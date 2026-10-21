@@ -192,7 +192,7 @@ function initArchive() {
   const entries = sortByPublicationDate(data.entries.filter(Boolean));
   const requestedCategory = new URLSearchParams(location.search).get("theme") || "";
   const state = { query: "", category: requestedCategory };
-  const labels = { maison: "Maison et quotidien", budget: "Budget et démarches", numerique_pratique: "Numérique pratique", bien_etre: "Bien-être et loisirs" };
+  const labels = { maison: "Maison pratique", budget: "Budget et démarches", numerique_pratique: "Numérique facile", bien_etre: "Bien-être et loisirs" };
   fillSelect(categorySelect, [...new Set(entries.map((entry) => entry.category).filter(Boolean))].sort().map((value) => ({ value, label: labels[value] || value })), "Toutes les catégories");
   categorySelect.value = [...categorySelect.options].some((option) => option.value === requestedCategory) ? requestedCategory : "";
   state.category = categorySelect.value;
