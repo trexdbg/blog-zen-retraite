@@ -20,6 +20,31 @@ const DATE_FORMATTER = new Intl.DateTimeFormat("fr-FR", { year: "numeric", month
 const SITE_NAME = "Zen Retraite";
 const ABOUT_LASTMOD = "2026-10-21";
 const HOME_EDITORIAL_LASTMOD = "2026-10-21";
+const HUB_PAGES = [
+  {
+    file: "guides-numerique.html",
+    name: "Numérique facile après 60 ans",
+    articleIds: [
+      "2025-11-14_20-43_autonomie-num-rique_num-rique-facile-connexion",
+      "2025-11-07_16-41_num-rique-vie-sociale_num-rique-connect-vie",
+      "2025-11-27_18-43_technologie-au-quotidien_num-rique-facile-vie",
+      "2026-10-11_20-28_s-curit-des-comptes-en-ligne_t-l-phone-connexion-s-curis-e",
+      "2026-10-17_18-40_applications-mobiles-et-vie-priv-e_smartphone-applications-mobiles",
+      "2026-10-04_07-56_gestion-des-photos_photos-souvenirs-famille",
+      "2026-10-16_21-27_identite-numerique_ordinateur-ecran-securite",
+    ],
+  },
+  {
+    file: "maison-pratique.html",
+    name: "Maison pratique et autonomie après 60 ans",
+    articleIds: [
+      "2025-12-01_11-33_am-nagement-logement-senior_maison-autonomie-confort",
+      "2025-11-29_11-29_conomies-nergie-maison_nergie-maison-conomies",
+      "2025-11-20_18-46_technologie-confort-autonomie_maison-connect-e-sant",
+      "2025-11-27_18-43_technologie-au-quotidien_num-rique-facile-vie",
+    ],
+  },
+];
 const AFFILIATE_DISCLOSURE =
   "En tant que Partenaire Amazon, je réalise un bénéfice sur les achats remplissant les conditions requises. Certains liens peuvent être affiliés, sans surcoût pour vous.";
 
@@ -72,6 +97,9 @@ function themeFamily(value) {
 function articleCategory(article) {
   const text = normalizeTheme(`${article?.theme || ""} ${article?.subtheme || ""} ${article?.title || ""}`);
   if (/habitat|tiny house|logement|minimalisme/.test(text)) return "maison";
+  // A connected-home guide is still a home guide, not a phone tutorial.
+  const theme = normalizeTheme(article?.theme || "");
+  if (["maison", "maison jardin"].includes(theme) && /maison|domotique|logement/.test(text)) return "maison";
   // FranceConnect and online identity are digital how-to guides, even if they
   // mention administrative procedures or budgets.
   if (/franceconnect|identite numerique|messagerie|reseau wi fi|\bwifi\b/.test(text)) return "numerique_pratique";
@@ -763,6 +791,38 @@ async function buildAbout(template) {
   console.log("[build] Page À propos générée.");
 }
 
+function hubStructuredData(hub, articles) {
+  const articleMap = new Map(articles.map((article) => [article.id, article]));
+  const elements = hub.articleIds.map((id, index) => {
+    const article = articleMap.get(id);
+    if (!article) throw new Error(`Hub ${hub.file}: article absent ou remplacé: ${id}`);
+    return { "@type": "ListItem", position: index + 1,
+      name: article.title, url: SITE_URL + articlePath(id) };
+  });
+  const payload = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: hub.name,
+    url: SITE_URL + "/" + hub.file,
+    inLanguage: "fr-FR",
+    dateModified: HOME_EDITORIAL_LASTMOD,
+    isPartOf: { "@type": "WebSite", name: SITE_NAME, url: SITE_URL + "/" },
+    mainEntity: { "@type": "ItemList", itemListElement: elements },
+  };
+  return `<script type="application/ld+json">${safeJson(payload)}</script>`;
+}
+
+async function buildHubs(templates, publishedArticles) {
+  await Promise.all(HUB_PAGES.map(async (hub, index) => {
+    const html = renderTemplate(templates[index], {
+      SITE_URL: htmlEscape(SITE_URL),
+      HUB_STRUCTURED_DATA: hubStructuredData(hub, publishedArticles),
+    });
+    await fs.writeFile(path.join(distDir, hub.file), html, "utf8");
+  }));
+  console.log("[build] Pages thématiques construites : numérique et maison.");
+}
+
 async function buildSitemap(articles, homeNewestDate, archiveNewestDate) {
   const urls = [
     {
@@ -783,6 +843,12 @@ async function buildSitemap(articles, homeNewestDate, archiveNewestDate) {
       changefreq: "monthly",
       priority: "0.6",
     },
+    ...HUB_PAGES.map((hub) => ({
+      loc: `${SITE_URL}/${hub.file}`,
+      lastmod: HOME_EDITORIAL_LASTMOD,
+      changefreq: "monthly",
+      priority: "0.9",
+    })),
   ];
 
   articles.forEach((article) => {
@@ -864,12 +930,14 @@ async function main() {
       loadTemplate("archive.html"),
       loadTemplate("article-page.html"),
       loadTemplate("about.html"),
+      loadTemplate("guides-numerique.html"),
+      loadTemplate("maison-pratique.html"),
     ]),
     loadArticles(),
     readJson(path.join(articlesDataDir, "index.json")).catch(() => []),
   ]);
 
-  const [homeTemplate, archiveTemplate, articleTemplate, aboutTemplate] = templates;
+  const [homeTemplate, archiveTemplate, articleTemplate, aboutTemplate, digitalHubTemplate, homeHubTemplate] = templates;
 
   await prepareDist();
 
@@ -901,6 +969,7 @@ async function main() {
   await buildArchive(archiveTemplate, archiveEntries);
   await buildArticles(articleTemplate, sortByDateDesc(articles));
   await buildAbout(aboutTemplate);
+  await buildHubs([digitalHubTemplate, homeHubTemplate], publishedArticles);
   await buildSitemap(
     publishedArticles,
     toDateStamp(homeArticles[0]?.created_at),
