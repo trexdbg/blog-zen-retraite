@@ -38,6 +38,7 @@ const CATEGORY_LABELS = {
 const FEATURED_GUIDES = [
   "2026-10-04_07-56_gestion-des-photos_photos-souvenirs-famille",
   "2026-10-11_20-28_s-curit-des-comptes-en-ligne_t-l-phone-connexion-s-curis-e",
+  "2025-11-27_18-43_technologie-au-quotidien_num-rique-facile-vie",
   "2026-10-17_18-40_applications-mobiles-et-vie-priv-e_smartphone-applications-mobiles",
   "2025-11-20_18-46_technologie-confort-autonomie_maison-connect-e-sant",
   "2025-12-01_11-33_am-nagement-logement-senior_maison-autonomie-confort",
