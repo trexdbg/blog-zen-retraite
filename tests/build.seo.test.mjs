@@ -224,7 +224,11 @@ test("static build preserves every archived article and adds the about page to t
   const legacy = await readFile(path.join(rootDir, "dist", "articles", legacyId, "index.html"), "utf8");
   assert.match(legacy, /<h2 id='key-takeaways-title'>/);
   assert.match(legacy, /"@type":"BreadcrumbList"/);
-  assert.equal((legacy.match(/En tant que Partenaire Amazon/g) || []).length, 0, "no disclosure for non-commercial guides");
+  assert.equal((legacy.match(/En tant que Partenaire Amazon/g) || []).length, 1, "tagged smart-home recommendation has exactly one disclosure");
+  assert.match(legacy, /B08YB2CT3C/);
+  const nonCommercialId = "2025-11-14_20-43_autonomie-num-rique_num-rique-facile-connexion";
+  const nonCommercial = await readFile(path.join(rootDir, "dist", "articles", nonCommercialId, "index.html"), "utf8");
+  assert.equal((nonCommercial.match(/En tant que Partenaire Amazon/g) || []).length, 0, "no notice on non-commercial smartphone tutorial");
   assert.equal((home.match(/En tant que Partenaire Amazon/g) || []).length, 0);
   assert.equal((archive.match(/En tant que Partenaire Amazon/g) || []).length, 0);
 
