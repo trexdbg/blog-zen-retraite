@@ -63,16 +63,16 @@ test("table of contents only annotates h2 headings with collision-proof anchors"
 });
 
 test("content cleanup preserves Amazon URLs while deduplicating the disclosure", () => {
-  const input = '<aside class="affiliate-disclosure"><p><strong>Information d’affiliation :</strong> En tant que Partenaire Amazon, je réalise un bénéfice sur les achats remplissant les conditions requises.</p></aside><p><a href="https://www.amazon.fr/dp/B081VJ79QZ?tag=example-21" rel="nofollow sponsored">Disque dur (lien affilié)</a></p>';
+  const input = '<aside class="affiliate-disclosure"><p><strong>Information d’affiliation :</strong> En tant que Partenaire Amazon, je réalise un bénéfice sur les achats remplissant les conditions requises.</p></aside><p><a href="https://www.amazon.fr/dp/B081VJ79QZ?tag=zenretraite11-21" rel="nofollow sponsored">Disque dur (lien affilié)</a></p>';
   const cleaned = cleanArticleContent(input);
   assert.doesNotMatch(cleaned, /Partenaire Amazon/);
   assert.doesNotMatch(cleaned, /\(lien affilié\)/);
-  assert.match(cleaned, /https:\/\/www\.amazon\.fr\/dp\/B081VJ79QZ\?tag=example-21/);
+  assert.match(cleaned, /https:\/\/www\.amazon\.fr\/dp\/B081VJ79QZ\?tag=zenretraite11-21/);
   assert.match(cleaned, /rel="nofollow sponsored noopener noreferrer"/);
 });
 
 test("affiliate notices only accompany a real Amazon link", () => {
-  assert.equal(hasAmazonAffiliateLinks('<a href="https://www.amazon.fr/dp/B081VJ79QZ?tag=example-21">Produit</a>'), true);
+  assert.equal(hasAmazonAffiliateLinks('<a href="https://www.amazon.fr/dp/B081VJ79QZ?tag=zenretraite11-21">Produit</a>'), true);
   assert.equal(hasAmazonAffiliateLinks('<a href="https://www.cybermalveillance.gouv.fr/">Conseils</a>'), false);
   assert.equal(hasAmazonAffiliateLinks('Aucun produit à acheter.'), false);
 });
@@ -90,8 +90,32 @@ test("Amazon affiliate links receive sponsored metadata without losing their ori
 test("Amazon links without a tracking ID never trigger an affiliate disclosure", () => {
   const input = '<a href="https://www.amazon.fr/dp/B08YB2CT3C">Prise non affiliée</a>';
   assert.equal(hasAmazonAffiliateLinks(input), false);
-  assert.equal(cleanArticleContent(input), input);
+  assert.equal(cleanArticleContent(input), "Prise non affiliée");
   assert.equal(hasAmazonAffiliateLinks('<a href="https://www.amazon.fr/dp/B08YB2CT3C?tag=zenretraite11-21">Prise affiliée</a>'), true);
+});
+
+test("legacy unreviewed commercial links become plain text and never trigger disclosures", () => {
+  const bad = '<p>Exemple : <a class="legacy" href="https://www.amazon.fr/Marque-Mystere/dp/B0CST2J4KC?tag=zenretraite11-21" target="_blank">kit non vérifié</a>.</p>';
+  const cleaned = cleanArticleContent(bad);
+  assert.equal(cleaned, "<p>Exemple : kit non vérifié.</p>");
+  assert.equal(hasAmazonAffiliateLinks(cleaned), false);
+  assert.equal(hasAmazonAffiliateLinks(bad), false);
+  const wrongTag = '<a href="https://www.amazon.fr/dp/B081VJ79QZ?tag=unknown-21">Disque</a>';
+  assert.equal(cleanArticleContent(wrongTag), "Disque");
+  assert.equal(hasAmazonAffiliateLinks(wrongTag), false);
+  const outdatedFormat = '<a href="https://www.amazon.fr/Nom-Produit/dp/B081VJ79QZ?tag=zenretraite11-21">Disque</a>';
+  assert.equal(cleanArticleContent(outdatedFormat), "Disque");
+});
+
+test("approved affiliate snapshot is unique, time-bounded and tied to the agent's reviewed products", async () => {
+  const snapshot = JSON.parse(await readFile(path.join(rootDir, "data/affiliate-approved-products.json"), "utf8"));
+  assert.equal(snapshot.products.length, 44);
+  assert.equal(snapshot.affiliate_tag, "zenretraite11-21");
+  assert.equal(new Set(snapshot.products.map((p) => p.asin)).size, snapshot.products.length);
+  for (const product of snapshot.products) {
+    assert.match(product.asin, /^[A-Z0-9]{10}$/);
+    assert.match(product.expires_at, /^\d{4}-\d{2}-\d{2}$/);
+  }
 });
 
 test("source article revisions preserve practical advice without forcing affiliate offers", async () => {
@@ -103,6 +127,20 @@ test("source article revisions preserve practical advice without forcing affilia
   assert.match(identity.content, /Y010004/);
   assert.match(identity.content, /aide\.franceconnect\.gouv\.fr/);
   assert.doesNotMatch(identity.content, /amazon\.fr|impossible d.annuler ou de modifier/);
+});
+
+test("legacy kitchen and garden content is now aligned with the product and topic", async () => {
+  const kitchen = JSON.parse(await readFile(path.join(rootDir, "data/articles/2025-10-30_15-16_cuisine-saine-et-appareils-lectrom-nagers_cuisine-saine-appareils.json"), "utf8"));
+  const garden = JSON.parse(await readFile(path.join(rootDir, "data/articles/2025-10-30_17-06_jardinage-adapt_jardinage-outils-seniors.json"), "utf8"));
+  assert.match(kitchen.content, /amazon\.fr\/dp\/B0000DAQ46\?tag=zenretraite11-21/);
+  assert.doesNotMatch(kitchen.content, /GUHAOOL|B0CST2J4KC/);
+  assert.match(garden.content, /amazon\.fr\/dp\/B08NK879ZD\?tag=zenretraite11-21/);
+  assert.doesNotMatch(garden.content, /BLOSTM|B0CYLW9Q6C/);
+  for (const item of [kitchen, garden]) {
+    assert.ok(item.content.includes("pas") && item.content.length > 2500);
+    assert.ok(item.sources.length >= 2);
+    assert.equal(item.updated_at, "2026-10-23");
+  }
 });
 
 test("static build preserves every archived article and adds the about page to the sitemap", async () => {
@@ -231,6 +269,22 @@ test("static build preserves every archived article and adds the about page to t
   assert.equal((nonCommercial.match(/En tant que Partenaire Amazon/g) || []).length, 0, "no notice on non-commercial smartphone tutorial");
   assert.equal((home.match(/En tant que Partenaire Amazon/g) || []).length, 0);
   assert.equal((archive.match(/En tant que Partenaire Amazon/g) || []).length, 0);
+
+  const snapshot = JSON.parse(await readFile(path.join(rootDir, "data/affiliate-approved-products.json"), "utf8"));
+  const approved = new Set(snapshot.products.filter((p) => p.expires_at >= new Date().toISOString().slice(0, 10)).map((p) => p.asin));
+  for (const id of articleIds) {
+    const generated = await readFile(path.join(rootDir, "dist", "articles", id, "index.html"), "utf8");
+    const contentStart = generated.indexOf('<div class="article-body">');
+    const contentEnd = generated.indexOf("</div>", contentStart);
+    const content = generated.slice(contentStart, contentEnd);
+    for (const match of content.matchAll(/<a\b[^>]*href=(["'])(https:\/\/(?:www\.)?amazon\.fr\/[^"']+)\1[^>]*>/gi)) {
+      const link = new URL(match[2].replace(/&amp;/g, "&"));
+      assert.ok(approved.has(link.pathname.match(/^\/dp\/([A-Z0-9]{10})\/?$/i)?.[1]?.toUpperCase()), "unaudited Amazon reference on " + id);
+      assert.equal(link.searchParams.get("tag"), snapshot.affiliate_tag, "wrong tracking tag on " + id);
+      assert.match(match[0], /\bsponsored\b/, "missing sponsored attribute on " + id);
+    }
+  }
+
 
   const olderId = "2026-10-07_20-07_s-curit-des-comptes-en-ligne_t-l-phone-connexion-s-curis-e";
   const newerId = "2026-10-11_20-28_s-curit-des-comptes-en-ligne_t-l-phone-connexion-s-curis-e";

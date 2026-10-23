@@ -1,4 +1,4 @@
-import { promises as fs } from "node:fs";
+import { promises as fs, readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -45,6 +45,23 @@ const HUB_PAGES = [
     ],
   },
 ];
+// Snapshot of the reviewed catalogue managed in zen-retraite-agent.
+// Fail closed if it is missing, invalid or a product has expired.
+const APPROVED_PRODUCTS = JSON.parse(readFileSync(path.join(dataDir, "affiliate-approved-products.json"), "utf8"));
+if (APPROVED_PRODUCTS.version !== 1 || !Array.isArray(APPROVED_PRODUCTS.products) ||
+    !/^[A-Za-z0-9-]{3,64}$/.test(APPROVED_PRODUCTS.affiliate_tag || "")) {
+  throw new Error("Le catalogue de contrôle d'affiliation est invalide.");
+}
+const APPROVED_AFFILIATE_ASINS = new Map();
+for (const product of APPROVED_PRODUCTS.products) {
+  if (!/^[A-Z0-9]{10}$/.test(product.asin || "") || !/^\d{4}-\d{2}-\d{2}$/.test(product.expires_at || "") ||
+      APPROVED_AFFILIATE_ASINS.has(product.asin)) {
+    throw new Error("Référence d'affiliation invalide ou dupliquée.");
+  }
+  APPROVED_AFFILIATE_ASINS.set(product.asin, product.expires_at);
+}
+let blockedAffiliateLinks = 0;
+
 const AFFILIATE_DISCLOSURE =
   "En tant que Partenaire Amazon, je réalise un bénéfice sur les achats remplissant les conditions requises. Certains liens peuvent être affiliés, sans surcoût pour vous.";
 
@@ -527,26 +544,51 @@ function articleImageBlock(article) {
 
 // The site-wide article notice is rendered before the body: keep disclosures
 // from older generated HTML from appearing two or three times to readers.
-function hasAmazonAffiliateLinks(content) {
-  return typeof content === "string" &&
-    /<a\b[^>]*href\s*=\s*(["'])https:\/\/(?:www\.)?amazon\.fr\/[^"']*[?&](?:amp;)?tag=[A-Za-z0-9-]+[^"']*\1/i.test(content);
+function amazonHref(linkTag) {
+  return linkTag.match(/\bhref\s*=\s*(["'])(.*?)\1/i)?.[2] || null;
 }
 
-// Older articles occasionally omit the sponsored relationship on Amazon links.
-// Keep the original destination and existing attributes, but make the
-// commercial relationship unambiguous to search engines and users.
+function isApprovedAffiliateHref(href) {
+  if (typeof href !== "string") return false;
+  try {
+    const url = new URL(href.replace(/&amp;/gi, "&"));
+    if (url.protocol !== "https:" || !["www.amazon.fr", "amazon.fr"].includes(url.hostname.toLowerCase()) ||
+        url.username || url.password || url.port) return false;
+    const asin = url.pathname.match(/^\/dp\/([A-Z0-9]{10})\/?$/i)?.[1]?.toUpperCase();
+    if (!asin || url.searchParams.get("tag") !== APPROVED_PRODUCTS.affiliate_tag) return false;
+    const expires = APPROVED_AFFILIATE_ASINS.get(asin);
+    return !!expires && expires >= new Date().toISOString().slice(0, 10);
+  } catch {
+    return false;
+  }
+}
+
+function hasAmazonAffiliateLinks(content) {
+  if (typeof content !== "string") return false;
+  return [...content.matchAll(/<a\b[^>]*>/gi)].some((match) => isApprovedAffiliateHref(amazonHref(match[0])));
+}
+
+// Never publish unreviewed product destinations from old articles. Keep the
+// surrounding advice legible; reviewers must subsequently revise any
+// outdated product claims in the source JSON, not just add a replacement URL.
 function normalizeAmazonAffiliateLinks(content) {
-  return content.replace(/<a\b[^>]*>/gi, (tag) => {
-    const href = tag.match(/\bhref\s*=\s*(["'])(.*?)\1/i);
-    if (!href || !/^https:\/\/(?:www\.)?amazon\.fr\//i.test(href[2]) ||
-        !/[?&](?:amp;)?tag=[A-Za-z0-9-]+/i.test(href[2])) {
-      return tag;
+  return content.replace(/<a\b[^>]*>[\s\S]*?<\/a>/gi, (anchor) => {
+    const opening = anchor.match(/^<a\b[^>]*>/i)?.[0];
+    const href = opening && amazonHref(opening);
+    if (!href) return anchor;
+    let url;
+    try { url = new URL(href.replace(/&amp;/gi, "&")); } catch { return anchor; }
+    if (!["www.amazon.fr", "amazon.fr"].includes(url.hostname.toLowerCase())) return anchor;
+    if (!isApprovedAffiliateHref(href)) {
+      blockedAffiliateLinks++;
+      return anchor.replace(/^<a\b[^>]*>/i, "").replace(/<\/a>$/i, "");
     }
-    const rel = tag.match(/\brel\s*=\s*(["'])(.*?)\1/i);
+    const rel = opening.match(/\brel\s*=\s*(["'])(.*?)\1/i);
     const values = new Set(rel ? rel[2].split(/\s+/).filter(Boolean) : []);
     for (const value of ["sponsored", "nofollow", "noopener", "noreferrer"]) values.add(value);
-    const attribute = `rel="${[...values].join(" ")}"`;
-    return rel ? tag.replace(rel[0], attribute) : tag.replace(/>$/, ` ${attribute}>`);
+    const attribute = 'rel="' + [...values].join(" ") + '"';
+    const updated = rel ? opening.replace(rel[0], attribute) : opening.replace(/>$/, " " + attribute + ">");
+    return updated + anchor.slice(opening.length);
   });
 }
 
@@ -1009,6 +1051,7 @@ async function main() {
   );
   await copyStaticAssets();
 
+  console.log("[build] Liens Amazon hors catalogue neutralisés : " + blockedAffiliateLinks);
   console.log("[build] Terminé ✅");
 }
 
