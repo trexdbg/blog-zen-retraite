@@ -1,0 +1,273 @@
+{
+  "version": 1,
+  "synced_at": "2026-10-23",
+  "source": "trexdbg/zen-retraite-agent/affiliate_catalog.json",
+  "note": "Liste technique des produits validés : un lien Amazon n'est publié que si son ASIN, sa date de validité et son identifiant partenaire correspondent.",
+  "affiliate_tag": "zenretraite11-21",
+  "products": [
+    {
+      "id": "seagate-basic-portable-2to-stjl2000400",
+      "asin": "B081VJ79QZ",
+      "title": "Seagate Basic 2 To (STJL2000400)",
+      "expires_at": "2027-01-02"
+    },
+    {
+      "id": "yubico-security-key-nfc-usba",
+      "asin": "B0BVNPWPCN",
+      "title": "Yubico Security Key NFC (USB-A)",
+      "expires_at": "2027-01-12"
+    },
+    {
+      "id": "fiskars-solid-p321-1057162",
+      "asin": "B08NK879ZD",
+      "title": "Fiskars Solid P321 - sécateur à lame franche (1057162)",
+      "expires_at": "2027-01-16"
+    },
+    {
+      "id": "oxo-pro-swivel-peeler-1057966",
+      "asin": "B0000DAQ46",
+      "title": "OXO Good Grips Pro - éplucheur pivotant",
+      "expires_at": "2027-01-16"
+    },
+    {
+      "id": "gardena-micro-drip-13010-20",
+      "asin": "B018E0L5RY",
+      "title": "GARDENA Micro-Drip - kit d'arrosage pour rangées de plantes S (13010-20)",
+      "expires_at": "2027-01-16"
+    },
+    {
+      "id": "tapo-p100-fr-3pack",
+      "asin": "B08YB2CT3C",
+      "title": "TP-Link Tapo P100 (FR) - lot de trois prises connectées Wi-Fi",
+      "expires_at": "2027-01-16"
+    },
+    {
+      "id": "petzl-tikkina-300-bleue",
+      "asin": "B0FD63SHYN",
+      "title": "Petzl TIKKINA bleue - lampe frontale 300 lumens",
+      "expires_at": "2027-01-16"
+    },
+    {
+      "id": "carson-lumicraft-lc15-loupe",
+      "asin": "B004ALP532",
+      "title": "Carson LumiCraft LC-15 - loupe mains libres avec LED",
+      "expires_at": "2027-01-16"
+    },
+    {
+      "id": "varta-led-booklight-16618",
+      "asin": "B00BB99QWM",
+      "title": "VARTA Book Light 16618 - lampe de lecture LED à clip",
+      "expires_at": "2027-01-16"
+    },
+    {
+      "id": "gardena-raccord-robinet-interieur-18210",
+      "asin": "B07YSSVYH4",
+      "title": "GARDENA 18210-20 - raccord pour robinet intérieur",
+      "expires_at": "2027-01-15"
+    },
+    {
+      "id": "gardena-epandeur-xl-436",
+      "asin": "B076X38GXM",
+      "title": "GARDENA XL - épandeur à engrais sur roues (00436-20)",
+      "expires_at": "2027-01-15"
+    },
+    {
+      "id": "gardena-distributeur-deux-voies",
+      "asin": "B00LM2IE12",
+      "title": "GARDENA - distributeur deux voies pour robinet 3/4",
+      "expires_at": "2027-01-15"
+    },
+    {
+      "id": "microplane-zesteur-premium-noir",
+      "asin": "B00151WA06",
+      "title": "Microplane Premium Classic noir - râpe zesteur",
+      "expires_at": "2027-01-15"
+    },
+    {
+      "id": "oxo-good-grips-ouvreboite",
+      "asin": "B00004OCJW",
+      "title": "OXO Good Grips - ouvre-boîte manuel à poignée souple",
+      "expires_at": "2027-01-15"
+    },
+    {
+      "id": "leifheit-essoreuse-comfortline-23200",
+      "asin": "B000B8J4A8",
+      "title": "Leifheit ComfortLine 23200 - essoreuse à salade 5,5 L",
+      "expires_at": "2027-01-15"
+    },
+    {
+      "id": "stanley-classic-bouteille-isotherme-1l",
+      "asin": "B000T21JFE",
+      "title": "Stanley Classic Legendary - bouteille isotherme 1 L verte",
+      "expires_at": "2027-01-15"
+    },
+    {
+      "id": "bodum-chambord-cafetiere-350ml",
+      "asin": "B0051OOM68",
+      "title": "Bodum CHAMBORD - cafetière à piston 350 ml",
+      "expires_at": "2027-01-15"
+    },
+    {
+      "id": "anker-511-nano3-30w",
+      "asin": "B0B2VC6J8Q",
+      "title": "Anker 511 Nano 3 - chargeur secteur USB-C 30 W",
+      "expires_at": "2027-01-15"
+    },
+    {
+      "id": "anker-zolo-powerbank-10000",
+      "asin": "B0CZ9GPPX1",
+      "title": "Anker Zolo - batterie externe 10 000 mAh avec câbles intégrés",
+      "expires_at": "2027-01-15"
+    },
+    {
+      "id": "anker-batterie-externe-20000-87w",
+      "asin": "B0CXDXP8VR",
+      "title": "Anker - batterie externe 20 000 mAh avec câble USB-C intégré",
+      "expires_at": "2027-01-15"
+    },
+    {
+      "id": "anker-prime-chargeur-100w",
+      "asin": "B0C4DZRRK3",
+      "title": "Anker Prime - chargeur secteur GaN 100 W à trois ports",
+      "expires_at": "2027-01-15"
+    },
+    {
+      "id": "anker-powerport-iii-nano-20w",
+      "asin": "B094DLVXJ1",
+      "title": "Anker PowerPort III Nano - chargeur USB-C 20 W",
+      "expires_at": "2027-01-15"
+    },
+    {
+      "id": "leifheit-pegasus-180-81514",
+      "asin": "B00GL9FQ4Y",
+      "title": "Leifheit Pegasus 180 Solid - étendoir pliable 18 m",
+      "expires_at": "2027-01-15"
+    },
+    {
+      "id": "tplink-archer-t3u-usb-wifi",
+      "asin": "B07M69276N",
+      "title": "TP-Link Archer T3U - adaptateur Wi-Fi USB AC1300",
+      "expires_at": "2027-01-15"
+    },
+    {
+      "id": "anker-643-cable-usbc-100w",
+      "asin": "B093GGNRZM",
+      "title": "Anker 643 - câble USB-C vers USB-C 100 W, 1,8 m",
+      "expires_at": "2027-01-15"
+    },
+    {
+      "id": "anker-powerline-iii-usbc-60w",
+      "asin": "B07SHT92GJ",
+      "title": "Anker PowerLine III - câble USB-C vers USB-C 60 W, 1,8 m",
+      "expires_at": "2027-01-15"
+    },
+    {
+      "id": "brother-pt-h110-etiqueteuse",
+      "asin": "B071S33CLL",
+      "title": "Brother P-touch PT-H110 - étiqueteuse portable",
+      "expires_at": "2027-01-15"
+    },
+    {
+      "id": "dymo-letratag-100h",
+      "asin": "B0BRZ9RTMX",
+      "title": "DYMO LetraTag LT-100H - étiqueteuse manuelle",
+      "expires_at": "2027-01-15"
+    },
+    {
+      "id": "staedtler-noris-hb-lot10",
+      "asin": "B003JYX2VS",
+      "title": "STAEDTLER Noris 120 - lot de dix crayons graphite HB",
+      "expires_at": "2027-01-15"
+    },
+    {
+      "id": "ravensburger-animaux-puzzle-1000",
+      "asin": "B0944C51B8",
+      "title": "Ravensburger - puzzle animaux sauvages de 1 000 pièces",
+      "expires_at": "2027-01-15"
+    },
+    {
+      "id": "ravensburger-notredame-3d-12523",
+      "asin": "B07B47YM8Y",
+      "title": "Ravensburger Notre-Dame de Paris - puzzle 3D 324 pièces",
+      "expires_at": "2027-01-15"
+    },
+    {
+      "id": "clementoni-tour-eiffel-puzzle-1000",
+      "asin": "B0BTDGRKTH",
+      "title": "Clementoni Tour Eiffel - puzzle de 1 000 pièces",
+      "expires_at": "2027-01-15"
+    },
+    {
+      "id": "gigamic-quoridor-classic",
+      "asin": "B0CFX91V8N",
+      "title": "Gigamic Quoridor Classic - jeu de stratégie en bois",
+      "expires_at": "2027-01-15"
+    },
+    {
+      "id": "ravensburger-labyrinthe-26743",
+      "asin": "B06XG99XFC",
+      "title": "Ravensburger Labyrinthe - jeu de société 26743",
+      "expires_at": "2027-01-15"
+    },
+    {
+      "id": "libellud-dixit-jeu-base",
+      "asin": "B08V6T32QB",
+      "title": "Libellud Dixit - jeu de société version française",
+      "expires_at": "2027-01-15"
+    },
+    {
+      "id": "repos-production-7-wonders",
+      "asin": "B08G4RBQY4",
+      "title": "Repos Production 7 Wonders - jeu de société édition 2020",
+      "expires_at": "2027-01-15"
+    },
+    {
+      "id": "jbl-go4-enceinte-bluetooth-noire",
+      "asin": "B0CX5C6WP3",
+      "title": "JBL GO 4 noire - enceinte Bluetooth portable",
+      "expires_at": "2027-01-15"
+    },
+    {
+      "id": "sandisk-ultra-usb3-64go",
+      "asin": "B00DQGBYDC",
+      "title": "SanDisk Ultra - clé USB 3.0 de 64 Go",
+      "expires_at": "2027-01-15"
+    },
+    {
+      "id": "fiskars-ciseaux-functionalform-21cm",
+      "asin": "B00U5P67IO",
+      "title": "Fiskars Functional Form 1019197 - ciseaux universels 21 cm",
+      "expires_at": "2027-01-15"
+    },
+    {
+      "id": "fiskars-solid-plantoir-1057080",
+      "asin": "B08QYNQ5Z5",
+      "title": "Fiskars Solid 1057080 - plantoir de jardin",
+      "expires_at": "2027-01-15"
+    },
+    {
+      "id": "logitech-m330-silent-plus-noir",
+      "asin": "B01K7GEAFC",
+      "title": "Logitech M330 Silent Plus - souris sans fil noire",
+      "expires_at": "2027-01-15"
+    },
+    {
+      "id": "ravensburger-tapis-puzzle-17956",
+      "asin": "B09BJYH2DP",
+      "title": "Ravensburger 17956 - tapis enroulable pour puzzle jusqu'à 1500 pièces",
+      "expires_at": "2027-01-15"
+    },
+    {
+      "id": "ravensburger-sort-go-12001674",
+      "asin": "B0DZ6ZSGVN",
+      "title": "Ravensburger Sort & Go 12001674 - huit bacs de tri pour puzzle",
+      "expires_at": "2027-01-15"
+    },
+    {
+      "id": "bic-cristal-original-vert-pochette",
+      "asin": "B007XT309Y",
+      "title": "BIC Cristal Original - pochette de quatre stylos à bille verts",
+      "expires_at": "2027-01-15"
+    }
+  ]
+}
