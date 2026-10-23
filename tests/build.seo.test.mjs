@@ -67,7 +67,7 @@ test("content cleanup preserves Amazon URLs while deduplicating the disclosure",
   const cleaned = cleanArticleContent(input);
   assert.doesNotMatch(cleaned, /Partenaire Amazon/);
   assert.doesNotMatch(cleaned, /\(lien affilié\)/);
-  assert.match(cleaned, /https:\/\/www\.amazon\.fr\/dp\/B081VJ79QZ\?tag=example-21/);
+  assert.match(cleaned, /https:\/\/www\.amazon\.fr\/dp\/B081VJ79QZ\?tag=zenretraite11-21/);
   assert.match(cleaned, /rel="nofollow sponsored noopener noreferrer"/);
 });
 
