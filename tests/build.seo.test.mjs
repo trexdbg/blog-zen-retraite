@@ -68,13 +68,41 @@ test("content cleanup preserves Amazon URLs while deduplicating the disclosure",
   assert.doesNotMatch(cleaned, /Partenaire Amazon/);
   assert.doesNotMatch(cleaned, /\(lien affilié\)/);
   assert.match(cleaned, /https:\/\/www\.amazon\.fr\/dp\/B081VJ79QZ\?tag=example-21/);
-  assert.match(cleaned, /rel="nofollow sponsored"/);
+  assert.match(cleaned, /rel="nofollow sponsored noopener noreferrer"/);
 });
 
 test("affiliate notices only accompany a real Amazon link", () => {
   assert.equal(hasAmazonAffiliateLinks('<a href="https://www.amazon.fr/dp/B081VJ79QZ?tag=example-21">Produit</a>'), true);
   assert.equal(hasAmazonAffiliateLinks('<a href="https://www.cybermalveillance.gouv.fr/">Conseils</a>'), false);
   assert.equal(hasAmazonAffiliateLinks('Aucun produit à acheter.'), false);
+});
+
+test("Amazon affiliate links receive sponsored metadata without losing their original target", () => {
+  const input = '<p><a class="product" href="https://www.amazon.fr/dp/B08YB2CT3C?tag=zenretraite11-21&amp;language=fr_FR">Une prise connectée</a></p>';
+  const cleaned = cleanArticleContent(input);
+  assert.match(cleaned, /rel="sponsored nofollow noopener noreferrer"/);
+  assert.match(cleaned, /class="product"/);
+  assert.match(cleaned, /B08YB2CT3C\?tag=zenretraite11-21&amp;language=fr_FR/);
+  assert.equal((cleanArticleContent(cleaned).match(/\bsponsored\b/g) || []).length, 1);
+  assert.equal(hasAmazonAffiliateLinks(cleaned), true);
+});
+
+test("Amazon links without a tracking ID never trigger an affiliate disclosure", () => {
+  const input = '<a href="https://www.amazon.fr/dp/B08YB2CT3C">Prise non affiliée</a>';
+  assert.equal(hasAmazonAffiliateLinks(input), false);
+  assert.equal(cleanArticleContent(input), input);
+  assert.equal(hasAmazonAffiliateLinks('<a href="https://www.amazon.fr/dp/B08YB2CT3C?tag=zenretraite11-21">Prise affiliée</a>'), true);
+});
+
+test("source article revisions preserve practical advice without forcing affiliate offers", async () => {
+  const home = JSON.parse(await readFile(path.join(rootDir, "data/articles/2025-11-20_18-46_technologie-confort-autonomie_maison-connect-e-sant.json"), "utf8"));
+  assert.match(home.content, /amazon\.fr\/dp\/B08YB2CT3C\?tag=zenretraite11-21/);
+  assert.match(home.content, /Wi-Fi 2,4 GHz/);
+  assert.match(home.content, /fiche fabricant/);
+  const identity = JSON.parse(await readFile(path.join(rootDir, "data/articles/2026-10-16_21-27_identite-numerique_ordinateur-ecran-securite.json"), "utf8"));
+  assert.match(identity.content, /Y010004/);
+  assert.match(identity.content, /aide\.franceconnect\.gouv\.fr/);
+  assert.doesNotMatch(identity.content, /amazon\.fr|impossible d.annuler ou de modifier/);
 });
 
 test("static build preserves every archived article and adds the about page to the sitemap", async () => {
@@ -196,7 +224,11 @@ test("static build preserves every archived article and adds the about page to t
   const legacy = await readFile(path.join(rootDir, "dist", "articles", legacyId, "index.html"), "utf8");
   assert.match(legacy, /<h2 id='key-takeaways-title'>/);
   assert.match(legacy, /"@type":"BreadcrumbList"/);
-  assert.equal((legacy.match(/En tant que Partenaire Amazon/g) || []).length, 0, "no disclosure for non-commercial guides");
+  assert.equal((legacy.match(/En tant que Partenaire Amazon/g) || []).length, 1, "tagged smart-home recommendation has exactly one disclosure");
+  assert.match(legacy, /B08YB2CT3C/);
+  const nonCommercialId = "2025-11-14_20-43_autonomie-num-rique_num-rique-facile-connexion";
+  const nonCommercial = await readFile(path.join(rootDir, "dist", "articles", nonCommercialId, "index.html"), "utf8");
+  assert.equal((nonCommercial.match(/En tant que Partenaire Amazon/g) || []).length, 0, "no notice on non-commercial smartphone tutorial");
   assert.equal((home.match(/En tant que Partenaire Amazon/g) || []).length, 0);
   assert.equal((archive.match(/En tant que Partenaire Amazon/g) || []).length, 0);
 

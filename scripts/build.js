@@ -529,15 +529,34 @@ function articleImageBlock(article) {
 // from older generated HTML from appearing two or three times to readers.
 function hasAmazonAffiliateLinks(content) {
   return typeof content === "string" &&
-    /<a\b[^>]*href\s*=\s*["']https:\/\/(?:www\.)?amazon\.fr\//i.test(content);
+    /<a\b[^>]*href\s*=\s*(["'])https:\/\/(?:www\.)?amazon\.fr\/[^"']*[?&](?:amp;)?tag=[A-Za-z0-9-]+[^"']*\1/i.test(content);
+}
+
+// Older articles occasionally omit the sponsored relationship on Amazon links.
+// Keep the original destination and existing attributes, but make the
+// commercial relationship unambiguous to search engines and users.
+function normalizeAmazonAffiliateLinks(content) {
+  return content.replace(/<a\b[^>]*>/gi, (tag) => {
+    const href = tag.match(/\bhref\s*=\s*(["'])(.*?)\1/i);
+    if (!href || !/^https:\/\/(?:www\.)?amazon\.fr\//i.test(href[2]) ||
+        !/[?&](?:amp;)?tag=[A-Za-z0-9-]+/i.test(href[2])) {
+      return tag;
+    }
+    const rel = tag.match(/\brel\s*=\s*(["'])(.*?)\1/i);
+    const values = new Set(rel ? rel[2].split(/\s+/).filter(Boolean) : []);
+    for (const value of ["sponsored", "nofollow", "noopener", "noreferrer"]) values.add(value);
+    const attribute = `rel="${[...values].join(" ")}"`;
+    return rel ? tag.replace(rel[0], attribute) : tag.replace(/>$/, ` ${attribute}>`);
+  });
 }
 
 function cleanArticleContent(content) {
   if (typeof content !== "string") return "";
-  return content
+  const withoutRepeatedDisclosures = content
     .replace(/<aside\b[^>]*class=["'][^"']*\baffiliate-disclosure\b[^"']*["'][^>]*>[\s\S]*?<\/aside>\s*/gi, "")
     .replace(/<p(?:\s[^>]*)?>\s*(?:Information d[’']affiliation\s*:\s*)?En tant que Partenaire Amazon, je réalise un bénéfice sur les achats remplissant les conditions requises\.\s*(?:Certains liens peuvent être affiliés, sans surcoût pour vous\.)?\s*<\/p>\s*/gi, "")
     .replace(/\s*\(lien affilié\)(?=\s*<\/a>)/gi, "");
+  return normalizeAmazonAffiliateLinks(withoutRepeatedDisclosures);
 }
 
 function structuredData(article, canonicalUrl, description) {
