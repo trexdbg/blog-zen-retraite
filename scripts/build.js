@@ -113,6 +113,12 @@ function displayCategory(article) {
   return CATEGORY_LABELS[articleCategory(article)];
 }
 
+// La page d'accueil conserve la recherche sur toute la bibliothèque,
+// mais met d'abord en avant les deux domaines éditoriaux du site.
+function isHomepageFocus(article) {
+  return ["numerique_pratique", "maison"].includes(articleCategory(article));
+}
+
 function hubForArticle(article) {
   const category = articleCategory(article);
   if (category === "numerique_pratique") return { url: SITE_URL + "/guides-numerique.html", path: "/guides-numerique.html", name: "Numérique facile" };
@@ -448,7 +454,7 @@ function buildArchiveItem(entry) {
 
 async function buildHome(template, articles, archiveCount) {
   const sortedArticles = sortByDateDesc(articles);
-  const latestArticles = sortedArticles.slice(0, 6);
+  const latestArticles = sortedArticles.filter(isHomepageFocus).slice(0, 6);
   const cards = latestArticles.map(buildCard).join("\n");
   const listData = articles.map((article) => ({
     id: article.id,
@@ -457,6 +463,7 @@ async function buildHome(template, articles, archiveCount) {
     theme: displayTheme(article.theme),
     category: articleCategory(article),
     category_label: displayCategory(article),
+    homepage_focus: isHomepageFocus(article),
     subtheme: article.subtheme,
     image: article.image,
     image_alt: articleImageAlt(article),
