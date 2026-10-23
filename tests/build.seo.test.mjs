@@ -159,12 +159,18 @@ test("static build preserves every archived article and adds the about page to t
     const file = path.join(rootDir, "assets", "images", path.basename(new URL(entry.image).pathname));
     assert.match(await readFile(file, "utf8"), /^<svg /, `missing illustration for ${entry.id}`);
   }
+  // Tous les guides restent accessibles par la recherche, mais l'accueil
+  // sans filtre ne met plus en avant les thèmes généralistes hors niche.
+  assert.ok(homeArticles.some((entry) => entry.homepage_focus === false), "le fonds hors spécialités reste accessible");
+  assert.ok(homeArticles.some((entry) => entry.homepage_focus === true), "les deux spécialités sont représentées");
   const latestIds = [...homeArticles]
+    .filter((entry) => entry.homepage_focus === true)
     .sort((left, right) => new Date(right.created_at).getTime() - new Date(left.created_at).getTime())
     .slice(0, 6)
     .map((entry) => entry.id);
   const visibleCardIds = [...home.matchAll(/<article class="card" data-article-id="([^"]+)"/g)].map((match) => match[1]);
   assert.deepEqual(visibleCardIds, latestIds);
+  assert.match(home, /guides de nos spécialités affichés/);
   assert.match(home, /id="search-input"/);
   assert.match(home, /id="load-more"/);
   assert.match(home, /archive\.html\?theme=/);
@@ -211,6 +217,7 @@ test("static build preserves every archived article and adds the about page to t
   const clientScript = await readFile(path.join(rootDir, "script.js"), "utf8");
   assert.doesNotMatch(clientScript, /\/articles\/[^`"']*\/index\.html/);
   assert.match(clientScript, /function articlePath\(id\)/);
+  assert.match(clientScript, /article\.homepage_focus === false/, "le filtrage dynamique respecte aussi la spécialisation");
   const jsonLd = article.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/);
   assert.ok(jsonLd);
   assert.equal(JSON.parse(jsonLd[1]).datePublished, structuredDate(source.created_at));
