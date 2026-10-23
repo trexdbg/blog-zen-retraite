@@ -129,6 +129,20 @@ test("source article revisions preserve practical advice without forcing affilia
   assert.doesNotMatch(identity.content, /amazon\.fr|impossible d.annuler ou de modifier/);
 });
 
+test("legacy kitchen and garden content is now aligned with the product and topic", async () => {
+  const kitchen = JSON.parse(await readFile(path.join(rootDir, "data/articles/2025-10-30_15-16_cuisine-saine-et-appareils-lectrom-nagers_cuisine-saine-appareils.json"), "utf8"));
+  const garden = JSON.parse(await readFile(path.join(rootDir, "data/articles/2025-10-30_17-06_jardinage-adapt_jardinage-outils-seniors.json"), "utf8"));
+  assert.match(kitchen.content, /amazon\.fr\/dp\/B0000DAQ46\?tag=zenretraite11-21/);
+  assert.doesNotMatch(kitchen.content, /GUHAOOL|B0CST2J4KC/);
+  assert.match(garden.content, /amazon\.fr\/dp\/B08NK879ZD\?tag=zenretraite11-21/);
+  assert.doesNotMatch(garden.content, /BLOSTM|B0CYLW9Q6C/);
+  for (const item of [kitchen, garden]) {
+    assert.ok(item.content.includes("pas") && item.content.length > 2500);
+    assert.ok(item.sources.length >= 2);
+    assert.equal(item.updated_at, "2026-10-23");
+  }
+});
+
 test("static build preserves every archived article and adds the about page to the sitemap", async () => {
   await run(process.execPath, ["scripts/build.js"], { cwd: rootDir });
   const articlesDir = path.join(rootDir, "data", "articles");
