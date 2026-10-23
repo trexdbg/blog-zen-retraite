@@ -155,7 +155,11 @@ function initHome() {
 
   function filteredArticles() {
     const query = normalized(state.query);
+    const hasActiveFilters = Boolean(query || state.category || state.subject);
     return articles.filter((article) => {
+      // Sans filtre, proposer d'abord les deux spécialités. Une recherche
+      // explicite continue d'interroger toutes les archives du site.
+      if (!hasActiveFilters && article.homepage_focus === false) return false;
       const haystack = normalized(`${article.title} ${article.excerpt} ${article.theme} ${article.subtheme} ${article.category_label}`);
       return (!state.category || article.category === state.category) && (!state.subject || article.subtheme === state.subject) && (!query || haystack.includes(query));
     });
@@ -167,8 +171,8 @@ function initHome() {
     grid.replaceChildren(...visible.map(buildCard));
     grid.dataset.state = "ready";
     if (empty) empty.hidden = visible.length > 0;
-    if (status) status.textContent = filtered.length === articles.length && state.visible <= PAGE_SIZE
-      ? `${visible.length} publications récentes affichées.`
+    if (status) status.textContent = !state.query && !state.category && !state.subject && state.visible <= PAGE_SIZE
+      ? `${visible.length} guides de nos spécialités affichés.`
       : `${filtered.length} guide${filtered.length > 1 ? "s" : ""} trouvé${filtered.length > 1 ? "s" : ""}, ${visible.length} affiché${visible.length > 1 ? "s" : ""}.`;
     if (loadMore) loadMore.hidden = visible.length >= filtered.length;
   }
