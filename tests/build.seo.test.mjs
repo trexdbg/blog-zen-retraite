@@ -315,7 +315,7 @@ test("static build preserves every archived article and adds the about page to t
   const olderId = "2026-10-07_20-07_s-curit-des-comptes-en-ligne_t-l-phone-connexion-s-curis-e";
   const newerId = "2026-10-11_20-28_s-curit-des-comptes-en-ligne_t-l-phone-connexion-s-curis-e";
   const newGuide = await readFile(path.join(rootDir, "dist", "articles", newerId, "index.html"), "utf8");
-  assert.doesNotMatch(newGuide, new RegExp('href=["\\\']/articles/' + olderId + '/'), "a guide cannot link back to its own superseded version");
+  assert.ok(!newGuide.includes(`href="/articles/${olderId}/"`), "a guide cannot link back to its own superseded version");
   const olderHtml = await readFile(path.join(rootDir, "dist", "articles", olderId, "index.html"), "utf8");
   assert.match(olderHtml, new RegExp('rel="canonical" href="https://zen-retraite.fr/articles/' + newerId + '/"'));
   assert.match(olderHtml, /lire le guide actualisé/);
