@@ -608,6 +608,31 @@ function cleanArticleContent(content) {
   return normalizeAmazonAffiliateLinks(withoutRepeatedDisclosures);
 }
 
+function canonicalizeInternalArticleLinks(content, article, articles) {
+  // Les guides remplacés restent consultables, mais un lien éditorial ne doit
+  // pas renvoyer vers une URL remplacée, ni former une boucle vers le guide lu.
+  if (typeof content !== "string" || !article || !Array.isArray(articles)) return content;
+  const supersededPaths = new Map(
+    articles
+      .filter((candidate) => isSuperseded(candidate, articles))
+      .map((candidate) => [articlePath(candidate.id), articlePath(candidate.superseded_by)])
+  );
+  if (!supersededPaths.size) return content;
+
+  return content.replace(/<a\b[^>]*>[\s\S]*?<\/a>/gi, (anchor) => {
+    const href = anchor.match(/\bhref\s*=\s*(["'])(\/articles\/[^"'?#]+\/(?:index\.html)?)\1/i);
+    if (!href) return anchor;
+    const currentPath = href[2].replace(/index\.html$/i, "");
+    const target = supersededPaths.get(currentPath);
+    if (!target) return anchor;
+    if (target === articlePath(article.id)) {
+      // Ne pas transformer un lien vers l'ancienne version en lien vers soi-même.
+      return anchor.replace(/^<a\b[^>]*>/i, "").replace(/<\/a>$/i, "");
+    }
+    return anchor.replace(href[0], `href=${href[1]}${htmlEscape(target)}${href[1]}`);
+  });
+}
+
 function structuredData(article, canonicalUrl, description) {
   const payload = {
     "@context": "https://schema.org",
@@ -806,7 +831,7 @@ async function buildArticles(template, articles) {
     const description = metaDescription(article.excerpt);
     const publishedDate = structuredDate(article.created_at);
     const updatedDate = structuredDate(article.updated_at);
-    const cleanedContent = cleanArticleContent(article.content);
+    const cleanedContent = canonicalizeInternalArticleLinks(cleanArticleContent(article.content), article, articles);
     const renderedContent = articleContentWithToc(cleanedContent);
     const replacements = {
       ARTICLE_TITLE: htmlEscape(article.title),
@@ -1069,4 +1094,4 @@ if (process.argv[1] && path.resolve(process.argv[1]) === __filename) {
   });
 }
 
-export { articleContentWithToc, articleCategory, cleanArticleContent, hasAmazonAffiliateLinks, keyTakeaways, relatedArticles, relatedArticlesBlock, structuredDate };
+export { articleContentWithToc, articleCategory, canonicalizeInternalArticleLinks, cleanArticleContent, hasAmazonAffiliateLinks, keyTakeaways, relatedArticles, relatedArticlesBlock, structuredDate };

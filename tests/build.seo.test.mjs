@@ -4,7 +4,7 @@ import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
-import { articleContentWithToc, cleanArticleContent, hasAmazonAffiliateLinks, keyTakeaways, relatedArticles, relatedArticlesBlock, structuredDate } from "../scripts/build.js";
+import { articleContentWithToc, canonicalizeInternalArticleLinks, cleanArticleContent, hasAmazonAffiliateLinks, keyTakeaways, relatedArticles, relatedArticlesBlock, structuredDate } from "../scripts/build.js";
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const run = (file, args, options) => new Promise((resolve, reject) => execFile(file, args, options, (error, stdout, stderr) => error ? reject(error) : resolve({ stdout, stderr })));
@@ -36,6 +36,25 @@ test("related article links use their canonical trailing-slash URL", () => {
   const html = relatedArticlesBlock(article, [candidate]);
   assert.match(html, /href='\/articles\/photo-albums\/'/);
   assert.doesNotMatch(html, /index\.html/);
+});
+
+test("internal links to superseded guides point to the canonical page without self-loops", () => {
+  const old = { id: "old", title: "Version ancienne", superseded_by: "new" };
+  const current = { id: "new", title: "Guide à jour" };
+  const another = { id: "another", title: "Guide connexe" };
+  const source = '<p><a href="/articles/old/">Voir ce guide</a> et <a href="/articles/another/">Autre guide</a>.</p>';
+  const own = canonicalizeInternalArticleLinks(source, current, [old, current, another]);
+  assert.match(own, /<p>Voir ce guide et <a href="\/articles\/another\/">Autre guide<\/a>\.<\/p>/);
+  assert.doesNotMatch(own, /href="\/articles\/new\//);
+
+  const thirdParty = canonicalizeInternalArticleLinks(
+    '<p><a class="guide" href="/articles/old/index.html">Lire la version ancienne</a></p>',
+    another,
+    [old, current, another]
+  );
+  assert.match(thirdParty, /href="\/articles\/new\/"/);
+  assert.doesNotMatch(thirdParty, /old\/index\.html/);
+  assert.equal(canonicalizeInternalArticleLinks('<p><a href="https://example.org/">Externe</a></p>', current, [old, current]), '<p><a href="https://example.org/">Externe</a></p>');
 });
 
 test("generic retirement terms alone do not create a related link", () => {
@@ -295,6 +314,8 @@ test("static build preserves every archived article and adds the about page to t
 
   const olderId = "2026-10-07_20-07_s-curit-des-comptes-en-ligne_t-l-phone-connexion-s-curis-e";
   const newerId = "2026-10-11_20-28_s-curit-des-comptes-en-ligne_t-l-phone-connexion-s-curis-e";
+  const newGuide = await readFile(path.join(rootDir, "dist", "articles", newerId, "index.html"), "utf8");
+  assert.ok(!newGuide.includes(`href="/articles/${olderId}/"`), "a guide cannot link back to its own superseded version");
   const olderHtml = await readFile(path.join(rootDir, "dist", "articles", olderId, "index.html"), "utf8");
   assert.match(olderHtml, new RegExp('rel="canonical" href="https://zen-retraite.fr/articles/' + newerId + '/"'));
   assert.match(olderHtml, /lire le guide actualisé/);
