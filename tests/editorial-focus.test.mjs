@@ -75,3 +75,26 @@ test("permissions guide gives a tested, source-backed Android and iPhone path", 
   assert.ok(guide.sources.some(source => source.url.includes("support.apple.com/fr-fr/guide/iphone/")));
   assert.equal(guide.updated_at, "2026-10-21");
 });
+
+test("messaging safety guide provides Gmail and Microsoft setup and recovery steps", async () => {
+  const guide = JSON.parse(await read("data/articles/2026-10-11_20-28_s-curit-des-comptes-en-ligne_t-l-phone-connexion-s-curis-e.json"));
+  assert.match(guide.content, /Pour une adresse Gmail/);
+  assert.match(guide.content, /Outlook\.com ou Hotmail/);
+  assert.match(guide.content, /Vérifier que tout fonctionne sans se bloquer/);
+  assert.match(guide.content, /moyen de récupération supplémentaire|moyens de récupération|moyen de retrouver l'accès/);
+  assert.ok(guide.sources.some(source => source.url.includes("support.google.com/mail/answer/185839")));
+  assert.ok(guide.sources.some(source => source.url.includes("support.microsoft.com/fr-fr/accounts-billing/security/")));
+  assert.doesNotMatch(guide.content, /href="\/articles\/2026-10-07_20-07_s-curit-des-comptes-en-ligne_t-l-phone-connexion-s-curis-e\/"/);
+  assert.equal(guide.updated_at, "2026-11-04");
+});
+
+test("photos guide has distinct Android and iPhone paths and warns about cloud sync", async () => {
+  const guide = JSON.parse(await read("data/articles/2026-10-04_07-56_gestion-des-photos_photos-souvenirs-famille.json"));
+  assert.match(guide.content, /Sur Android/);
+  assert.match(guide.content, /Sur iPhone/);
+  assert.match(guide.content, /Sauvegarde terminée/);
+  assert.match(guide.content, /une sauvegarde indépendante/);
+  assert.ok(guide.sources.some(source => source.url.includes("support.google.com/photos/answer/9343402")));
+  assert.ok(guide.sources.some(source => source.url.includes("support.apple.com/fr-fr/120267")));
+  assert.equal(guide.updated_at, "2026-11-04");
+});
