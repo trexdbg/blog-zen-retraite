@@ -98,3 +98,20 @@ test("photos guide has distinct Android and iPhone paths and warns about cloud s
   assert.ok(guide.sources.some(source => source.url.includes("support.apple.com/fr-fr/120267")));
   assert.equal(guide.updated_at, "2026-11-04");
 });
+
+test("smartphone guide gives sourced, reversible Android and iPhone settings", async () => {
+  const guide = JSON.parse(await read("data/articles/2025-11-14_20-43_autonomie-num-rique_num-rique-facile-connexion.json"));
+  assert.match(guide.content, /Sur Android : agrandir le texte/);
+  assert.match(guide.content, /Sur iPhone : agrandir le texte/);
+  assert.match(guide.content, /Paramètres &gt; Notifications/);
+  assert.match(guide.content, /Réglages &gt; Luminosité et affichage/);
+  assert.match(guide.content, /Pour annuler|Pour annuler,|Pour annuler/);
+  assert.equal(guide.updated_at, "2026-11-17");
+  for (const domain of ["support.google.com/accessibility/android/", "support.google.com/android/", "support.apple.com/fr-fr/102453", "support.apple.com/fr-fr/guide/iphone/"]) {
+    assert.ok(guide.sources.some((source) => source.url.includes(domain)), "official source missing: " + domain);
+  }
+  const home = await read("templates/home.html");
+  const hub = await read("templates/guides-numerique.html");
+  assert.match(home, /Agrandir les caractères sur Android ou iPhone/);
+  assert.match(hub, /étapes Android et iPhone sourcées/);
+});
