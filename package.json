@@ -6,6 +6,7 @@
   "scripts": {
     "build": "node scripts/build.js",
     "test": "node --test tests/*.test.mjs",
-    "smoke:public": "node scripts/smoke-public.mjs"
+    "smoke:public": "node scripts/smoke-public.mjs",
+    "audit:affiliate": "node scripts/affiliate-audit.mjs"
   }
 }
