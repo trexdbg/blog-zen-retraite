@@ -293,7 +293,7 @@ function structuredDate(value) {
 }
 
 function metaDescription(text) {
-  const fallback = "Zen Retraite partage des inspirations pour une retraite active et sereine.";
+  const fallback = "Zen Retraite propose des guides pour simplifier le numérique et la maison après 60 ans.";
   if (!text) return fallback;
   const sanitized = String(text).replace(/\s+/g, " ").trim();
   if (!sanitized) return fallback;
@@ -856,7 +856,7 @@ async function buildArticles(template, articles) {
       ARTICLE_HUB_BREADCRUMB: hubForArticle(article)
         ? `<span aria-hidden="true">/</span><a href="${htmlEscape(hubForArticle(article).path)}">${htmlEscape(hubForArticle(article).name)}</a>`
         : "",
-      ARTICLE_THEME: htmlEscape(displayTheme(article.theme)),
+      ARTICLE_THEME: htmlEscape(displayCategory(article)),
       ARTICLE_SUBTHEME: htmlEscape(article.subtheme || "Découverte"),
       ARTICLE_IMAGE_BLOCK: articleImageBlock(article),
       ARTICLE_CONTENT: renderedContent.html,
