@@ -249,6 +249,15 @@ test("static build preserves every archived article and adds the about page to t
   assert.doesNotMatch(archive, legacyArticleHref);
   const sitemapLocs = new Set([...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1]));
   assert.equal(sitemapLocs.size, publishedIds.size + 5);
+  assert.doesNotMatch(sitemap, /<(?:changefreq|priority)>/, "Google ignore les anciens faux signaux de fréquence et de priorité");
+  assert.doesNotMatch(sitemap, /<loc>[^<]*\/index\.html<\/loc>/, "les URL canoniques du sitemap ne doivent pas finir par index.html");
+  const kwhId = "2025-11-29_11-29_conomies-nergie-maison_nergie-maison-conomies";
+  const energySource = records.find((record) => record.id === kwhId);
+  assert.equal(energySource.updated_at, "2026-11-17");
+  const kwhHtml = await readFile(path.join(rootDir, "dist", "articles", kwhId, "index.html"), "utf8");
+  assert.match(kwhHtml, /id="comparer-kwh"/);
+  assert.match(kwhHtml, /620 − 570 = 50 kWh/);
+  assert.match(sitemap, new RegExp("<loc>https://zen-retraite\\.fr/articles/" + kwhId + "/</loc>\\s*<lastmod>2026-11-17</lastmod>"));
   assert.match(sitemap, /https:\/\/zen-retraite\.fr\/a-propos\.html/);
   for (const file of ["guides-numerique.html", "maison-pratique.html"]) {
     const url = "https://zen-retraite.fr/" + file;
