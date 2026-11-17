@@ -137,3 +137,15 @@ test("housing guide provides actionable, sourced room-by-room assessment and aid
   assert.match(hub, /Votre visite du logement en 15 minutes/);
   assert.match(hub, /#fiche-diagnostic-logement/);
 });
+
+test("topic hubs directly answer common user questions without misleading rich-result schema", async () => {
+  const digital = await read("templates/guides-numerique.html");
+  const housing = await read("templates/maison-pratique.html");
+  assert.match(digital, /Trois questions fréquentes avant de se lancer/);
+  assert.match(digital, /Comment sécuriser sa messagerie sans perdre son accès/);
+  assert.match(digital, /Une synchronisation peut répercuter certaines suppressions/);
+  assert.match(housing, /Trois questions à se poser avant un achat ou des travaux/);
+  assert.match(housing, /Peut-on commencer les travaux avant de demander une aide/);
+  assert.match(housing, /Une maison connectée est-elle indispensable/);
+  assert.doesNotMatch(digital + housing, /FAQPage|AggregateRating/);
+});
