@@ -1,0 +1,21 @@
+name: affiliate-catalogue-audit
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Contrôle hebdomadaire sans appel à l'API Amazon
+    - cron: '23 5 * * 1'
+
+permissions:
+  contents: read
+
+jobs:
+  catalogue:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Audit local des références Amazon
+        run: npm run audit:affiliate
