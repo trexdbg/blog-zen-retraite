@@ -115,3 +115,25 @@ test("smartphone guide gives sourced, reversible Android and iPhone settings", a
   assert.match(home, /Agrandir les caractères sur Android ou iPhone/);
   assert.match(hub, /étapes Android et iPhone sourcées/);
 });
+
+test("home's default selection is restricted to explicitly reviewed topic-hub guides", async () => {
+  const source = await read("scripts/build.js");
+  assert.match(source, /REVIEWED_HOME_GUIDE_IDS = new Set\(HUB_PAGES\.flatMap/);
+  assert.match(source, /REVIEWED_HOME_GUIDE_IDS\.has\(article\.id\)/);
+  const home = await read("templates/home.html");
+  assert.match(home, /recherche et les filtres permettent aussi de retrouver tous les anciens articles/);
+});
+
+test("housing guide provides actionable, sourced room-by-room assessment and aid precautions", async () => {
+  const guide = JSON.parse(await read("data/articles/2025-12-01_11-33_am-nagement-logement-senior_maison-autonomie-confort.json"));
+  assert.match(guide.content, /id="fiche-diagnostic-logement"/);
+  assert.match(guide.content, /Entrée \/ couloir/);
+  assert.match(guide.content, /Salle de bains/);
+  assert.match(guide.content, /assistant à maîtrise d’ouvrage/);
+  assert.match(guide.content, /avant le début des travaux/);
+  assert.ok(guide.sources.some((s) => s.url.includes("anah.gouv.fr/document/guide-des-aides-financieres-0226")));
+  assert.equal(guide.updated_at, "2026-11-17");
+  const hub = await read("templates/maison-pratique.html");
+  assert.match(hub, /Votre visite du logement en 15 minutes/);
+  assert.match(hub, /#fiche-diagnostic-logement/);
+});
