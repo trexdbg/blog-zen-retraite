@@ -220,6 +220,10 @@ test("static build preserves every archived article and adds the about page to t
   // sans filtre ne met plus en avant les thèmes généralistes hors niche.
   assert.ok(homeArticles.some((entry) => entry.homepage_focus === false), "le fonds hors spécialités reste accessible");
   assert.ok(homeArticles.some((entry) => entry.homepage_focus === true), "les deux spécialités sont représentées");
+  const legacyPlantGuide = homeArticles.find((entry) => entry.id === "2025-12-05_18-43_maison-nature-bien-tre_plantes-int-rieur-air");
+  assert.equal(legacyPlantGuide?.homepage_focus, false, "un guide généraliste sur les plantes ne doit plus être choisi par défaut");
+  assert.equal(homeArticles.find((entry) => entry.id === "2025-12-01_11-33_am-nagement-logement-senior_maison-autonomie-confort")?.homepage_focus, true);
+  assert.equal(homeArticles.find((entry) => entry.id === "2026-10-04_07-56_gestion-des-photos_photos-souvenirs-famille")?.homepage_focus, true);
   const latestIds = [...homeArticles]
     .filter((entry) => entry.homepage_focus === true)
     .sort((left, right) => new Date(right.created_at).getTime() - new Date(left.created_at).getTime())
