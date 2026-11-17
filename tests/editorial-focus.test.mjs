@@ -171,3 +171,20 @@ test("rewritten decluttering guide connects to house hub with a conditional Brot
   const hub = await read("templates/maison-pratique.html");
   assert.match(hub, /2025-11-19_18-44_maison-organisation-bien-tre_maison-rang-e-zen/);
 });
+
+test("garden guides no longer promote unverified robots or miracle safety products", async () => {
+  const outside = JSON.parse(await read("data/articles/2025-11-11_06-48_am-nagement-ext-rieur-confort-et-s-curit_jardin-accessible-confort.json"));
+  const watering = JSON.parse(await read("data/articles/2025-11-12_20-44_jardin-connect-et-entretien-facile_jardin-connect-robot.json"));
+  assert.match(outside.content, /B07YSSVYH4/);
+  assert.match(watering.content, /B018E0L5RY/);
+  assert.doesNotMatch(outside.content + watering.content, /LEADZM|Netro-Controller|LZQ-rev/);
+  assert.match(outside.content, /M22×1 ou femelles M24×1/);
+  assert.match(watering.content, /n'est pas une tondeuse robot/);
+  assert.ok(outside.sources.some(s => s.url.includes("gardena.com/fr/")));
+  assert.ok(watering.sources.some(s => s.url.includes("agirpourlatransition.ademe.fr/")));
+  assert.equal(outside.updated_at, "2026-11-17");
+  assert.equal(watering.updated_at, "2026-11-17");
+  const hub = await read("templates/maison-pratique.html");
+  assert.match(hub, /Rendre l'entretien extérieur plus simple/);
+  assert.match(hub, /Choisir un goutte-à-goutte utile/);
+});
