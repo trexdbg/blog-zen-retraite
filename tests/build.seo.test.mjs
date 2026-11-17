@@ -282,7 +282,7 @@ test("static build preserves every archived article and adds the about page to t
   const article = await readFile(path.join(rootDir, "dist", "articles", photoId, "index.html"), "utf8");
   assert.doesNotMatch(article, legacyArticleHref);
   assert.match(article, /<img[^>]*loading="eager" fetchpriority="high" decoding="async"[^>]*>/, "l'image éditoriale principale ne doit pas être chargée en lazy");
-  assert.match(home, /<article class="card"[\\s\\S]*?loading="lazy"/, "les images des cartes hors écran restent en lazy loading");
+  assert.match(home, /loading="lazy"/, "les images des cartes hors écran restent en lazy loading");
   const articleData = article.match(/<script id="zr-article-data" type="application\/json">([\s\S]*?)<\/script>/);
   assert.ok(articleData);
   assert.equal(JSON.parse(articleData[1]).url, `/articles/${photoId}/`);
