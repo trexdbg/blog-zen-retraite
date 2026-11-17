@@ -60,9 +60,13 @@
       let destination;
       try { destination = new URL(anchor.href, location.href); } catch { return; }
       if (destination.hostname !== "amazon.fr" && destination.hostname !== "www.amazon.fr") return;
+      // Ne pas attribuer un clic Amazon ordinaire au programme Partenaires.
+      // Aucun ASIN, tag, URL de destination ni identifiant lecteur n'est envoyé.
+      if (anchor.dataset.affiliate !== "amazon") return;
       window.gtag("event", "affiliate_click", {
         affiliate_partner: "amazon",
-        page_path: location.pathname
+        page_path: location.pathname,
+        affiliate_placement: anchor.closest(".affiliate-choice") ? "decision_box" : "article_text"
       });
     });
   }
