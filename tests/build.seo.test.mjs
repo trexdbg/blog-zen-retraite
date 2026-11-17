@@ -112,6 +112,7 @@ test("analytics only reports explicitly approved affiliate anchors after consent
   const analytics = await readFile(path.join(rootDir, "analytics-consent.js"), "utf8");
   assert.match(analytics, /anchor\.dataset\.affiliate !== "amazon"/);
   assert.match(analytics, /affiliate_placement: anchor\.closest/);
+  assert.match(analytics, /\.product-recommendation/, "le suivi doit reconnaître les encadrés réellement rendus");
   assert.doesNotMatch(analytics, /product_id:|asin:|affiliate_url:/);
 });
 

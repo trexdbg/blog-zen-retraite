@@ -66,7 +66,7 @@
       window.gtag("event", "affiliate_click", {
         affiliate_partner: "amazon",
         page_path: location.pathname,
-        affiliate_placement: anchor.closest(".affiliate-choice") ? "decision_box" : "article_text"
+        affiliate_placement: anchor.closest(".product-recommendation, .affiliate-choice") ? "decision_box" : "article_text"
       });
     });
   }
