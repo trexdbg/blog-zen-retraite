@@ -132,8 +132,12 @@ function displayCategory(article) {
 
 // La page d'accueil conserve la recherche sur toute la bibliothèque,
 // mais met d'abord en avant les deux domaines éditoriaux du site.
+// Une catégorie large ne suffit pas à justifier une mise en avant éditoriale.
+// Seuls les guides choisis pour nos parcours thématiques apparaissent sans filtre.
+// Le fonds complet reste trouvable dans la recherche de l'accueil et les archives.
+const REVIEWED_HOME_GUIDE_IDS = new Set(HUB_PAGES.flatMap((hub) => hub.articleIds));
 function isHomepageFocus(article) {
-  return ["numerique_pratique", "maison"].includes(articleCategory(article));
+  return Boolean(article?.id && REVIEWED_HOME_GUIDE_IDS.has(article.id));
 }
 
 function hubForArticle(article) {
