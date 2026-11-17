@@ -21,3 +21,5 @@ jobs:
         run: npm install
       - name: Run verification tests
         run: npm test
+      - name: Validate public smoke test syntax
+        run: node --check scripts/smoke-public.mjs
