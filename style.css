@@ -336,3 +336,9 @@ img{max-width:100%;height:auto}
 .affiliate-choice p{margin:.65rem 0}
 .affiliate-choice .affiliate-caution{font-size:.87em;color:var(--muted)}
 @media (max-width:600px){.article-body a[data-affiliate="amazon"]{max-width:100%;word-break:break-word}.affiliate-choice{padding:.9rem}}
+
+/* Une recommandation produit est un encadré de décision, pas une publicité masquée. */
+.article-body .product-recommendation{max-width:70ch;margin:1.8rem 0;padding:1.15rem 1.35rem;border:1px solid var(--line);border-radius:12px;background:var(--surface-soft)}
+.article-body .product-recommendation h3{margin:.1rem 0 .7rem;font-size:1.25rem}
+.article-body .product-recommendation p{margin:.85rem 0}
+@media(max-width:600px){.article-body .product-recommendation{padding:.9rem 1rem}}
