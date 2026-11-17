@@ -938,35 +938,25 @@ async function buildSitemap(articles, homeNewestDate, archiveNewestDate) {
     {
       loc: `${SITE_URL}/`,
       lastmod: [homeNewestDate, HOME_EDITORIAL_LASTMOD].filter(Boolean).sort().at(-1),
-      changefreq: "hourly",
-      priority: "1.0",
     },
     {
       loc: `${SITE_URL}/archive.html`,
-      lastmod: archiveNewestDate || new Date().toISOString().slice(0, 10),
-      changefreq: "daily",
-      priority: "0.9",
+      lastmod: archiveNewestDate || null,
     },
     {
       loc: `${SITE_URL}/a-propos.html`,
       lastmod: ABOUT_LASTMOD,
-      changefreq: "monthly",
-      priority: "0.6",
     },
     ...HUB_PAGES.map((hub) => ({
       loc: `${SITE_URL}/${hub.file}`,
       lastmod: HOME_EDITORIAL_LASTMOD,
-      changefreq: "monthly",
-      priority: "0.9",
     })),
   ];
 
   articles.forEach((article) => {
     urls.push({
       loc: `${SITE_URL}/articles/${article.id}/`,
-      lastmod: toDateStamp(article.updated_at) || toDateStamp(article.created_at) || new Date().toISOString().slice(0, 10),
-      changefreq: "weekly",
-      priority: "0.8",
+      lastmod: toDateStamp(article.updated_at) || toDateStamp(article.created_at) || null,
     });
   });
 
@@ -975,9 +965,7 @@ async function buildSitemap(articles, homeNewestDate, archiveNewestDate) {
       (url) => `
   <url>
     <loc>${htmlEscape(url.loc)}</loc>
-    <lastmod>${url.lastmod}</lastmod>
-    <changefreq>${url.changefreq}</changefreq>
-    <priority>${url.priority}</priority>
+    ${url.lastmod ? `<lastmod>${htmlEscape(url.lastmod)}</lastmod>` : ""}
   </url>`.trim()
     )
     .join("\n\n  ");
