@@ -23,3 +23,7 @@ jobs:
         run: npm test
       - name: Validate public smoke test syntax
         run: node --check scripts/smoke-public.mjs
+      - name: Verify affiliate audit script syntax
+        run: node --check scripts/affiliate-audit.mjs
+      - name: Review the affiliate catalogue locally
+        run: npm run audit:affiliate
