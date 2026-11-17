@@ -149,3 +149,25 @@ test("topic hubs directly answer common user questions without misleading rich-r
   assert.match(housing, /Une maison connectée est-elle indispensable/);
   assert.doesNotMatch(digital + housing, /FAQPage|AggregateRating/);
 });
+
+test("phone guide has one verified optional charger, not a forced purchase", async () => {
+  const guide = JSON.parse(await read("data/articles/2025-11-14_20-43_autonomie-num-rique_num-rique-facile-connexion.json"));
+  assert.match(guide.content, /B0B2VC6J8Q/);
+  assert.match(guide.content, /Si votre chargeur fonctionne/);
+  assert.match(guide.content, /non compris dans le bloc seul/);
+  assert.ok(guide.sources.some((source) => source.url.includes("service.anker.com/product-description/")));
+});
+
+test("rewritten decluttering guide connects to house hub with a conditional Brother product", async () => {
+  const guide = JSON.parse(await read("data/articles/2025-11-19_18-44_maison-organisation-bien-tre_maison-rang-e-zen.json"));
+  assert.match(guide.title, /papiers et ses affaires/);
+  assert.match(guide.content, /B071S33CLL/);
+  assert.match(guide.content, /papier et feutre suffisent/);
+  assert.match(guide.content, /6 piles AAA/);
+  assert.match(guide.content, /service-public.fr\/particuliers\/vosdroits\/F19134/);
+  assert.ok(guide.sources.some((source) => source.url.includes("store.brother.fr")));
+  assert.match(guide.image, /editorial-maison\.svg/);
+  assert.equal(guide.updated_at, "2026-11-17");
+  const hub = await read("templates/maison-pratique.html");
+  assert.match(hub, /2025-11-19_18-44_maison-organisation-bien-tre_maison-rang-e-zen/);
+});
