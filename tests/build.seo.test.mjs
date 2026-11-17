@@ -326,7 +326,9 @@ test("static build preserves every archived article and adds the about page to t
   assert.match(legacy, /B08YB2CT3C/);
   const nonCommercialId = "2025-11-14_20-43_autonomie-num-rique_num-rique-facile-connexion";
   const nonCommercial = await readFile(path.join(rootDir, "dist", "articles", nonCommercialId, "index.html"), "utf8");
-  assert.equal((nonCommercial.match(/En tant que Partenaire Amazon/g) || []).length, 0, "no notice on non-commercial smartphone tutorial");
+  assert.equal((nonCommercial.match(/En tant que Partenaire Amazon/g) || []).length, 1, "optional tagged charger has exactly one article-level disclosure");
+  assert.match(nonCommercial, /B0B2VC6J8Q/);
+  assert.match(nonCommercial, /data-affiliate="amazon"/);
   assert.equal((home.match(/En tant que Partenaire Amazon/g) || []).length, 0);
   assert.equal((archive.match(/En tant que Partenaire Amazon/g) || []).length, 0);
 
