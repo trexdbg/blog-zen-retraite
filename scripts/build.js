@@ -548,7 +548,7 @@ async function buildArchive(template, entries) {
 
 function articleImageBlock(article) {
   if (!article.image) return "";
-  const image = `<img src="${htmlEscape(article.image)}" alt="${htmlEscape(articleImageAlt(article))}" loading="lazy" onerror="if(this.dataset.retry!=='1'){this.dataset.retry='1';this.src='${htmlEscape(article.fallback_image)}'}else{this.remove()}"${imageDimensionAttributes(article)}>`;
+  const image = `<img src="${htmlEscape(article.image)}" alt="${htmlEscape(articleImageAlt(article))}" loading="eager" fetchpriority="high" decoding="async" onerror="if(this.dataset.retry!=='1'){this.dataset.retry='1';this.src='${htmlEscape(article.fallback_image)}'}else{this.remove()}"${imageDimensionAttributes(article)}>`;
   if (!article.image_caption) return image;
   return `<figure class="article-image">${image}<figcaption>${htmlEscape(article.image_caption)}</figcaption></figure>`;
 }
