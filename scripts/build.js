@@ -598,8 +598,19 @@ function normalizeAmazonAffiliateLinks(content) {
     const values = new Set(rel ? rel[2].split(/\s+/).filter(Boolean) : []);
     for (const value of ["sponsored", "nofollow", "noopener", "noreferrer"]) values.add(value);
     const attribute = 'rel="' + [...values].join(" ") + '"';
-    const updated = rel ? opening.replace(rel[0], attribute) : opening.replace(/>$/, " " + attribute + ">");
-    return updated + anchor.slice(opening.length);
+    let updated = rel ? opening.replace(rel[0], attribute) : opening.replace(/>$/, " " + attribute + ">");
+    // Annoter les liens approuvés sans modifier leur destination ou leur tag.
+    // L'attribut servira au suivi agrégé uniquement après consentement.
+    if (!/\bdata-affiliate\s*=/i.test(updated)) {
+      updated = updated.replace(/>$/, ' data-affiliate="amazon">');
+    }
+    // La mention générale reste une seule fois en haut du guide. Une courte
+    // indication directement visible sur chaque lien respecte la transparence.
+    const body = anchor.slice(opening.length);
+    const markedBody = /class=["'][^"']*\baffiliate-label\b/i.test(body)
+      ? body
+      : body.replace(/<\/a>\s*$/i, '<span class="affiliate-label"> (lien rémunéré)</span></a>');
+    return updated + markedBody;
   });
 }
 

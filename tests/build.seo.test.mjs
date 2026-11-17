@@ -96,6 +96,25 @@ test("affiliate notices only accompany a real Amazon link", () => {
   assert.equal(hasAmazonAffiliateLinks('Aucun produit à acheter.'), false);
 });
 
+
+test("approved Amazon links remain stable, marked and annotated next to the link", () => {
+  const url = "https://www.amazon.fr/dp/B081VJ79QZ?tag=zenretraite11-21";
+  const input = '<p><a href="' + url + '">Voir le disque</a></p>';
+  const cleaned = cleanArticleContent(input);
+  assert.match(cleaned, /data-affiliate="amazon"/);
+  assert.match(cleaned, /class="affiliate-label"> \(lien rémunéré\)<\/span>/);
+  assert.equal((cleaned.match(/class="affiliate-label"/g) || []).length, 1);
+  assert.equal(cleanArticleContent(cleaned), cleaned, "un second passage ne doit pas dupliquer la mention");
+  assert.ok(cleaned.includes('href="' + url + '"'));
+});
+
+test("analytics only reports explicitly approved affiliate anchors after consent", async () => {
+  const analytics = await readFile(path.join(rootDir, "analytics-consent.js"), "utf8");
+  assert.match(analytics, /anchor\.dataset\.affiliate !== "amazon"/);
+  assert.match(analytics, /affiliate_placement: anchor\.closest/);
+  assert.doesNotMatch(analytics, /product_id:|asin:|affiliate_url:/);
+});
+
 test("Amazon affiliate links receive sponsored metadata without losing their original target", () => {
   const input = '<p><a class="product" href="https://www.amazon.fr/dp/B08YB2CT3C?tag=zenretraite11-21&amp;language=fr_FR">Une prise connectée</a></p>';
   const cleaned = cleanArticleContent(input);

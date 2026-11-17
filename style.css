@@ -324,3 +324,15 @@ img{max-width:100%;height:auto}
 .cookie-settings-link{padding:.25rem .35rem;border:0;background:transparent;color:var(--footer-ink);text-decoration:underline;text-underline-offset:3px;font:inherit;font-size:.78rem;cursor:pointer}
 .cookie-choice:focus-visible,.cookie-settings-link:focus-visible{outline:3px solid var(--focus);outline-offset:3px}
 @media(max-width:680px){.cookie-banner{bottom:.5rem;left:.5rem;right:.5rem;flex-direction:column;align-items:stretch;padding:1rem;max-height:calc(100vh - 1rem);overflow:auto}.cookie-banner-actions{display:grid;grid-template-columns:1fr 1fr}.cookie-choice{min-width:0}}
+
+/* Liens Amazon contextualisés : visibles et annoncés comme rémunérés,
+   sans fausses remises, faux avis ou visuels de produits non autorisés. */
+.article-body a[data-affiliate="amazon"]{display:inline-flex;flex-wrap:wrap;align-items:center;gap:.28rem;padding:.16rem .42rem;border:1px solid var(--line);border-radius:.5rem;background:var(--surface-soft);color:var(--ink);text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:3px}
+.article-body a[data-affiliate="amazon"]:hover{border-color:var(--brand)}
+.article-body a[data-affiliate="amazon"]:focus-visible{outline:3px solid var(--focus);outline-offset:3px}
+.affiliate-label{font-size:.74em;font-weight:650;color:var(--muted)}
+.affiliate-choice{max-width:70ch;margin:1.65rem 0;padding:1rem 1.15rem;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.affiliate-choice h3{margin:.2rem 0 .65rem;font-size:1.18rem}
+.affiliate-choice p{margin:.65rem 0}
+.affiliate-choice .affiliate-caution{font-size:.87em;color:var(--muted)}
+@media (max-width:600px){.article-body a[data-affiliate="amazon"]{max-width:100%;word-break:break-word}.affiliate-choice{padding:.9rem}}
