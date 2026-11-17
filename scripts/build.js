@@ -40,6 +40,8 @@ const HUB_PAGES = [
     articleIds: [
       "2025-12-01_11-33_am-nagement-logement-senior_maison-autonomie-confort",
       "2025-11-19_18-44_maison-organisation-bien-tre_maison-rang-e-zen",
+      "2025-11-11_06-48_am-nagement-ext-rieur-confort-et-s-curit_jardin-accessible-confort",
+      "2025-11-12_20-44_jardin-connect-et-entretien-facile_jardin-connect-robot",
       "2025-11-29_11-29_conomies-nergie-maison_nergie-maison-conomies",
       "2025-11-20_18-46_technologie-confort-autonomie_maison-connect-e-sant",
       "2025-11-27_18-43_technologie-au-quotidien_num-rique-facile-vie",
