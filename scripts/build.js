@@ -19,7 +19,7 @@ const SITE_URL = (process.env.SITE_URL || "https://zen-retraite.fr").replace(/\/
 const DATE_FORMATTER = new Intl.DateTimeFormat("fr-FR", { year: "numeric", month: "long", day: "numeric" });
 const SITE_NAME = "Zen Retraite";
 const ABOUT_LASTMOD = "2026-10-21";
-const HOME_EDITORIAL_LASTMOD = "2026-10-21";
+const HOME_EDITORIAL_LASTMOD = "2026-11-17";
 const HUB_PAGES = [
   {
     file: "guides-numerique.html",
