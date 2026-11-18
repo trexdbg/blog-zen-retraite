@@ -407,3 +407,19 @@ test("static build preserves every archived article and adds the about page to t
   }
 
 });
+
+test("les nouvelles recommandations USB et lecture restent conditionnelles et sourcées", async () => {
+  for (const [id, asin, domain] of [
+    ["2025-11-17_18-45_transmission-num-rique-et-m-moire-familiale_m-moire-famille-num-rique", "B00DQGBYDC", "sandisk.com"],
+    ["2025-11-05_15-00_d-coration-int-rieure-et-confort_int-rieur-cosy-automne", "B00BB99QWM", "varta-ag.com"]
+  ]) {
+    const a = JSON.parse(await readFile(path.join(rootDir, "data/articles", id + ".json"), "utf8"));
+    assert.equal(a.updated_at, "2026-11-18");
+    assert.ok(a.sources.some(source => source.url.includes(domain)));
+    const output = cleanArticleContent(a.content);
+    assert.ok(output.includes("/dp/" + asin + "?tag=zenretraite11-21"));
+    assert.match(output, /data-affiliate="amazon"/);
+    assert.equal((output.match(/class="affiliate-label"/g) || []).length, 1);
+    assert.match(output, /essai physique/);
+  }
+});
