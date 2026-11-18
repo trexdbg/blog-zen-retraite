@@ -19,7 +19,7 @@ const SITE_URL = (process.env.SITE_URL || "https://zen-retraite.fr").replace(/\/
 const DATE_FORMATTER = new Intl.DateTimeFormat("fr-FR", { year: "numeric", month: "long", day: "numeric" });
 const SITE_NAME = "Zen Retraite";
 const ABOUT_LASTMOD = "2026-10-21";
-const HOME_EDITORIAL_LASTMOD = "2026-11-17";
+const HOME_EDITORIAL_LASTMOD = "2026-11-18";
 const HUB_PAGES = [
   {
     file: "guides-numerique.html",
@@ -27,6 +27,7 @@ const HUB_PAGES = [
     articleIds: [
       "2025-11-14_20-43_autonomie-num-rique_num-rique-facile-connexion",
       "2025-11-07_16-41_num-rique-vie-sociale_num-rique-connect-vie",
+      "2025-11-17_18-45_transmission-num-rique-et-m-moire-familiale_m-moire-famille-num-rique",
       "2025-11-27_18-43_technologie-au-quotidien_num-rique-facile-vie",
       "2026-10-11_20-28_s-curit-des-comptes-en-ligne_t-l-phone-connexion-s-curis-e",
       "2026-10-17_18-40_applications-mobiles-et-vie-priv-e_smartphone-applications-mobiles",
@@ -40,6 +41,7 @@ const HUB_PAGES = [
     articleIds: [
       "2025-12-01_11-33_am-nagement-logement-senior_maison-autonomie-confort",
       "2025-11-19_18-44_maison-organisation-bien-tre_maison-rang-e-zen",
+      "2025-11-05_15-00_d-coration-int-rieure-et-confort_int-rieur-cosy-automne",
       "2025-11-11_06-48_am-nagement-ext-rieur-confort-et-s-curit_jardin-accessible-confort",
       "2025-11-12_20-44_jardin-connect-et-entretien-facile_jardin-connect-robot",
       "2025-11-29_11-29_conomies-nergie-maison_nergie-maison-conomies",
