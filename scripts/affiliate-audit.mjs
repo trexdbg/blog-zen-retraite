@@ -28,6 +28,14 @@ let ignoredLinks = 0;
 let expiredLinks = 0;
 let validLinks = 0;
 const blockedExamples = [];
+const blockedByArticle = new Map();
+const approvedArticles = new Set();
+function markBlocked(article, reason) {
+  const item = blockedByArticle.get(article.id) || { id: article.id, title: article.title || article.id, count: 0, reasons: {} };
+  item.count++;
+  item.reasons[reason] = (item.reasons[reason] || 0) + 1;
+  blockedByArticle.set(article.id, item);
+}
 for (const article of entries) {
   if (!article.id || !publishedIds.has(article.id)) continue;
   for (const match of (article.content || "").matchAll(/<a\b[^>]*\bhref=(["'])(.*?)\1[^>]*>/gi)) {
@@ -39,15 +47,18 @@ for (const article of entries) {
     const product = productMap.get(asin);
     if (url.protocol !== "https:" || url.username || url.password || url.port || !product || url.searchParams.get("tag") !== catalog.affiliate_tag) {
       ignoredLinks++;
+      markBlocked(article, "destination ou tag non approuvé");
       if (blockedExamples.length < 8) blockedExamples.push(article.id + " : destination ou tag non approuvé");
       continue;
     }
     if (product.expires_at < date) {
       expiredLinks++;
+      markBlocked(article, "échéance documentaire dépassée");
       if (blockedExamples.length < 8) blockedExamples.push(article.id + " : référence à revalider (" + asin + ")");
       continue;
     }
     validLinks++;
+    approvedArticles.add(article.id);
     const list = usage.get(asin) || new Set();
     list.add(article.id);
     usage.set(asin, list);
@@ -55,6 +66,7 @@ for (const article of entries) {
 }
 const due = catalog.products.filter(p => p.expires_at <= warningDate).sort((a, b) => a.expires_at.localeCompare(b.expires_at));
 const activeUse = [...usage.entries()].sort((a, b) => b[1].size - a[1].size);
+const backlog = [...blockedByArticle.values()].sort((a, b) => b.count - a.count || a.id.localeCompare(b.id));
 const lines = [
   "## Zen Retraite — audit des références Amazon",
   "",
@@ -66,6 +78,8 @@ const lines = [
   "| Pages publiées examinées | " + publishedIds.size + " |",
   "| Liens approuvés et non expirés dans les sources | " + validLinks + " |",
   "| Références distinctes effectivement utilisées | " + usage.size + " |",
+  "| Articles contenant au moins un lien approuvé | " + approvedArticles.size + " |",
+  "| Articles comportant au moins un lien écarté | " + backlog.length + " |",
   "| Liens de source non approuvés (bloqués au build) | " + ignoredLinks + " |",
   "| Liens à revalider avant republication | " + expiredLinks + " |",
   "| Produits à revalider sous 21 jours | " + due.length + " |",
@@ -77,6 +91,12 @@ const lines = [
   "",
   "### Références approchant de la revalidation",
   ...(due.length ? due.map(p => "- " + p.asin + " — " + p.title + " ; échéance " + p.expires_at + (usage.has(p.asin) ? " (en ligne dans un guide)" : " (non utilisée)")) : ["Aucune dans les 21 prochains jours."]),
+  "",
+  "### Priorités de revue éditoriale (20 premiers articles par nombre de liens écartés)",
+  "",
+  "Ces comptes n'indiquent ni le trafic ni une recommandation de réinsérer les anciens produits. Relire les affirmations et choisir un matériel documenté seulement si utile.",
+  "",
+  ...(backlog.length ? backlog.slice(0, 20).map(item => "- " + item.count + " lien(s) — " + item.title.replace(/[\r\n]/g, " ") + " — " + item.id + " (" + Object.entries(item.reasons).map(([reason, n]) => reason + " : " + n).join("; ") + ")") : ["Aucun article à revoir pour les liens."]),
   "",
   "### Anomalies de liens dans les sources",
   ...(blockedExamples.length ? blockedExamples.map(v => "- " + v) : ["Aucune anomalie détectée dans l'échantillon."]),

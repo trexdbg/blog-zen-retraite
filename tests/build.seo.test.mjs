@@ -423,3 +423,21 @@ test("les nouvelles recommandations USB et lecture restent conditionnelles et so
     assert.match(output, /essai physique/);
   }
 });
+
+test("le guide ordinateur présente deux options conditionnelles et retire les anciennes offres non approuvées", async () => {
+  const id = "2025-12-02_20-46_technologie-autonomie_num-rique-connexion-cran";
+  const a = JSON.parse(await readFile(path.join(rootDir, "data/articles", id + ".json"), "utf8"));
+  assert.equal(a.updated_at, "2026-11-19");
+  for (const domain of ["support.microsoft.com", "support.apple.com", "logitech.com", "tp-link.com"]) {
+    assert.ok(a.sources.some(source => source.url.includes(domain)));
+  }
+  const output = cleanArticleContent(a.content);
+  for (const asin of ["B01K7GEAFC", "B07M69276N"]) assert.ok(output.includes("/dp/" + asin + "?tag=zenretraite11-21"));
+  assert.equal((output.match(/data-affiliate="amazon"/g) || []).length, 2);
+  assert.equal((output.match(/class="affiliate-label"/g) || []).length, 2);
+  assert.doesNotMatch(output, /B0DHXBRLDM|B0BNHJ2F6T|2822601895/);
+  assert.match(output, /Ne désactivez pas la sécurité/);
+  assert.match(output, /Nous n'avons pas réalisé d'essai physique/);
+  const hub = await readFile(path.join(rootDir, "templates/guides-numerique.html"), "utf8");
+  assert.ok(hub.includes("/articles/" + id + "/"));
+});
