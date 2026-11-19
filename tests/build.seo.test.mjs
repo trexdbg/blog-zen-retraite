@@ -360,6 +360,7 @@ test("static build preserves every archived article and adds the about page to t
   assert.ok(!archiveEntries.some((article) => article.id === olderId));
 
   const consolidation = {
+    "2025-11-02_18-37_jardinage-adapt_jardin-outils-plantes": "2025-11-03_06-49_jardinage-urbain-et-ergonomique_jardinage-urbain-facile",
     "2025-10-30_22-07_maison-confort-s-curit_maison-confort-s-curit": "2025-12-01_11-33_am-nagement-logement-senior_maison-autonomie-confort",
     "2025-11-01_18-37_maison-jardin-nature_maison-nergie-hiver": "2025-11-29_11-29_conomies-nergie-maison_nergie-maison-conomies",
     "2025-11-01_06-43_activit-physique-et-quipement_marche-b-tons-nature": "2025-11-06_18-46_bien-tre-et-sant-douce_marche-for-t-sport",
@@ -460,5 +461,23 @@ test("le guide hiver propose un étendoir conditionnel et des précautions de ve
     const legacy = JSON.parse(await readFile(path.join(rootDir, "data/articles", old + ".json"), "utf8"));
     assert.ok(legacy.superseded_by);
     assert.doesNotMatch(legacy.content, /amazon\.fr/);
+  }
+});
+
+test("guides potager et lecture : deux accessoires conditionnels, sources et retrait d'anciennes offres", async () => {
+  for (const [id, asin, domain] of [
+    ["2025-11-03_06-49_jardinage-urbain-et-ergonomique_jardinage-urbain-facile", "B08QYNQ5Z5", "fiskars.com"],
+    ["2025-12-02_18-50_am-nagement-int-rieur-lecture_lecture-confort-maison", "B004ALP532", "carson.com"]
+  ]) {
+    const a = JSON.parse(await readFile(path.join(rootDir, "data/articles", id + ".json"), "utf8"));
+    const output = cleanArticleContent(a.content);
+    assert.ok(a.sources.some(source => source.url.includes(domain)));
+    assert.ok(output.includes("/dp/" + asin + "?tag=zenretraite11-21"));
+    assert.equal((output.match(/data-affiliate="amazon"/g) || []).length, 1);
+    assert.equal((output.match(/class="affiliate-label"/g) || []).length, 1);
+    assert.match(output, /Nous n'avons pas réalisé d'essai physique/);
+    assert.doesNotMatch(output, /B0D45PHH8T|B0CXSSLWP7|B0FGCX5W21/);
+    const hub = await readFile(path.join(rootDir, "templates/maison-pratique.html"), "utf8");
+    assert.ok(hub.includes("/articles/" + id + "/"));
   }
 });
