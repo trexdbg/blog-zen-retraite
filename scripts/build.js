@@ -46,6 +46,8 @@ const HUB_PAGES = [
       "2025-11-05_15-00_d-coration-int-rieure-et-confort_int-rieur-cosy-automne",
       "2025-11-11_06-48_am-nagement-ext-rieur-confort-et-s-curit_jardin-accessible-confort",
       "2025-11-12_20-44_jardin-connect-et-entretien-facile_jardin-connect-robot",
+      "2025-11-03_06-49_jardinage-urbain-et-ergonomique_jardinage-urbain-facile",
+      "2025-12-02_18-50_am-nagement-int-rieur-lecture_lecture-confort-maison",
       "2025-11-29_11-29_conomies-nergie-maison_nergie-maison-conomies",
       "2025-11-20_18-46_technologie-confort-autonomie_maison-connect-e-sant",
       "2025-11-27_18-43_technologie-au-quotidien_num-rique-facile-vie",
@@ -1002,8 +1004,8 @@ async function loadArchiveEntries(articleMap, homeIds) {
   const archiveEntries = new Map();
 
   // The archive is a complete index of every published article except those
-  // shown on the home page. archive.json can still supply labels for existing
-  // entries, but it is never the sole source of archive coverage.
+  // shown on the home page. Article records are authoritative; archive.json
+  // may only supply a fallback label and never the sole source of coverage.
   const addEntry = (entry) => {
     const id = typeof entry === "string" ? entry : typeof entry?.id === "string" ? entry.id : "";
     const normalizedId = id.trim();
@@ -1018,7 +1020,7 @@ async function loadArchiveEntries(articleMap, homeIds) {
 
     archiveEntries.set(normalizedId, {
       id: normalizedId,
-      title: typeof entry === "object" && entry?.title ? entry.title : article.title || null,
+      title: article.title || (typeof entry === "object" && entry?.title ? entry.title : null),
       created_at: typeof entry === "object" && entry?.created_at ? entry.created_at : article.created_at || null,
       category: articleCategory(article),
     });
