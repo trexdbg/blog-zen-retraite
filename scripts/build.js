@@ -41,6 +41,8 @@ const HUB_PAGES = [
     name: "Maison pratique et autonomie après 60 ans",
     articleIds: [
       "2025-12-01_11-33_am-nagement-logement-senior_maison-autonomie-confort",
+      "2025-10-30_15-16_cuisine-saine-et-appareils-lectrom-nagers_cuisine-saine-appareils",
+      "2025-11-29_06-46_gastronomie-durable-et-anti-gaspi_cuisine-durable-astuces",
       "2025-10-31_18-45_maison-confort-s-curit_maison-confort-hiver",
       "2025-11-19_18-44_maison-organisation-bien-tre_maison-rang-e-zen",
       "2025-11-05_15-00_d-coration-int-rieure-et-confort_int-rieur-cosy-automne",
