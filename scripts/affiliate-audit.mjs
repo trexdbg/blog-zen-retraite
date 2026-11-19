@@ -4,6 +4,7 @@
 import { readFile, readdir, appendFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { affiliateStatus, readAttribute } from "./affiliate-links.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const catalog = JSON.parse(await readFile(path.join(root, "data/affiliate-approved-products.json"), "utf8"));
@@ -38,20 +39,17 @@ function markBlocked(article, reason) {
 }
 for (const article of entries) {
   if (!article.id || !publishedIds.has(article.id)) continue;
-  for (const match of (article.content || "").matchAll(/<a\b[^>]*\bhref=(["'])(.*?)\1[^>]*>/gi)) {
-    const raw = match[2].replace(/&amp;/gi, "&");
-    let url;
-    try { url = new URL(raw); } catch { continue; }
-    if (!["amazon.fr", "www.amazon.fr"].includes(url.hostname.toLowerCase())) continue;
-    const asin = url.pathname.match(/^\/dp\/([A-Z0-9]{10})\/?$/i)?.[1]?.toUpperCase();
-    const product = productMap.get(asin);
-    if (url.protocol !== "https:" || url.username || url.password || url.port || !product || url.searchParams.get("tag") !== catalog.affiliate_tag) {
+  for (const match of (article.content || "").matchAll(/<a\b[^>]*>/gi)) {
+    const { status, asin } = affiliateStatus(readAttribute(match[0], "href"), catalog.affiliate_tag, key => productMap.get(key)?.expires_at, date);
+    if (status === "external") continue;
+    if (status === "blocked") {
+
       ignoredLinks++;
       markBlocked(article, "destination ou tag non approuvé");
       if (blockedExamples.length < 8) blockedExamples.push(article.id + " : destination ou tag non approuvé");
       continue;
     }
-    if (product.expires_at < date) {
+    if (status === "expired") {
       expiredLinks++;
       markBlocked(article, "échéance documentaire dépassée");
       if (blockedExamples.length < 8) blockedExamples.push(article.id + " : référence à revalider (" + asin + ")");

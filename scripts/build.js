@@ -1,6 +1,7 @@
 import { promises as fs, readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { affiliateStatus, readAttribute, stripAffiliateLabels } from "./affiliate-links.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -567,22 +568,15 @@ function articleImageBlock(article) {
 // The site-wide article notice is rendered before the body: keep disclosures
 // from older generated HTML from appearing two or three times to readers.
 function amazonHref(linkTag) {
-  return linkTag.match(/\bhref\s*=\s*(["'])(.*?)\1/i)?.[2] || null;
+  return readAttribute(linkTag, "href");
+}
+
+function classifyAffiliateHref(href) {
+  return affiliateStatus(href, APPROVED_PRODUCTS.affiliate_tag, asin => APPROVED_AFFILIATE_ASINS.get(asin));
 }
 
 function isApprovedAffiliateHref(href) {
-  if (typeof href !== "string") return false;
-  try {
-    const url = new URL(href.replace(/&amp;/gi, "&"));
-    if (url.protocol !== "https:" || !["www.amazon.fr", "amazon.fr"].includes(url.hostname.toLowerCase()) ||
-        url.username || url.password || url.port) return false;
-    const asin = url.pathname.match(/^\/dp\/([A-Z0-9]{10})\/?$/i)?.[1]?.toUpperCase();
-    if (!asin || url.searchParams.get("tag") !== APPROVED_PRODUCTS.affiliate_tag) return false;
-    const expires = APPROVED_AFFILIATE_ASINS.get(asin);
-    return !!expires && expires >= new Date().toISOString().slice(0, 10);
-  } catch {
-    return false;
-  }
+  return classifyAffiliateHref(href).status === "approved";
 }
 
 function hasAmazonAffiliateLinks(content) {
@@ -597,14 +591,13 @@ function normalizeAmazonAffiliateLinks(content) {
   return content.replace(/<a\b[^>]*>[\s\S]*?<\/a>/gi, (anchor) => {
     const opening = anchor.match(/^<a\b[^>]*>/i)?.[0];
     const href = opening && amazonHref(opening);
-    if (!href) return anchor;
-    let url;
-    try { url = new URL(href.replace(/&amp;/gi, "&")); } catch { return anchor; }
-    if (!["www.amazon.fr", "amazon.fr"].includes(url.hostname.toLowerCase())) return anchor;
-    if (!isApprovedAffiliateHref(href)) {
+    const classification = classifyAffiliateHref(href);
+    if (classification.status === "external") return anchor;
+    if (classification.status !== "approved") {
       blockedAffiliateLinks++;
-      return anchor.replace(/^<a\b[^>]*>/i, "").replace(/<\/a>$/i, "");
+      return stripAffiliateLabels(anchor.slice(opening.length).replace(/<\/a>$/i, ""));
     }
+
     const rel = opening.match(/\brel\s*=\s*(["'])(.*?)\1/i);
     const values = new Set(rel ? rel[2].split(/\s+/).filter(Boolean) : []);
     for (const value of ["sponsored", "nofollow", "noopener", "noreferrer"]) values.add(value);
@@ -612,15 +605,11 @@ function normalizeAmazonAffiliateLinks(content) {
     let updated = rel ? opening.replace(rel[0], attribute) : opening.replace(/>$/, " " + attribute + ">");
     // Annoter les liens approuvés sans modifier leur destination ou leur tag.
     // L'attribut servira au suivi agrégé uniquement après consentement.
-    if (!/\bdata-affiliate\s*=/i.test(updated)) {
-      updated = updated.replace(/>$/, ' data-affiliate="amazon">');
-    }
-    // La mention générale reste une seule fois en haut du guide. Une courte
-    // indication directement visible sur chaque lien respecte la transparence.
-    const body = anchor.slice(opening.length);
-    const markedBody = /class=["'][^"']*\baffiliate-label\b/i.test(body)
-      ? body
-      : body.replace(/<\/a>\s*$/i, '<span class="affiliate-label"> (lien rémunéré)</span></a>');
+    updated = updated.replace(/\sdata-affiliate\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, "").replace(/>$/, ' data-affiliate="amazon">');
+    // Recreate exactly one visible indication; remove historical duplicates.
+    const body = stripAffiliateLabels(anchor.slice(opening.length));
+    const markedBody = body.replace(/<\/a>\s*$/i, '<span class="affiliate-label"> (lien rémunéré)</span></a>');
+
     return updated + markedBody;
   });
 }
