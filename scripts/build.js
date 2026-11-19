@@ -19,13 +19,14 @@ const SITE_URL = (process.env.SITE_URL || "https://zen-retraite.fr").replace(/\/
 const DATE_FORMATTER = new Intl.DateTimeFormat("fr-FR", { year: "numeric", month: "long", day: "numeric" });
 const SITE_NAME = "Zen Retraite";
 const ABOUT_LASTMOD = "2026-10-21";
-const HOME_EDITORIAL_LASTMOD = "2026-11-18";
+const HOME_EDITORIAL_LASTMOD = "2026-11-19";
 const HUB_PAGES = [
   {
     file: "guides-numerique.html",
     name: "Numérique facile après 60 ans",
     articleIds: [
       "2025-11-14_20-43_autonomie-num-rique_num-rique-facile-connexion",
+      "2025-12-02_20-46_technologie-autonomie_num-rique-connexion-cran",
       "2025-11-07_16-41_num-rique-vie-sociale_num-rique-connect-vie",
       "2025-11-17_18-45_transmission-num-rique-et-m-moire-familiale_m-moire-famille-num-rique",
       "2025-11-27_18-43_technologie-au-quotidien_num-rique-facile-vie",
