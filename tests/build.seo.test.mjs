@@ -360,6 +360,8 @@ test("static build preserves every archived article and adds the about page to t
   assert.ok(!archiveEntries.some((article) => article.id === olderId));
 
   const consolidation = {
+    "2025-10-30_22-07_maison-confort-s-curit_maison-confort-s-curit": "2025-12-01_11-33_am-nagement-logement-senior_maison-autonomie-confort",
+    "2025-11-01_18-37_maison-jardin-nature_maison-nergie-hiver": "2025-11-29_11-29_conomies-nergie-maison_nergie-maison-conomies",
     "2025-11-01_06-43_activit-physique-et-quipement_marche-b-tons-nature": "2025-11-06_18-46_bien-tre-et-sant-douce_marche-for-t-sport",
     "2025-10-30_21-45_bien-tre-et-sant-douce_marche-nature-saine": "2025-11-06_18-46_bien-tre-et-sant-douce_marche-for-t-sport",
     "2025-10-30_21-37_bien-tre-et-sant-douce_sport-nature-active": "2025-11-06_18-46_bien-tre-et-sant-douce_marche-for-t-sport",
@@ -440,4 +442,23 @@ test("le guide ordinateur présente deux options conditionnelles et retire les a
   assert.match(output, /Nous n'avons pas réalisé d'essai physique/);
   const hub = await readFile(path.join(rootDir, "templates/guides-numerique.html"), "utf8");
   assert.ok(hub.includes("/articles/" + id + "/"));
+});
+
+test("le guide hiver propose un étendoir conditionnel et des précautions de ventilation", async () => {
+  const id = "2025-10-31_18-45_maison-confort-s-curit_maison-confort-hiver";
+  const a = JSON.parse(await readFile(path.join(rootDir, "data/articles", id + ".json"), "utf8"));
+  assert.equal(a.updated_at, "2026-11-19");
+  assert.ok(a.sources.some(s => s.url.includes("leifheit.fr")));
+  assert.ok(a.sources.some(s => s.url.includes("agirpourlatransition.ademe.fr")));
+  const output = cleanArticleContent(a.content);
+  assert.ok(output.includes("/dp/B00GL9FQ4Y?tag=zenretraite11-21"));
+  assert.equal((output.match(/data-affiliate="amazon"/g) || []).length, 1);
+  assert.match(output, /Ne bouchez jamais les grilles/);
+  assert.match(output, /Ne bloquez jamais une sortie/);
+  assert.doesNotMatch(output, /couverture chauffante électrique|thermostat connecté programmable/);
+  for (const old of ["2025-10-30_22-07_maison-confort-s-curit_maison-confort-s-curit", "2025-11-01_18-37_maison-jardin-nature_maison-nergie-hiver"]) {
+    const legacy = JSON.parse(await readFile(path.join(rootDir, "data/articles", old + ".json"), "utf8"));
+    assert.ok(legacy.superseded_by);
+    assert.doesNotMatch(legacy.content, /amazon\.fr/);
+  }
 });
