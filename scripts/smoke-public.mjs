@@ -2,7 +2,7 @@
 // Exécutable via : npm run smoke:public
 const base = (process.env.PUBLIC_BASE_URL || "https://zen-retraite.fr").replace(/\/+$/, "");
 const checks = [
-  { path: "/", canonical: "/", marker: 'id="home-title"' },
+  { path: "/", canonical: "/", marker: 'id="home-title"', extraMarker: 'id="equipment-title"' },
   { path: "/guides-numerique.html", canonical: "/guides-numerique.html", marker: 'id="hub-title"' },
   { path: "/maison-pratique.html", canonical: "/maison-pratique.html", marker: 'id="hub-title"' },
   {
@@ -19,18 +19,24 @@ const checks = [
   { path: "/robots.txt", marker: "Sitemap:" },
 ];
 
-async function fetchWithRetry(path) {
-  const url = base + path;
+async function fetchWithRetry(check) {
+  const url = base + check.path;
   for (let attempt = 1; attempt <= 7; attempt++) {
     try {
-      const response = await fetch(url, { redirect: "follow", signal: AbortSignal.timeout(15000) });
+      const response = await fetch(url, { redirect: "follow", signal: AbortSignal.timeout(15000), cache: "no-store" });
       if (!response.ok) throw new Error("HTTP " + response.status);
       const text = await response.text();
       if (text.length < 30) throw new Error("Réponse vide ou trop courte");
+      for (const marker of [check.marker, check.extraMarker].filter(Boolean)) {
+        if (!text.includes(marker)) throw new Error("Contenu attendu absent : " + marker);
+      }
+      if (check.canonical && (!text.includes('<link rel="canonical" href="' + base + check.canonical + '">') || !text.includes("<h1"))) {
+        throw new Error("Canonique ou h1 absent");
+      }
       return text;
     } catch (error) {
       if (attempt === 7) throw new Error(url + " : " + error.message);
-      console.warn("[smoke] Tentative " + attempt + "/7 pour " + path + " : " + error.message);
+      console.warn("[smoke] Tentative " + attempt + "/7 pour " + check.path + " : " + error.message);
       await new Promise((resolve) => setTimeout(resolve, 5000));
     }
   }
@@ -39,7 +45,7 @@ async function fetchWithRetry(path) {
 async function main() {
   const contents = new Map();
   for (const check of checks) {
-    const body = await fetchWithRetry(check.path);
+    const body = await fetchWithRetry(check);
     if (!body.includes(check.marker)) throw new Error(check.path + " : contenu essentiel absent (" + check.marker + ")");
     if (check.canonical && !body.includes('<link rel="canonical" href="' + base + check.canonical + '">')) {
       throw new Error(check.path + " : URL canonique absente ou incorrecte");
