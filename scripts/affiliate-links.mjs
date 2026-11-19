@@ -1,6 +1,6 @@
 // Shared by the static build and the offline catalogue audit.
 export function readAttribute(tag, name) {
-  const attributes = tag.replace(/^<\s*[\w:-]+/, "").replace(/\/?>$/, "");
+  const attributes = tag.replace(/^<\s*[\w:-]+/, "").replace(/>$/, "");
   const tokens = attributes.matchAll(/([^\s=<>/"']+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>\x60]+)))?/g);
   for (const token of tokens) {
     if (token[1].toLowerCase() === name.toLowerCase()) return token[2] ?? token[3] ?? token[4] ?? "";
