@@ -11,7 +11,7 @@ test("read actual href, not similarly named attributes or text inside values", (
   assert.equal(readAttribute('<a data-href="' + href + '" href = "https://example.org/">', "href"), "https://example.org/");
   assert.equal(readAttribute('<a title=\'href="' + href + '"\' HREF = "https://example.org/">', "href"), "https://example.org/");
   assert.equal(readAttribute('<a data-href="' + href + '">', "href"), null);
-  assert.equal(readAttribute('<a href=https://example.org/>', "href"), "https://example.org");
+  assert.equal(readAttribute('<a href=https://example.org/>', "href"), "https://example.org/");
 });
 
 test("classification handles exact host, tag, catalogue and inclusive expiry", () => {
