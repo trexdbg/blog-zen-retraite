@@ -197,6 +197,17 @@ test("static build preserves every archived article and adds the about page to t
     readFile(path.join(rootDir, "dist", "sitemap.xml"), "utf8"),
   ]);
   const home = await readFile(path.join(rootDir, "dist", "index.html"), "utf8");
+  assert.match(home, /id="equipment-title"/);
+  for (const id of [
+    "2025-12-02_20-46_technologie-autonomie_num-rique-connexion-cran",
+    "2025-10-30_15-16_cuisine-saine-et-appareils-lectrom-nagers_cuisine-saine-appareils",
+    "2025-12-02_18-50_am-nagement-int-rieur-lecture_lecture-confort-maison",
+    "2025-11-03_06-49_jardinage-urbain-et-ergonomique_jardinage-urbain-facile"
+  ]) {
+    assert.ok(home.includes('href="/articles/' + id + '/"'));
+    assert.ok(publishedIds.has(id));
+  }
+
   const archiveData = archive.match(/<script id="zr-archive-data" type="application\/json">([\s\S]*?)<\/script>/);
   assert.ok(archiveData);
   const archiveEntries = JSON.parse(archiveData[1]).entries;
