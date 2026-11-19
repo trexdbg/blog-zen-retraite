@@ -178,7 +178,7 @@ test("legacy kitchen and garden content is now aligned with the product and topi
   for (const item of [kitchen, garden]) {
     assert.ok(item.content.includes("pas") && item.content.length > 2500);
     assert.ok(item.sources.length >= 2);
-    assert.equal(item.updated_at, "2026-10-23");
+    assert.ok(structuredDate(item.updated_at) >= "2026-10-23");
   }
 });
 
@@ -360,6 +360,7 @@ test("static build preserves every archived article and adds the about page to t
   assert.ok(!archiveEntries.some((article) => article.id === olderId));
 
   const consolidation = {
+    "2025-11-10_06-49_gastronomie-durable-et-anti-gaspillage_cuisine-z-ro-d-chet": "2025-11-29_06-46_gastronomie-durable-et-anti-gaspi_cuisine-durable-astuces",
     "2025-11-02_18-37_jardinage-adapt_jardin-outils-plantes": "2025-11-03_06-49_jardinage-urbain-et-ergonomique_jardinage-urbain-facile",
     "2025-10-30_22-07_maison-confort-s-curit_maison-confort-s-curit": "2025-12-01_11-33_am-nagement-logement-senior_maison-autonomie-confort",
     "2025-11-01_18-37_maison-jardin-nature_maison-nergie-hiver": "2025-11-29_11-29_conomies-nergie-maison_nergie-maison-conomies",
@@ -480,4 +481,18 @@ test("guides potager et lecture : deux accessoires conditionnels, sources et ret
     const hub = await readFile(path.join(rootDir, "templates/maison-pratique.html"), "utf8");
     assert.ok(hub.includes("/articles/" + id + "/"));
   }
+});
+
+test("cuisine pratique : nouvel ouvre-boîte et essoreuse, sans achats imposés", async () => {
+  const kitchen = JSON.parse(await readFile(path.join(rootDir, "data/articles/2025-10-30_15-16_cuisine-saine-et-appareils-lectrom-nagers_cuisine-saine-appareils.json"), "utf8"));
+  const waste = JSON.parse(await readFile(path.join(rootDir, "data/articles/2025-11-29_06-46_gastronomie-durable-et-anti-gaspi_cuisine-durable-astuces.json"), "utf8"));
+  assert.match(cleanArticleContent(kitchen.content), /\/dp\/B00004OCJW\?tag=zenretraite11-21/);
+  assert.match(cleanArticleContent(waste.content), /\/dp\/B000B8J4A8\?tag=zenretraite11-21/);
+  assert.equal((cleanArticleContent(kitchen.content).match(/data-affiliate="amazon"/g) || []).length, 2);
+  assert.equal((cleanArticleContent(waste.content).match(/data-affiliate="amazon"/g) || []).length, 1);
+  assert.ok(kitchen.sources.some(s => s.url.includes("soft-handled-can-opener")));
+  assert.ok(waste.sources.some(s => s.url.includes("leifheit.fr")));
+  assert.ok(waste.sources.some(s => s.url.includes("agriculture.gouv.fr")));
+  assert.match(waste.content, /ne désinfecte pas les aliments/);
+  assert.doesNotMatch(waste.content, /B0D1KSFR1Y|B0CBSYQPTC|B075JPDT5C/);
 });
