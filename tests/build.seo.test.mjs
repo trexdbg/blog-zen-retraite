@@ -507,3 +507,26 @@ test("cuisine pratique : nouvel ouvre-boîte et essoreuse, sans achats imposés"
   assert.match(waste.content, /ne désinfecte pas les aliments/);
   assert.doesNotMatch(waste.content, /B0D1KSFR1Y|B0CBSYQPTC|B075JPDT5C/);
 });
+
+test("the housing guide uses a verified official self-assessment tool and a local editorial image", async () => {
+  const id = "2025-12-01_11-33_am-nagement-logement-senior_maison-autonomie-confort";
+  const source = JSON.parse(await readFile(path.join(rootDir, "data/articles", id + ".json"), "utf8"));
+  const official = "https://www.lassuranceretraite.fr/portail-info/hors-menu/annexe/retraites/etre-bien-chez-soi-conseils.html";
+  assert.equal(source.updated_at, "2026-11-24");
+  assert.equal(source.image, "https://zen-retraite.fr/assets/images/editorial-maison.svg");
+  assert.equal(source.image_width, 1200);
+  assert.equal(source.image_height, 700);
+  assert.ok(source.sources.some(item => item.url === official), "official resource must be sourced");
+  assert.ok(source.content.includes('href="' + official + '"'));
+  const [article, hub] = await Promise.all([
+    readFile(path.join(rootDir, "dist", "articles", id, "index.html"), "utf8"),
+    readFile(path.join(rootDir, "dist", "maison-pratique.html"), "utf8")
+  ]);
+  assert.ok(article.includes('href="' + official + '"'));
+  assert.ok(hub.includes('href="' + official + '"'));
+  assert.match(hub, /id="official-tool-title"/);
+  assert.match(article, /<time datetime="2026-11-24">/);
+  assert.match(article, /<time datetime="2025-12-01T11:33:/);
+  assert.match(article, /editorial-maison\.svg/);
+  assert.doesNotMatch(article, /dateTime=/);
+});
