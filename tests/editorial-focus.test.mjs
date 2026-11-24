@@ -106,7 +106,7 @@ test("smartphone guide gives sourced, reversible Android and iPhone settings", a
   assert.match(guide.content, /Paramètres &gt; Notifications/);
   assert.match(guide.content, /Réglages &gt; Luminosité et affichage/);
   assert.match(guide.content, /Pour annuler|Pour annuler,|Pour annuler/);
-  assert.equal(guide.updated_at, "2026-11-24");
+  assert.equal(guide.updated_at, "2026-11-17");
   for (const domain of ["support.google.com/accessibility/android/", "support.google.com/android/", "support.apple.com/fr-fr/102453", "support.apple.com/fr-fr/guide/iphone/"]) {
     assert.ok(guide.sources.some((source) => source.url.includes(domain)), "official source missing: " + domain);
   }
@@ -132,7 +132,7 @@ test("housing guide provides actionable, sourced room-by-room assessment and aid
   assert.match(guide.content, /assistant à maîtrise d’ouvrage/);
   assert.match(guide.content, /avant le début des travaux/);
   assert.ok(guide.sources.some((s) => s.url.includes("anah.gouv.fr/document/guide-des-aides-financieres-0226")));
-  assert.equal(guide.updated_at, "2026-11-17");
+  assert.equal(guide.updated_at, "2026-11-24");
   const hub = await read("templates/maison-pratique.html");
   assert.match(hub, /Votre visite du logement en 15 minutes/);
   assert.match(hub, /#fiche-diagnostic-logement/);
