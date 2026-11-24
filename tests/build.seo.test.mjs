@@ -526,7 +526,7 @@ test("the housing guide uses a verified official self-assessment tool and a loca
   assert.ok(hub.includes('href="' + official + '"'));
   assert.match(hub, /id="official-tool-title"/);
   assert.match(article, /<time datetime="2026-11-24">/);
-  assert.match(article, /<time datetime="2025-12-01T11:33:/);
+  assert.match(article, /<time datetime="2025-12-01T11:32:49Z">/);
   assert.match(article, /editorial-maison\.svg/);
   assert.doesNotMatch(article, /dateTime=/);
 });
