@@ -20,7 +20,7 @@ const SITE_URL = (process.env.SITE_URL || "https://zen-retraite.fr").replace(/\/
 const DATE_FORMATTER = new Intl.DateTimeFormat("fr-FR", { year: "numeric", month: "long", day: "numeric" });
 const SITE_NAME = "Zen Retraite";
 const ABOUT_LASTMOD = "2026-10-21";
-const HOME_EDITORIAL_LASTMOD = "2026-11-19";
+const HOME_EDITORIAL_LASTMOD = "2026-11-24";
 const HUB_PAGES = [
   {
     file: "guides-numerique.html",
@@ -472,7 +472,7 @@ function buildArchiveItem(entry) {
   const dateIso = entry.created_at && !Number.isNaN(new Date(entry.created_at).getTime()) ? entry.created_at : "";
   const dateHuman = formatDateHuman(dateIso);
   const timeBlock = dateIso
-    ? `<time dateTime="${htmlEscape(dateIso)}">${htmlEscape(dateHuman)}</time>`
+    ? `<time datetime="${htmlEscape(dateIso)}">${htmlEscape(dateHuman)}</time>`
     : "";
   const href = entry.url || articlePath(entry.id);
   return `
@@ -862,7 +862,7 @@ async function buildArticles(template, articles) {
       ARTICLE_PUBLISHED_ISO: htmlEscape(publishedDate || ""),
       ARTICLE_PUBLISHED_HUMAN: htmlEscape(formatDateHuman(article.created_at)),
       ARTICLE_UPDATED_BLOCK: updatedDate
-        ? `<span>Mis à jour le <time dateTime="${htmlEscape(updatedDate)}">${htmlEscape(formatDateHuman(article.updated_at))}</time></span>`
+        ? `<span>Mis à jour le <time datetime="${htmlEscape(updatedDate)}">${htmlEscape(formatDateHuman(article.updated_at))}</time></span>`
         : "",
       ARTICLE_HUB_BREADCRUMB: hubForArticle(article)
         ? `<span aria-hidden="true">/</span><a href="${htmlEscape(hubForArticle(article).path)}">${htmlEscape(hubForArticle(article).name)}</a>`
