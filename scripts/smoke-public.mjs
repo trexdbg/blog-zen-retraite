@@ -4,7 +4,7 @@ const base = (process.env.PUBLIC_BASE_URL || "https://zen-retraite.fr").replace(
 const checks = [
   { path: "/", canonical: "/", marker: 'id="home-title"', extraMarker: 'id="equipment-title"' },
   { path: "/guides-numerique.html", canonical: "/guides-numerique.html", marker: 'id="hub-title"' },
-  { path: "/maison-pratique.html", canonical: "/maison-pratique.html", marker: 'id="hub-title"' },
+  { path: "/maison-pratique.html", canonical: "/maison-pratique.html", marker: 'id="hub-title"', extraMarker: 'id="official-tool-title"' },
   {
     path: "/articles/2026-10-04_07-56_gestion-des-photos_photos-souvenirs-famille/",
     canonical: "/articles/2026-10-04_07-56_gestion-des-photos_photos-souvenirs-famille/",
@@ -14,6 +14,7 @@ const checks = [
     path: "/articles/2025-12-01_11-33_am-nagement-logement-senior_maison-autonomie-confort/",
     canonical: "/articles/2025-12-01_11-33_am-nagement-logement-senior_maison-autonomie-confort/",
     marker: 'id="fiche-diagnostic-logement"',
+    extraMarker: 'etre-bien-chez-soi-conseils.html',
   },
   { path: "/sitemap.xml", marker: "<urlset" },
   { path: "/robots.txt", marker: "Sitemap:" },

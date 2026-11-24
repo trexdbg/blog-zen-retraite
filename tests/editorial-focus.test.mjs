@@ -132,7 +132,7 @@ test("housing guide provides actionable, sourced room-by-room assessment and aid
   assert.match(guide.content, /assistant à maîtrise d’ouvrage/);
   assert.match(guide.content, /avant le début des travaux/);
   assert.ok(guide.sources.some((s) => s.url.includes("anah.gouv.fr/document/guide-des-aides-financieres-0226")));
-  assert.equal(guide.updated_at, "2026-11-17");
+  assert.equal(guide.updated_at, "2026-11-24");
   const hub = await read("templates/maison-pratique.html");
   assert.match(hub, /Votre visite du logement en 15 minutes/);
   assert.match(hub, /#fiche-diagnostic-logement/);
