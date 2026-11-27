@@ -31,6 +31,12 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Run SEO, editorial and affiliate tests
+        run: npm test
+
+      - name: Audit affiliate links before publication
+        run: npm run audit:affiliate
+
       - name: Build static pages
         env:
           SITE_URL: https://zen-retraite.fr
